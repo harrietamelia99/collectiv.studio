@@ -13,10 +13,15 @@ import { TEAM_HEADSHOT_PUBLIC_PATH } from "@/lib/team-headshots";
 import { TeamCard, TeamCardGroup } from "@/components/ui/TeamCard";
 
 export default async function AboutPage() {
-  const dynamicFaqs = await prisma.siteFaq.findMany({
-    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-    select: { id: true, question: true, answer: true },
-  });
+  let dynamicFaqs: { id: string; question: string; answer: string }[] = [];
+  try {
+    dynamicFaqs = await prisma.siteFaq.findMany({
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      select: { id: true, question: true, answer: true },
+    });
+  } catch {
+    /* e.g. deploy env uses non-SQLite DATABASE_URL — still show static FAQs */
+  }
 
   return (
     <>

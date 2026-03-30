@@ -54,34 +54,39 @@ export async function POST(req: Request) {
     });
   }
 
-  const stat = await prisma.chatQuestionStat.upsert({
-    where: { normalizedKey: key },
-    create: { normalizedKey: key, sampleQuestion: msg.slice(0, 500), count: 1 },
-    update: {
-      count: { increment: 1 },
-      sampleQuestion: msg.slice(0, 500),
-    },
-  });
+  let dynamic: { question: string; answer: string }[] = [];
+  try {
+    const stat = await prisma.chatQuestionStat.upsert({
+      where: { normalizedKey: key },
+      create: { normalizedKey: key, sampleQuestion: msg.slice(0, 500), count: 1 },
+      update: {
+        count: { increment: 1 },
+        sampleQuestion: msg.slice(0, 500),
+      },
+    });
 
-  if (stat.count > 5) {
-    await prisma.faqSuggestion
-      .upsert({
-        where: { normalizedKey: key },
-        create: {
-          normalizedKey: key,
-          sampleQuestion: msg.slice(0, 600),
-          askCount: stat.count,
-          status: "PENDING",
-        },
-        update: {
-          askCount: stat.count,
-          sampleQuestion: msg.slice(0, 600),
-        },
-      })
-      .catch(() => {});
+    if (stat.count > 5) {
+      await prisma.faqSuggestion
+        .upsert({
+          where: { normalizedKey: key },
+          create: {
+            normalizedKey: key,
+            sampleQuestion: msg.slice(0, 600),
+            askCount: stat.count,
+            status: "PENDING",
+          },
+          update: {
+            askCount: stat.count,
+            sampleQuestion: msg.slice(0, 600),
+          },
+        })
+        .catch(() => {});
+    }
+
+    dynamic = await prisma.siteFaq.findMany();
+  } catch {
+    /* DB unavailable — match against static FAQs + OpenAI fallback only */
   }
-
-  const dynamic = await prisma.siteFaq.findMany();
   let best = { score: 0, a: "", q: "" };
   for (const f of siteFaqsStatic) {
     const s = faqMatchScore(msg, f.q);
