@@ -32,10 +32,22 @@ export default function Error({
         Try again
       </button>
       <p className="cc-copy-sm mt-8 text-center text-burgundy/60">
-        If this keeps happening, stop all running dev servers, run{" "}
-        <code className="rounded bg-burgundy/10 px-1 py-0.5">npm run dev:clean</code> in{" "}
-        <code className="rounded bg-burgundy/10 px-1 py-0.5">collectiv-studio</code>, then open{" "}
-        <code className="rounded bg-burgundy/10 px-1 py-0.5">http://localhost:3333</code>
+        {process.env.NODE_ENV === "development" ? (
+          <>
+            If this keeps happening, stop all running dev servers, run{" "}
+            <code className="rounded bg-burgundy/10 px-1 py-0.5">npm run dev:clean</code> in{" "}
+            <code className="rounded bg-burgundy/10 px-1 py-0.5">collectiv-studio</code>, then open{" "}
+            <code className="rounded bg-burgundy/10 px-1 py-0.5">http://localhost:3333</code>
+          </>
+        ) : (
+          <>
+            On Vercel, add your Supabase{" "}
+            <code className="rounded bg-burgundy/10 px-1 py-0.5">DATABASE_URL</code> (with{" "}
+            <code className="rounded bg-burgundy/10 px-1 py-0.5">?sslmode=require</code> if needed),{" "}
+            <code className="rounded bg-burgundy/10 px-1 py-0.5">NEXTAUTH_URL</code> (your live site URL), and{" "}
+            <code className="rounded bg-burgundy/10 px-1 py-0.5">NEXTAUTH_SECRET</code>, then redeploy.
+          </>
+        )}
       </p>
     </div>
   );

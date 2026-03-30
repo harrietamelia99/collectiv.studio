@@ -73,12 +73,17 @@ const homeStats = [
 ] as const;
 
 export default async function HomePage() {
-  const featuredReviews = await prisma.publishedClientReview.findMany({
-    where: { featuredOnHome: true, rating: 5 },
-    orderBy: { submittedAt: "desc" },
-    take: 12,
-    select: { id: true, reviewText: true, reviewerName: true },
-  });
+  let featuredReviews: { id: string; reviewText: string; reviewerName: string }[] = [];
+  try {
+    featuredReviews = await prisma.publishedClientReview.findMany({
+      where: { featuredOnHome: true, rating: 5 },
+      orderBy: { submittedAt: "desc" },
+      take: 12,
+      select: { id: true, reviewText: true, reviewerName: true },
+    });
+  } catch {
+    /* e.g. Vercel without DATABASE_URL or DB unreachable — page still renders */
+  }
 
   const dbTestimonials = featuredReviews.map((r) => ({
     id: r.id,
