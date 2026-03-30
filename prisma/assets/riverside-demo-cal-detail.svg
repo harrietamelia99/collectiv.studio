@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
+  <defs>
+    <linearGradient id="d" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2c1810"/>
+      <stop offset="100%" stop-color="#4a3028"/>
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="1350" fill="url(#d)"/>
+  <rect x="280" y="440" width="520" height="520" rx="8" fill="#d4c4b8" opacity="0.25"/>
+  <rect x="360" y="520" width="160" height="160" rx="4" fill="#f5f0ea" opacity="0.35"/>
+  <rect x="560" y="520" width="160" height="160" rx="4" fill="#f5f0ea" opacity="0.2"/>
+  <rect x="360" y="700" width="360" height="100" rx="4" fill="#f5f0ea" opacity="0.15"/>
+  <text x="540" y="1120" text-anchor="middle" fill="#f5f0ea" font-family="Georgia,serif" font-size="38" opacity="0.88">Detail crop � demo</text>
+</svg>

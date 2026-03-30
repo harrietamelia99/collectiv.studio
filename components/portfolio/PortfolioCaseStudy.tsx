@@ -1,0 +1,139 @@
+import Link from "next/link";
+import type { PortfolioProject } from "@/lib/portfolio";
+import { ImagePlaceholderFill } from "@/components/ui/ImagePlaceholder";
+import { SectionLabel } from "@/components/ui/SectionLabel";
+
+type Props = {
+  project: PortfolioProject;
+  prev: PortfolioProject;
+  next: PortfolioProject;
+};
+
+export function PortfolioCaseStudy({ project, prev, next }: Props) {
+  return (
+    <>
+      <section className="border-b border-solid border-[var(--cc-hairline)] bg-cream px-6 pb-10 pt-4 md:pb-14 md:pt-5">
+        <div className="mx-auto max-w-6xl">
+          <Link
+            href="/portfolio"
+            className="cc-caption mb-8 inline-flex text-burgundy/70 transition-opacity hover:opacity-100 md:mb-10"
+          >
+            ← Back to portfolio
+          </Link>
+          <SectionLabel className="mb-3 md:mb-4">[ case study ]</SectionLabel>
+          <h1 className="cc-no-heading-hover max-w-[22rem] text-balance text-burgundy sm:max-w-2xl md:max-w-4xl">
+            {project.title}
+          </h1>
+          <p className="cc-copy-muted mt-5 max-w-2xl md:mt-6">{project.tagline}</p>
+          <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-solid border-[var(--cc-hairline)] pt-8 md:mt-10 md:gap-x-6 md:pt-10">
+            <span className="cc-caption text-burgundy/55">{project.year}</span>
+            <span className="hidden text-burgundy/25 md:inline" aria-hidden>
+              ·
+            </span>
+            <span className="cc-caption-strong">{project.type}</span>
+            <div className="flex w-full flex-wrap gap-2 md:ml-auto md:w-auto md:justify-end">
+              {project.services.map((s) => (
+                <span
+                  key={s}
+                  className="cc-caption inline-flex rounded-[var(--cc-pill-radius)] border border-burgundy/15 bg-burgundy/[0.03] px-3 py-1 text-burgundy/80"
+                >
+                  {s}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-cream px-6 pb-12 pt-10 md:pb-16 md:pt-12">
+        <div className="mx-auto max-w-6xl">
+          <div className="relative aspect-[16/9] w-full overflow-hidden md:aspect-[2.2/1]">
+            <ImagePlaceholderFill />
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-cream px-6 py-14 md:py-20">
+        <div className="mx-auto max-w-3xl">
+          <SectionLabel className="mb-4">[ overview ]</SectionLabel>
+          <p className="cc-copy">{project.overview}</p>
+        </div>
+      </section>
+
+      <section className="bg-cream px-6 py-14 md:py-20">
+        <div className="mx-auto grid max-w-6xl gap-12 md:grid-cols-2 md:gap-16 lg:gap-20">
+          <div>
+            <SectionLabel className="mb-4">[ challenge ]</SectionLabel>
+            <p className="cc-copy">{project.challenge}</p>
+          </div>
+          <div className="border-t border-solid border-[var(--cc-hairline)] pt-10 md:border-l md:border-t-0 md:pl-16 md:pt-0 lg:pl-20">
+            <SectionLabel className="mb-4">[ approach ]</SectionLabel>
+            <p className="cc-copy">{project.approach}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-cream px-6 py-14 md:py-20">
+        <div className="mx-auto max-w-3xl">
+          <SectionLabel className="mb-4">[ outcome ]</SectionLabel>
+          <p className="cc-copy">{project.outcome}</p>
+        </div>
+      </section>
+
+      {project.quote ? (
+        <section className="bg-burgundy px-6 py-16 md:py-24">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="cc-no-heading-hover font-display text-cc-h3 font-normal italic text-cream md:text-cc-h2">
+              “{project.quote.text}”
+            </p>
+            <p className="cc-caption-light mt-6 text-cream/65">{project.quote.attribution}</p>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="bg-cream px-6 py-14 md:py-20">
+        <div className="mx-auto max-w-6xl">
+          <SectionLabel className="mb-10 md:mb-12">[ project gallery ]</SectionLabel>
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-10">
+            {project.galleryCaptions.map((caption, i) => (
+              <figure key={i} className="m-0">
+                <div className="relative aspect-[4/3] w-full overflow-hidden">
+                  <ImagePlaceholderFill />
+                </div>
+                <figcaption className="cc-caption mt-4">{caption}</figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-cream px-6 py-16 md:py-24">
+        <div className="mx-auto max-w-6xl">
+          <SectionLabel className="mb-8 md:mb-10">[ more work ]</SectionLabel>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
+            <Link
+              href={`/portfolio/${prev.slug}`}
+              className="group flex flex-col border border-solid border-burgundy bg-cream p-6 transition-[box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:shadow-nav md:p-8"
+            >
+              <span className="cc-caption text-burgundy/45">Previous</span>
+              <span className="mt-3 font-display text-cc-h3 font-normal text-burgundy transition-colors group-hover:text-burgundy">
+                {prev.title}
+              </span>
+              <span className="cc-caption mt-2 text-burgundy/60">{prev.type}</span>
+            </Link>
+            <Link
+              href={`/portfolio/${next.slug}`}
+              className="group flex flex-col border border-solid border-burgundy bg-cream p-6 transition-[box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:shadow-nav md:items-end md:p-8"
+            >
+              <span className="cc-caption text-burgundy/45">Next</span>
+              <span className="mt-3 text-left font-display text-cc-h3 font-normal text-burgundy transition-colors group-hover:text-burgundy md:text-right">
+                {next.title}
+              </span>
+              <span className="cc-caption mt-2 text-left text-burgundy/60 md:text-right">{next.type}</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}

@@ -1,0 +1,463 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  /// Null while the client is invited but has not finished registration (password not set yet).
+  passwordHash String?
+  /// Client’s full name (personal).
+  name         String?
+  firstName    String?
+  lastName     String?
+  /// Contact phone (portal registration & studio visibility).
+  phone        String?
+  /// Opaque token for password reset (cleared after use).
+  passwordResetToken          String?   @unique
+  passwordResetTokenExpiresAt DateTime?
+  /// Email invite: registration link token (cleared after signup).
+  clientInviteToken       String?   @unique
+  clientInviteExpiresAt   DateTime?
+  /// When the latest invite email was sent (studio dashboard / resend).
+  clientInviteSentAt      DateTime?
+  /// When the client completed portal registration (password set).
+  clientRegisteredAt      DateTime?
+  /// Business or brand name — used when searching clients on the studio dashboard.
+  businessName String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  projects               Project[]
+  projectsLedForStudio Project[] @relation("ProjectStudioAssignee")
+
+  studioTeamProfile    StudioTeamMember?
+  agencyTodosAssigned  AgencyTodo[]      @relation("AgencyTodoAssignee")
+  studioTimeOffRecords StudioTimeOff[]
+  studioTeamChatAuthored StudioTeamChatMessage[] @relation("StudioTeamChatAuthor")
+  studioNotifications    StudioNotification[]
+  studioAgencyInboxDismissals StudioAgencyInboxDismissal[]
+  /// Reusable brand defaults copied into new projects for this account.
+  userBrandKit           UserBrandKit?
+  clientNotifications    ClientNotification[]
+  /// Optional portrait for portal messages (relative to upload root, e.g. avatars/{userId}/file.jpg).
+  profilePhotoPath       String?
+  projectMessagesAuthored ProjectMessage[] @relation("ProjectMessageAuthor")
+  projectInternalNotes    ProjectInternalNote[]
+}
+
+model Project {
+  id                  String    @id @default(cuid())
+  /// Set when the client has an account. Null while waiting for signup (see invitedClientEmail).
+  userId              String?
+  user                User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Lowercase email — project appears in the client portal once they register with this address.
+  invitedClientEmail  String?
+  name                String
+  /// MULTI | SOCIAL | WEBSITE | ONE_OFF | BRANDING | SIGNAGE | PRINT — controls which portal areas appear for this project.
+  portalKind          String    @default("MULTI")
+  /// Studio confirms this is an active paying / contracted client before full self-serve access.
+  clientVerifiedAt    DateTime?
+  /// Studio confirms the client has signed the contract (granular gate; see also `clientVerifiedAt`).
+  clientContractSignedAt DateTime?
+  /// Full contract text Issy edits per project (shown to client before sign-off).
+  contractTermsText        String    @default("")
+  /// Typed signature name when the client signs in-portal (null if Issy marked signed manually only).
+  contractSignedTypedName  String?
+  /// Client IP at in-portal sign time (from request headers).
+  contractSignedIp         String?
+  /// Immutable snapshot of `contractTermsText` at the moment the client signed in-portal.
+  contractSignedSnapshotText String?
+  /// Studio confirms deposit received — required with contract for full access on non–social-only projects.
+  studioDepositMarkedPaidAt DateTime?
+  /// Legacy: previously unlocked the website workstream; website access now follows contract + deposit (`clientHasFullPortalAccess`).
+  discoveryApprovedAt DateTime?
+  /// JSON map `"stream:slug" -> ISO date` — studio marked they reviewed a workflow step (agency dashboard only).
+  studioReviewedStepsJson String @default("{}")
+  /// Studio confirms the site is live / DNS connected (agency ops; client still uses domain step sign-off separately).
+  studioWebsiteLiveConfirmedAt DateTime?
+
+  websitePrimaryHex    String?
+  websiteSecondaryHex  String?
+  websiteAccentHex     String?
+  /// Optional fourth brand colour (e.g. supporting / highlight).
+  websiteQuaternaryHex String?
+  /// JSON string[] of relative upload paths
+  websiteFontPaths    String    @default("[]")
+  websiteLogoPath     String?
+  /// JSON { path, kind, customLabel? }[] — secondary logo, submark, wordmark, etc. (primary stays in websiteLogoPath).
+  websiteLogoVariationsJson String @default("[]")
+  /// Client confirms website kit is complete for build.
+  websiteKitSignedOff Boolean   @default(false)
+  /// Client confirms page copy and reference imagery are ready for build.
+  websiteContentSignedOff Boolean @default(false)
+  /// Client confirms they have reviewed the staging / live preview link.
+  websitePreviewSignedOff Boolean @default(false)
+  /// Client confirms domain / launch plan on the domain & go live step.
+  websiteLaunchSignedOff Boolean @default(false)
+
+  /// Unguessable token for read-only website kit preview (share with client / stakeholders).
+  websiteKitPreviewToken String? @unique
+  /// How many site pages the client will supply copy and imagery for (1–8).
+  websitePageCount       Int     @default(4)
+  /// JSON string[] labels shown on each page tab, e.g. ["Home","About","Services","Contact"].
+  websitePageLabels      String  @default("[\"Home\",\"About\",\"Services\",\"Contact\"]")
+  /// Staging or live site URL the studio shares with the client (website projects).
+  websiteLiveUrl         String?
+
+  /// Client’s target domain (e.g. example.com) — plain text for studio DNS work.
+  websiteClientDomain    String?
+  /// Registrar or DNS host name (e.g. GoDaddy, Cloudflare).
+  websiteDomainProvider  String?
+  /// AES-256-GCM ciphertext (v1:…) of JSON { login, password } for registrar — studio-only decrypt; never sent to client RSC.
+  websiteDomainAccessEncrypted String?
+  /// True when registrar login details are stored (encrypted). Safe to expose to client UI for progress only.
+  websiteDomainRegistrarVaultStored Boolean @default(false)
+
+  /// Social management: structured briefing answers (JSON object).
+  socialOnboardingJson         String    @default("{}")
+  socialOnboardingSubmittedAt DateTime?
+  /// AES-256-GCM ciphertext (v1:…) of optional client social logins — never log or email; studio-only decrypt.
+  socialAccountAccessEncrypted String?
+
+  /// JSON SocialWeeklySlot[] — weekly post template. When non-empty, batch placeholders + monthly workflow apply.
+  socialWeeklyScheduleJson String @default("[]")
+  /// YYYY-MM — last month we auto-generated placeholder rows for (idempotent generation).
+  socialPlaceholdersGeneratedThroughYm String @default("")
+  /// YYYY-MM — reminder to May to finish the month’s drafts before month start (sent once per key).
+  socialMayFillReminderSentYm String @default("")
+
+  /// Studio marks the build complete — client then sees the offboarding / review form.
+  studioMarkedCompleteAt DateTime?
+
+  /// Client-added inspiration: JSON [{ "url", "label?", "kind?" }] — Pinterest boards, IG accounts, etc.
+  inspirationLinksJson String @default("[]")
+  /// Optional written mood direction when the client has no links yet (branding step 1).
+  brandingMoodDescription String @default("")
+  /// Brand questionnaire answers (JSON) — branding step 2.
+  brandingQuestionnaireJson String @default("{}")
+  brandingQuestionnaireSubmittedAt DateTime?
+  /// Signage technical / production spec (JSON).
+  signageSpecificationJson String @default("{}")
+  signageSpecificationSubmittedAt DateTime?
+  /// Print job specification (JSON).
+  printSpecificationJson String @default("{}")
+  printSpecificationSubmittedAt DateTime?
+  /// Print flow: client skipped optional inspiration step.
+  printInspirationSkipped Boolean @default(false)
+  /// Website preview: client change requests — blocks preview step completion until cleared by studio.
+  websitePreviewClientFeedback String @default("")
+  /// Studio reopened workflow steps for client re-edit: `{"website":["content"],"branding":["questionnaire"]}`.
+  portalWorkflowReopenJson String @default("{}")
+  /// Client confirmed receipt of final branding deliverables (separate from payment popup).
+  brandingFinalDeliverablesAcknowledgedAt DateTime?
+  signageFinalDeliverablesAcknowledgedAt DateTime?
+  printFinalDeliverablesAcknowledgedAt DateTime?
+
+  /// CURRENT | OVERDUE | PENDING — studio sets whether client payments are up to date (shown on client portal).
+  paymentStatus          String @default("CURRENT")
+  /// Optional note shown to the client (e.g. which invoice) when not CURRENT.
+  paymentNoteForClient   String @default("")
+  /// Client confirmed final payment — unlocks download of signed-off (final) design files.
+  clientAcknowledgedFinalPaymentAt DateTime?
+
+  /// Studio/agency member responsible for this project (optional; any STUDIO_EMAIL login may be chosen).
+  assignedStudioUserId String?
+  assignedStudioUser   User?   @relation("ProjectStudioAssignee", fields: [assignedStudioUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  calendarItems       ContentCalendarItem[]
+  reviewAssets        ReviewAsset[]
+  messages            ProjectMessage[]
+  websitePageBriefs   WebsitePageBrief[]
+  projectQuote        ProjectQuote?
+  offboardingReview   PublishedClientReview?
+  agencyTodos         AgencyTodo[]
+  internalNotes       ProjectInternalNote[]
+  agencyInboxDismissals StudioAgencyInboxDismissal[]
+
+  @@index([invitedClientEmail])
+}
+
+/// Agency-only notes on a project — never shown to clients.
+model ProjectInternalNote {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([projectId, createdAt])
+}
+
+/// Client account–level brand kit (reused across new projects).
+model UserBrandKit {
+  id                        String   @id @default(cuid())
+  userId                    String   @unique
+  user                      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  websitePrimaryHex         String?
+  websiteSecondaryHex       String?
+  websiteAccentHex          String?
+  websiteQuaternaryHex      String?
+  websiteFontPaths          String   @default("[]")
+  websiteLogoPath           String?
+  websiteLogoVariationsJson String   @default("[]")
+  notes                     String   @default("")
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+}
+
+/// In-portal alerts for clients (bell + /portal/notifications).
+model ClientNotification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String?
+  kind      String
+  title     String
+  body      String    @default("")
+  href      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt, createdAt])
+  @@index([userId, createdAt])
+}
+
+/// Maps one studio login to Isabella / Harriet / May for dashboards & routed notifications (sync from env).
+model StudioTeamMember {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// isabella | harriet | may
+  personaSlug      String   @unique
+  jobTitle         String
+  availabilityNote String   @default("")
+  /// Shown in “Welcome …” — e.g. Issy, Harriet. Falls back to account name or persona.
+  welcomeName      String?
+  /// Optional profile photo (https URL).
+  photoUrl         String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+/// Shared internal thread for Collectiv studio logins (Harriet, Issy, May, etc.).
+model StudioTeamChatMessage {
+  id               String   @id @default(cuid())
+  authorUserId     String
+  author           User     @relation("StudioTeamChatAuthor", fields: [authorUserId], references: [id], onDelete: Cascade)
+  body             String
+  /// JSON string[] of User ids @-mentioned in body
+  mentionedUserIds String   @default("[]")
+  createdAt        DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+/// In-app alerts for studio team (client activity, @mentions in team chat).
+model StudioNotification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      String
+  title     String
+  body      String    @default("")
+  href      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt, createdAt])
+}
+
+/// Per-user “dismiss from agency dashboard inbox” — does not delete project messages or calendar feedback.
+model StudioAgencyInboxDismissal {
+  id                      String   @id @default(cuid())
+  userId                  String
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// THREAD_REPLY | CALENDAR_FEEDBACK
+  kind                    String
+  projectId               String
+  project                 Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  /// Empty string when kind is THREAD_REPLY; ContentCalendarItem id for CALENDAR_FEEDBACK.
+  calendarItemId          String   @default("")
+  /// Latest client ProjectMessage id at dismiss (thread).
+  anchorProjectMessageId  String?
+  /// ContentCalendarItem.updatedAt at dismiss (re-show row if feedback/item changes).
+  anchorCalendarUpdatedAt DateTime?
+  dismissedAt             DateTime @default(now())
+
+  @@unique([userId, kind, projectId, calendarItemId])
+  @@index([userId, kind])
+}
+
+model AgencyTodo {
+  id             String    @id @default(cuid())
+  assigneeUserId String
+  assignee       User      @relation("AgencyTodoAssignee", fields: [assigneeUserId], references: [id], onDelete: Cascade)
+  projectId      String?
+  project        Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  title          String
+  body           String    @default("")
+  kind           String    @default("manual")
+  dueDate        DateTime?
+  completedAt    DateTime?
+  /// When set and in the future, sync will not recreate this AUTO:* reminder after dismiss / mark-done.
+  autoSnoozedUntil DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([assigneeUserId, completedAt])
+}
+
+model StudioTimeOff {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startDate DateTime
+  endDate   DateTime
+  note      String   @default("")
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+/// Line items JSON: [{ "label": string, "detail"?: string, "amount": string }]
+model ProjectQuote {
+  id            String    @id @default(cuid())
+  projectId     String    @unique
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  intro         String    @default("")
+  lineItemsJson String    @default("[]")
+  sentAt        DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model PublishedClientReview {
+  id             String   @id @default(cuid())
+  projectId      String   @unique
+  project        Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  reviewerName   String
+  reviewText     String
+  rating         Int
+  /// JSON [{ "key", "prompt", "answer" }] — structured offboarding (studio detail).
+  offboardingAnswersJson String @default("[]")
+  /// Five-star reviews surface on the homepage carousel when true.
+  featuredOnHome Boolean  @default(false)
+  submittedAt    DateTime @default(now())
+}
+
+model ChatQuestionStat {
+  id             String   @id @default(cuid())
+  normalizedKey  String   @unique
+  sampleQuestion String
+  count          Int      @default(1)
+  updatedAt      DateTime @updatedAt
+}
+
+model FaqSuggestion {
+  id              String    @id @default(cuid())
+  normalizedKey   String    @unique
+  sampleQuestion  String
+  askCount        Int
+  status          String    @default("PENDING")
+  createdAt       DateTime  @default(now())
+}
+
+model SiteFaq {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+/// Client-supplied copy and images per planned site page (reduces back-and-forth in build).
+model WebsitePageBrief {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  pageIndex  Int
+  headline   String?
+  bodyCopy   String   @default("")
+  /// JSON string[] of relative upload paths (same storage as portal uploads).
+  imagePaths String   @default("[]")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([projectId, pageIndex])
+}
+
+model ContentCalendarItem {
+  id              String    @id @default(cuid())
+  projectId       String
+  project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  scheduledFor    DateTime?
+  title           String?
+  imagePath       String?
+  /// Empty for batch placeholders until copy is added.
+  caption         String    @default("")
+  /// Optional hashtag block for scheduling (space-separated #tags). Falls back to #tokens parsed from caption if empty.
+  hashtags        String    @default("")
+  /// JSON string[] platform ids, e.g. ["instagram","facebook"].
+  channelsJson    String    @default("[\"instagram\"]")
+  /// Client notes / change requests for the studio on this post.
+  clientFeedback  String?
+  clientSignedOff Boolean   @default(false)
+  signedOffAt     DateTime?
+  /// Batch workflow: AWAITING_CONTENT | DRAFT | PENDING_APPROVAL | APPROVED | REVISION_NEEDED
+  postWorkflowStatus String @default("PENDING_APPROVAL")
+  /// Generated empty slot from weekly schedule (before studio adds creative + copy).
+  isPlanPlaceholder Boolean @default(false)
+  /// REEL | GRAPHIC | CAROUSEL | STORY | VIDEO
+  postFormat      String    @default("GRAPHIC")
+  /// YYYY-MM — month bucket for batch submit / approve-all.
+  planMonthKey    String?
+  /// Unique per project for idempotent placeholder creation.
+  planStableKey   String?
+  /// JSON array: audit trail (client comments, revision requests, studio resubmits, snapshots).
+  calendarActivityLogJson String @default("[]")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @default(now()) @updatedAt
+
+  @@index([projectId, planMonthKey])
+  @@index([projectId, planStableKey])
+}
+
+model ReviewAsset {
+  id              String  @id @default(cuid())
+  projectId       String
+  project         Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  /// "BRANDING" | "SIGNAGE" | "GENERAL" (shared studio uploads for client sign-off)
+  kind            String
+  title           String
+  notes           String?
+  filePath        String?
+  clientSignedOff Boolean    @default(false)
+  signedOffAt     DateTime?
+  createdAt       DateTime   @default(now())
+}
+
+model ProjectMessage {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  /// "CLIENT" | "STUDIO"
+  authorRole  String
+  authorName  String?
+  body        String
+  createdAt   DateTime @default(now())
+  authorUserId String?
+  author       User?    @relation("ProjectMessageAuthor", fields: [authorUserId], references: [id], onDelete: SetNull)
+
+  @@index([authorUserId])
+}

@@ -2,26 +2,522 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Fixed nav offset for anchor jumps when Lenis / native smooth scroll is off */
+html {
+  scroll-padding-top: 108px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@media (min-width: 1024px) {
+  html {
+    scroll-padding-top: 116px;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.lenis) {
+    scroll-behavior: smooth;
+  }
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+:root {
+  --cc-cream: #f2edeb;
+  --cc-burgundy: #250d18;
+  /* Rules on cream: brand burgundy (sections, hr, accordions, form rules via --cc-border) */
+  --cc-divider: var(--cc-burgundy);
+  --cc-border: var(--cc-divider);
+  /** Section and list hairlines (pair with `border-solid border-*-cc` + colour) */
+  --cc-stroke: 1px;
+  --cc-pill-radius: 9999px;
+  /* Layered, softer elevation (nav / floating UI) */
+  --cc-pill-shadow: 0 16px 48px rgba(37, 13, 24, 0.1), 0 4px 14px rgba(37, 13, 24, 0.05);
+  --cc-nav: 0 10px 40px rgba(37, 13, 24, 0.08), 0 2px 10px rgba(37, 13, 24, 0.04);
+  --cc-soft: 0 4px 24px rgba(37, 13, 24, 0.06), 0 1px 3px rgba(37, 13, 24, 0.04);
+  --cc-lift: 0 18px 42px rgba(37, 13, 24, 0.12), 0 6px 16px rgba(37, 13, 24, 0.06);
+  --cc-dd-radius: 18px;
+  --cc-card-radius: 1.25rem;
+  --cc-placeholder-grey: #a1a1aa;
+  /* Hairline rules between sections (use Tailwind `border-*-cc` + `border-solid` + these colours) */
+  --cc-hairline: var(--cc-divider);
+  /* Softer burgundy for back-to-back cream bands (still reads plum, not grey) */
+  --cc-hairline-subtle: rgba(37, 13, 24, 0.38);
+  /** Package page: full-width seams + accordions (same perceptual weight as in-panel rules). */
+  --cc-hairline-package-seam: rgba(37, 13, 24, 0.16);
+  /** Rules on burgundy panels (accordions); pairs with `border-*-cc`. */
+  --cc-hairline-cream-on-burgundy: rgba(242, 237, 235, 0.16);
+  /* 1px rule under cream hero before full burgundy (about, etc.) */
+  --cc-hairline-burgundy: var(--cc-burgundy);
+  /* Rules on burgundy surfaces: light stroke (full burgundy would disappear on #250d18) */
+  --cc-hairline-on-dark: rgba(242, 237, 235, 0.28);
+  /* Portal / cream chrome edges */
+  --cc-hairline-cream-edge: var(--cc-burgundy);
+  /* Footer internal rules on burgundy */
+  --cc-hairline-on-burgundy: rgba(242, 237, 235, 0.2);
+  /* Nav pill: full brand burgundy so the stroke reads on cream + backdrop-blur */
+  --cc-nav-pill-stroke: var(--cc-burgundy);
+}
+
+/* Plain CSS fallbacks so cream/burgundy and link colours survive if utilities fail to load */
+body {
+  background-color: var(--cc-cream);
+  color: var(--cc-burgundy);
+  font-family: var(--font-body), ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 12px;
+  line-height: 1.65;
+  letter-spacing: 0.02em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (min-width: 768px) {
+  body {
+    font-size: 13px;
+    line-height: 1.7;
+    letter-spacing: 0.025em;
+  }
+}
+
+a {
+  color: var(--cc-burgundy);
+}
+
+/* Sizes/position here so a broken Tailwind build doesn’t leave this link full-viewport. */
+.cc-ig-deco-block {
+  display: block;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: min(110vw, 540px);
+  height: min(110vw, 540px);
+  max-width: 100vw;
+  max-height: 100vh;
+  transform: translate(20%, 36%);
+  background-color: var(--cc-placeholder-grey);
+  border-radius: 1rem;
+  opacity: 0.9;
+}
+
+/* Hide mobile full-screen nav at lg+ even if utility CSS fails (Simple Browser / stale .next). */
+@media (min-width: 1024px) {
+  .cc-mobile-nav-overlay {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+@layer base {
+  body {
+    /* Core colours/fonts also set above (plain CSS) if Tailwind fails */
+    @apply bg-cream text-burgundy font-body antialiased;
+    font-size: 12px;
+    line-height: 1.65;
+    letter-spacing: 0.02em;
+  }
+
+  @screen md {
+    body {
+      font-size: 13px;
+      line-height: 1.7;
+      letter-spacing: 0.025em;
+    }
+  }
+
+  /*
+   * Display heading tiers - values mirror tailwind.config.ts theme.extend.fontSize (cc-h1…cc-h4).
+   * Do not @apply text-cc-h* here: Tailwind cannot resolve those utilities inside @layer base.
+   */
+  main h1 {
+    @apply font-display font-normal text-burgundy;
+    font-size: clamp(1.95rem, 4.8vw, 3.15rem);
+    line-height: 0.96;
+    letter-spacing: -0.045em;
+  }
+
+  main h2 {
+    @apply font-display font-normal text-burgundy;
+    font-size: clamp(1.48rem, 3.5vw, 2.42rem);
+    line-height: 0.98;
+    letter-spacing: -0.038em;
+  }
+
+  main h3 {
+    @apply font-display font-normal text-burgundy;
+    font-size: clamp(1.22rem, 2.35vw, 1.72rem);
+    line-height: 1.06;
+    letter-spacing: -0.032em;
+  }
+
+  main h4 {
+    @apply font-display font-normal text-burgundy;
+    font-size: clamp(1.05rem, 1.7vw, 1.32rem);
+    line-height: 1.12;
+    letter-spacing: -0.026em;
+  }
+
+  main h1 em,
+  main h2 em,
+  main h3 em,
+  main h4 em {
+    @apply font-normal italic;
+  }
+
+  hr {
+    border: 0;
+    border-top: var(--cc-stroke) solid var(--cc-divider);
+    margin: 0;
+  }
+
+  a:focus-visible,
+  button:focus-visible {
+    outline: 2px solid rgba(37, 13, 24, 0.28);
+    outline-offset: 3px;
+  }
+
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 2px solid rgba(37, 13, 24, 0.28);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Body copy on cream (inherits ~12px / 13px md from body). */
+  .cc-copy {
+    @apply font-body font-normal text-burgundy;
+    font-size: 12px;
+    line-height: 1.65;
+    letter-spacing: 0.02em;
+  }
+
+  @screen md {
+    .cc-copy {
+      font-size: 13px;
+      line-height: 1.7;
+      letter-spacing: 0.025em;
+    }
+  }
+
+  .cc-copy-muted {
+    @apply font-body font-normal text-burgundy/80;
+    font-size: 12px;
+    line-height: 1.68;
+    letter-spacing: 0.02em;
+  }
+
+  @screen md {
+    .cc-copy-muted {
+      font-size: 13px;
+      line-height: 1.72;
+      letter-spacing: 0.025em;
+    }
+  }
+
+  /* Long-form on dark (about hero, etc.). */
+  .cc-copy-light {
+    @apply font-body font-normal text-cream/95;
+    font-size: 12px;
+    line-height: 1.85;
+    letter-spacing: 0.02em;
+  }
+
+  @screen md {
+    .cc-copy-light {
+      font-size: 13px;
+      line-height: 1.75;
+      letter-spacing: 0.025em;
+    }
+  }
+
+  /* Body-sized line on dark (credits, captions). */
+  .cc-copy-inverse {
+    @apply font-body font-normal text-cream/85;
+    font-size: 12px;
+    line-height: 1.65;
+    letter-spacing: 0.02em;
+  }
+
+  @screen md {
+    .cc-copy-inverse {
+      font-size: 13px;
+      line-height: 1.7;
+      letter-spacing: 0.025em;
+    }
+  }
+
+  /* Section labels [ portfolio ], mono caps. */
+  .cc-section-label {
+    @apply font-body font-normal uppercase text-burgundy;
+    font-size: 10px;
+    line-height: 1.35;
+    letter-spacing: 0.1em;
+  }
+
+  @screen md {
+    .cc-section-label {
+      font-size: 11px;
+      letter-spacing: 0.11em;
+    }
+  }
+
+  .cc-section-label--light {
+    @apply text-cream;
+  }
+
+  /** Full-width plum rule on cream (section breaks under the nav band). */
+  .cc-rule-t-burgundy {
+    border-top: var(--cc-stroke) solid var(--cc-burgundy);
+  }
+
+  .cc-rule-b-burgundy {
+    border-bottom: var(--cc-stroke) solid var(--cc-burgundy);
+  }
+
+  /** Thin burgundy frame around a content block on cream. */
+  .cc-outline-hairline {
+    border: var(--cc-stroke) solid rgba(37, 13, 24, 0.22);
+  }
+
+  /**
+   * Marketing site: 1px plum rule between sibling <section> blocks (everything after the first band).
+   * First section may still use `cc-rule-t-burgundy` for the seam under the fixed nav.
+   * Skip `.cc-service-packages-stack`: one burgundy band wrapping all package cards (internal borders only).
+   */
+  main.cc-site-main > section + section:not(.cc-service-packages-stack),
+  main.cc-site-main .cc-portfolio-case-study > section + section {
+    border-top: var(--cc-stroke) solid var(--cc-burgundy);
+  }
+
+  /* Form / UI labels (not buttons). */
+  .cc-form-label {
+    @apply font-body font-normal text-burgundy;
+    font-size: 13px;
+    line-height: 1.45;
+    letter-spacing: 0.02em;
+  }
+
+  @screen md {
+    .cc-form-label {
+      font-size: 13px;
+      line-height: 1.5;
+    }
+  }
+
+  /* Small meta / captions on cream. */
+  .cc-caption {
+    @apply font-body font-normal uppercase text-burgundy/60;
+    font-size: 10px;
+    line-height: 1.35;
+    letter-spacing: 0.08em;
+  }
+
+  @screen md {
+    .cc-caption {
+      font-size: 11px;
+      letter-spacing: 0.09em;
+    }
+  }
+
+  .cc-caption-strong {
+    @apply font-body font-normal uppercase text-burgundy;
+    font-size: 10px;
+    line-height: 1.35;
+    letter-spacing: 0.08em;
+  }
+
+  @screen md {
+    .cc-caption-strong {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+    }
+  }
+
+  /* Tighter body for bullets / card highlights. */
+  .cc-copy-sm {
+    @apply font-body font-normal text-burgundy;
+    font-size: 11px;
+    line-height: 1.6;
+    letter-spacing: 0.02em;
+  }
+
+  @screen md {
+    .cc-copy-sm {
+      font-size: 12px;
+      line-height: 1.62;
+      letter-spacing: 0.025em;
+    }
+  }
+
+  /* Uppercase meta on dark / overlay (portfolio tiles). */
+  .cc-caption-light {
+    @apply font-body font-normal uppercase text-cream/90;
+    font-size: 10px;
+    line-height: 1.35;
+    letter-spacing: 0.1em;
+  }
+
+  @screen md {
+    .cc-caption-light {
+      font-size: 11px;
+      letter-spacing: 0.09em;
+    }
+  }
+
+  .cc-testimonial-slide {
+    animation: cc-testimonial-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes cc-testimonial-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 6px, 0);
+    }
+
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cc-testimonial-slide {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /**
+   * Portal — editorial cards (serif titles, mono body, white panels, cool gray rules).
+   * Shared by client-facing areas and studio/agency tools for a consistent shell.
+   */
+  .cc-portal-client-shell {
+    @apply rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-sm sm:p-8;
+  }
+
+  /* Card titles are not interactive — disable global main h2 hover lift inside portal shells. */
+  .cc-portal-client-shell h2:hover {
+    transform: none;
+    opacity: 1;
+  }
+
+  .cc-portal-client-shell-title {
+    @apply border-b border-zinc-200 pb-3 font-display text-xl font-normal tracking-[-0.02em] text-burgundy md:text-2xl;
+  }
+
+  .cc-portal-client-description {
+    @apply font-body text-sm font-normal leading-relaxed text-burgundy/70;
+  }
+
+  .cc-portal-client-form-well {
+    @apply rounded-xl border border-zinc-200/80 bg-zinc-100/60 p-4 sm:p-5;
+  }
+
+  .cc-portal-client-input {
+    @apply w-full min-h-[44px] rounded-xl border border-zinc-200/90 bg-white px-3 py-2.5 font-body text-sm font-normal text-burgundy outline-none transition-shadow placeholder:text-zinc-400 focus:border-burgundy/25 focus:ring-2 focus:ring-burgundy/20;
+  }
+
+  .cc-portal-client-empty {
+    @apply rounded-xl border border-dashed border-zinc-300 bg-zinc-50/90 px-4 py-6 font-body text-sm font-normal leading-relaxed text-burgundy/65;
+  }
+}
+
+/* General buttons (not form submit): hover lift */
+button:not([type="submit"]):not(.cc-no-lift):hover,
+a.cc-btn-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--cc-lift);
+  opacity: 0.97;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.22s ease;
+}
+
+button:not([type="submit"]):not(.cc-no-lift),
+a.cc-btn-lift {
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.22s ease;
+}
+
+main h1:hover,
+main h2:hover,
+main h3:hover,
+main h4:hover {
+  transform: translateY(-3px);
+  opacity: 0.96;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.accordion-root h1:hover,
+.accordion-root h2:hover,
+.accordion-root h3:hover,
+.accordion-root h4:hover,
+.cc-no-heading-hover:hover {
+  transform: none;
+  opacity: 1;
+}
+
+button[type="submit"]:hover,
+.btn-submit:hover {
+  transform: none;
+  opacity: 0.94;
+}
+
+.logo-marquee {
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  overflow: hidden;
+  position: relative;
+}
+.logo-marquee__track {
+  display: flex;
+  width: max-content;
+  animation: logo-marquee-scroll 45s linear infinite;
+}
+.logo-marquee__set {
+  display: flex;
+  align-items: center;
+  gap: clamp(28px, 4vw, 72px);
+  padding-right: clamp(28px, 4vw, 72px);
+}
+.logo-marquee__set img {
+  height: clamp(52px, 6.25vw, 92px);
+  width: auto;
+  object-fit: contain;
+}
+@keyframes logo-marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-marquee__track {
+    animation: none;
+    width: 100%;
+    max-width: 72rem;
+    margin-inline: auto;
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 1.25rem;
+    column-gap: clamp(28px, 4vw, 72px);
+  }
+
+  .logo-marquee__track .logo-marquee__set:last-child {
+    display: none;
   }
 }

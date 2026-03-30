@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" fill="none">
+  <rect width="200" height="200" rx="36" fill="#f4f7f9"/>
+  <path
+    d="M28 128c18-28 42-42 72-42s54 14 72 42"
+    stroke="#1a5f7a"
+    stroke-width="5"
+    stroke-linecap="round"
+    fill="none"
+    opacity="0.45"
+  />
+  <path
+    d="M36 108c22-32 50-48 82-48s60 16 82 48"
+    stroke="#1a5f7a"
+    stroke-width="6"
+    stroke-linecap="round"
+    fill="none"
+  />
+  <path
+    d="M44 88c26-24 58-36 94-36s68 12 94 36"
+    stroke="#2d8a9e"
+    stroke-width="5"
+    stroke-linecap="round"
+    fill="none"
+    opacity="0.7"
+  />
+  <text
+    x="100"
+    y="118"
+    text-anchor="middle"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="26"
+    font-weight="600"
+    fill="#0f3d4d"
+    letter-spacing="-0.02em"
+  >
+    Riverside
+  </text>
+  <text
+    x="100"
+    y="148"
+    text-anchor="middle"
+    font-family="ui-sans-serif, system-ui, sans-serif"
+    font-size="11"
+    font-weight="600"
+    fill="#1a5f7a"
+    letter-spacing="0.28em"
+    opacity="0.85"
+  >
+    STUDIO
+  </text>
+</svg>
