@@ -10,7 +10,9 @@ function isPortalPublicAuthPath(pathname: string) {
     pathname === "/portal/register" ||
     pathname === "/portal/register/success" ||
     pathname === "/portal/forgot-password" ||
-    pathname === "/portal/reset-password"
+    pathname === "/portal/reset-password" ||
+    /** Invite links must work while logged out; token lives in the query string. */
+    pathname === "/portal/invite"
   );
 }
 
@@ -34,7 +36,11 @@ export async function middleware(req: NextRequest) {
   const token = await getToken({ req, secret });
   if (!token) {
     const url = new URL("/portal/login", req.url);
-    url.searchParams.set("callbackUrl", pathname);
+    const pathWithSearch = `${pathname}${req.nextUrl.search}`;
+    /** Preserve e.g. `?token=` on invite or deep links; only same-origin relative paths. */
+    if (pathWithSearch.startsWith("/portal") && pathWithSearch !== "/portal/login") {
+      url.searchParams.set("callbackUrl", pathWithSearch);
+    }
     return NextResponse.redirect(url);
   }
   return NextResponse.next();

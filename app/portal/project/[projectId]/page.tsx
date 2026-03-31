@@ -35,8 +35,6 @@ import { buildClientConversationStripData } from "@/lib/portal-conversation-stri
 import { ClientWorkflowHubTile } from "@/components/portal/ClientWorkflowHubTile";
 import { ClientContractSignOff } from "@/components/portal/ClientContractSignOff";
 import { ClientQuoteView } from "@/components/portal/ClientQuoteView";
-import { ctaButtonClasses } from "@/components/ui/Button";
-import { PORTAL_CLIENT_INPUT_CLASS } from "@/components/portal/PortalSectionCard";
 import { ProjectHubQuickNav, type HubNavItem } from "@/components/portal/ProjectHubQuickNav";
 import {
   HubIconArrowLeft,
