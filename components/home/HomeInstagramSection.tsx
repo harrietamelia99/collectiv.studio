@@ -44,10 +44,14 @@ export function HomeInstagramSectionFallback() {
             {handle}
           </a>
           <p className="mt-4 max-w-xl font-body text-sm leading-relaxed text-burgundy/65">
-            Project snapshots, launches, and behind-the-scenes — follow us on Instagram. The grid loads when the server
-            has a valid Meta access token (see <code className="font-mono text-[11px] text-burgundy/75">INSTAGRAM_ACCESS_TOKEN</code>{" "}
-            in <code className="font-mono text-[11px] text-burgundy/75">.env.example</code>). On Vercel, add the same
-            variables under Project → Settings → Environment Variables, then redeploy.
+            Project snapshots, launches, and behind-the-scenes — follow us on Instagram. The grid needs a valid Meta
+            long-lived token (<code className="font-mono text-[11px] text-burgundy/75">INSTAGRAM_ACCESS_TOKEN</code> on
+            Vercel). Tokens expire about every 60 days — generate a new long-lived token in Meta, update the env var,
+            and redeploy. Business/Creator accounts often also need{" "}
+            <code className="font-mono text-[11px] text-burgundy/75">INSTAGRAM_GRAPH_BASE_URL=https://graph.facebook.com</code>{" "}
+            and <code className="font-mono text-[11px] text-burgundy/75">INSTAGRAM_USER_ID</code> (numeric). Check Vercel
+            → Deployment → Logs for lines starting with{" "}
+            <code className="font-mono text-[11px] text-burgundy/75">[instagram-feed]</code>.
           </p>
         </div>
         <FeedSkeleton />

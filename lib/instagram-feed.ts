@@ -54,10 +54,18 @@ function displayUrl(node: GraphMediaNode): string | null {
 }
 
 function logFeedFailure(message: string) {
+  /** Log in production too so Vercel Runtime Logs explain missing grids (tokens expire ~60d). */
   console.warn(`[instagram-feed] ${message}`);
 }
 
 type FetchAttempt = { root: string; path: string; label: string };
+
+/** Includes carousel `children` — some tokens return 400 if nested fields aren’t allowed. */
+const FIELDS_WITH_CAROUSEL =
+  "id,caption,media_type,media_url,permalink,thumbnail_url,timestamp,children{media_type,media_url,thumbnail_url}";
+
+/** No nested fields — more compatible; carousel posts may be skipped if no top-level image URL. */
+const FIELDS_BASIC = "id,caption,media_type,media_url,permalink,thumbnail_url";
 
 function buildFetchAttempts(userId: string | undefined, customBase: string | undefined): FetchAttempt[] {
   const v = graphVersion();
@@ -72,6 +80,13 @@ function buildFetchAttempts(userId: string | undefined, customBase: string | und
       path: userId ? `${userId}/media` : "me/media",
       label: "configured",
     });
+    /** If the configured host fails (wrong base, partial outage), same token often still works on graph.instagram.com. */
+    if (userId) {
+      attempts.push({ root: igRoot, path: `${userId}/media`, label: "instagram+userId+fallback" });
+      attempts.push({ root: igRoot, path: "me/media", label: "instagram+me+fallback" });
+    } else {
+      attempts.push({ root: igRoot, path: "me/media", label: "instagram+me+fallback" });
+    }
     return attempts;
   }
 
@@ -94,9 +109,11 @@ async function fetchMediaOnce(
   token: string,
 ): Promise<{ items: InstagramFeedItem[] | null; error?: string; status: number }> {
   const url = `${root}/${path}?fields=${fields}&limit=${capped}&access_token=${encodeURIComponent(token)}`;
-  const res = await fetch(url, {
-    next: { revalidate: 900 },
-  });
+  /**
+   * Do not use Data Cache / ISR for Instagram: a failed or empty response must not stick for 15 minutes
+   * after you renew INSTAGRAM_ACCESS_TOKEN on Vercel (otherwise the grid looks “gone” until cache expires).
+   */
+  const res = await fetch(url, { cache: "no-store" });
   const json = (await res.json()) as GraphMediaResponse;
   if (!res.ok || json.error?.message) {
     return {
@@ -141,11 +158,9 @@ async function fetchMediaOnce(
 export async function fetchInstagramFeed(limit = 8): Promise<InstagramFeedItem[] | null> {
   const token = process.env.INSTAGRAM_ACCESS_TOKEN?.trim();
   if (!token) {
-    if (process.env.NODE_ENV === "development") {
-      logFeedFailure(
-        "INSTAGRAM_ACCESS_TOKEN is not set — add it in .env locally or Vercel → Environment Variables for production.",
-      );
-    }
+    logFeedFailure(
+      "INSTAGRAM_ACCESS_TOKEN is not set — add it in .env locally or Vercel → Environment Variables for production.",
+    );
     return null;
   }
 
@@ -160,29 +175,46 @@ export async function fetchInstagramFeed(limit = 8): Promise<InstagramFeedItem[]
   }
 
   const capped = Math.min(Math.max(1, limit), 25);
-  const fields =
-    "id,caption,media_type,media_url,permalink,thumbnail_url,timestamp,children{media_type,media_url,thumbnail_url}";
+  const fieldPasses: { name: string; fields: string }[] = [
+    { name: "full+carousel", fields: FIELDS_WITH_CAROUSEL },
+    { name: "basic", fields: FIELDS_BASIC },
+  ];
 
   try {
     const attempts = buildFetchAttempts(userId, customBase);
-    let lastError = "";
+    let lastErrorOverall = "";
 
-    for (const { root, path, label } of attempts) {
-      const { items, error, status } = await fetchMediaOnce(root, path, fields, capped, token);
-      if (items?.length) {
-        if (label !== attempts[0].label && process.env.NODE_ENV === "development") {
-          logFeedFailure(
-            `Using fallback "${label}" (${root}/${path}) — fix INSTAGRAM_USER_ID or INSTAGRAM_GRAPH_BASE_URL if you want a single explicit endpoint.`,
-          );
+    for (let pi = 0; pi < fieldPasses.length; pi++) {
+      const { name: passName, fields } = fieldPasses[pi];
+      let lastError = "";
+
+      for (const { root, path, label } of attempts) {
+        const { items, error, status } = await fetchMediaOnce(root, path, fields, capped, token);
+        if (items?.length) {
+          if (label !== attempts[0].label && process.env.NODE_ENV === "development") {
+            logFeedFailure(
+              `Using fallback endpoint "${label}" (${root}/${path}) — tighten INSTAGRAM_USER_ID / INSTAGRAM_GRAPH_BASE_URL if you want one fixed URL.`,
+            );
+          }
+          if (passName === "basic") {
+            logFeedFailure(
+              "Instagram: using basic Graph fields (carousel expansion failed or was skipped — grid still loads for image/video posts).",
+            );
+          }
+          return items;
         }
-        return items;
+        if (error) lastError = `${label}: ${status} ${error}`;
       }
-      if (error) lastError = `${label}: ${status} ${error}`;
+
+      lastErrorOverall = lastError;
+      if (lastError && pi === 0) {
+        logFeedFailure(`Instagram full fields failed (${lastError}). Retrying with basic fields…`);
+      }
     }
 
-    if (lastError) {
+    if (lastErrorOverall) {
       logFeedFailure(
-        `All attempts failed. Last: ${lastError}. For Business/Creator + Page token use INSTAGRAM_GRAPH_BASE_URL=https://graph.facebook.com and a numeric INSTAGRAM_USER_ID.`,
+        `All attempts failed. Last: ${lastErrorOverall}. For Business/Creator + Page token use INSTAGRAM_GRAPH_BASE_URL=https://graph.facebook.com and a numeric INSTAGRAM_USER_ID.`,
       );
     }
     return null;
