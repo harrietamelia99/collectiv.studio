@@ -14,7 +14,15 @@ const HARRIET_EMAIL = "harriet@collectiv.local";
  */
 export async function GET(req: Request) {
   if (!authDiagnosticSecret()) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json(
+      {
+        error: "diagnostic_disabled",
+        route: "/api/test-auth",
+        message:
+          "AUTH_DIAGNOSTIC_SECRET is not set for this deployment. Add it in Vercel → Settings → Environment Variables (Production), redeploy, then retry with ?secret=…",
+      },
+      { status: 503 },
+    );
   }
 
   const url = new URL(req.url);

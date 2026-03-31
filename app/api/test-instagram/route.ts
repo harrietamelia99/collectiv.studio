@@ -9,10 +9,21 @@ export const dynamic = "force-dynamic";
  * Set AUTH_DIAGNOSTIC_SECRET on Vercel, redeploy, then:
  *   GET /api/test-instagram?secret=YOUR_SECRET
  * Remove AUTH_DIAGNOSTIC_SECRET when finished.
+ *
+ * When the secret env var is unset we return 503 (not 404) so a live hit still proves this route
+ * is deployed — 404 was mistaken for a missing file.
  */
 export async function GET(req: Request) {
   if (!authDiagnosticSecret()) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json(
+      {
+        error: "diagnostic_disabled",
+        route: "/api/test-instagram",
+        message:
+          "AUTH_DIAGNOSTIC_SECRET is not set for this deployment. Add it in Vercel → Settings → Environment Variables (Production), redeploy, then retry with ?secret=…",
+      },
+      { status: 503 },
+    );
   }
 
   const url = new URL(req.url);
