@@ -10,8 +10,8 @@ import {
   PORTAL_CLIENT_INPUT_CLASS,
 } from "@/components/portal/PortalSectionCard";
 import { PhaseProgressBar } from "@/components/portal/PhaseProgressBar";
-import { setWebsiteLiveUrl } from "@/app/portal/actions";
-import { PortalWebsiteSignOffForm } from "@/components/portal/portal-flash-action-forms";
+import { PortalSetWebsiteLiveUrlForm, PortalWebsiteSignOffForm } from "@/components/portal/portal-flash-action-forms";
+import { PortalFormSubmitButton } from "@/components/portal/PortalFormSubmitButton";
 import { ctaButtonClasses } from "@/components/ui/Button";
 import { loadWebsiteWorkspace } from "@/app/portal/project/[projectId]/website/_lib/load-website-workspace";
 import { loadAccountBrandKitSlice } from "@/lib/portal-account-brand-kit";
@@ -159,7 +159,7 @@ export default async function WebsitePreviewPage({ params }: Props) {
               className="max-w-none lg:max-w-4xl"
             >
               <div className={PORTAL_CLIENT_FORM_WELL_CLASS}>
-                <form action={setWebsiteLiveUrl.bind(null, project.id)} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <PortalSetWebsiteLiveUrlForm projectId={project.id} className="flex flex-col gap-3 sm:flex-row sm:items-end">
                   <label className="flex min-w-0 flex-1 flex-col gap-1.5">
                     <span className="mb-0.5 block font-body text-[10px] font-semibold uppercase tracking-[0.12em] text-burgundy">
                       URL
@@ -172,10 +172,16 @@ export default async function WebsitePreviewPage({ params }: Props) {
                       className={PORTAL_CLIENT_INPUT_CLASS}
                     />
                   </label>
-                  <button type="submit" className={ctaButtonClasses({ variant: "outline", size: "sm", className: "shrink-0" })}>
-                    Save link
-                  </button>
-                </form>
+                  <PortalFormSubmitButton
+                    idleLabel="Save link"
+                    pendingLabel="Saving…"
+                    successLabel="Live URL saved ✓"
+                    errorFallback="Couldn’t save URL. Try again."
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0"
+                  />
+                </PortalSetWebsiteLiveUrlForm>
               </div>
             </PortalSectionCard>
           ) : null}

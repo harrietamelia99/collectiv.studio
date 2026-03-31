@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { acknowledgeFinalDesignPayment } from "@/app/portal/actions";
+import { PortalFormSubmitButton } from "@/components/portal/PortalFormSubmitButton";
+import { PortalFormWithFlash } from "@/components/portal/PortalFormWithFlash";
 import { ctaButtonClasses } from "@/components/ui/Button";
+import type { PortalFormFlash } from "@/lib/portal-form-flash";
 
 function openFinalPaymentDialog(projectId: string) {
   const el = document.getElementById(`final-payment-dialog-${projectId}`);
@@ -18,6 +21,10 @@ export function FinalPaymentDialog({
   autoOpen: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const action = useMemo(
+    () => async (_prev: PortalFormFlash | null, fd: FormData) => acknowledgeFinalDesignPayment(fd),
+    [],
+  );
 
   useEffect(() => {
     if (autoOpen && ref.current && !ref.current.open) {
@@ -31,7 +38,7 @@ export function FinalPaymentDialog({
       id={`final-payment-dialog-${projectId}`}
       className="w-[calc(100%-2rem)] max-w-md rounded-cc-card border border-burgundy/18 bg-cream p-6 text-burgundy shadow-2xl backdrop:bg-black/45 open:backdrop:backdrop-blur-[2px]"
     >
-      <form action={acknowledgeFinalDesignPayment} className="flex flex-col">
+      <PortalFormWithFlash action={action} className="flex flex-col">
         <input type="hidden" name="projectId" value={projectId} />
         <h2 className="font-display text-xl tracking-[-0.02em] text-burgundy">Access your final files</h2>
         <p className="mt-3 font-body text-sm leading-relaxed text-burgundy/75">
@@ -54,11 +61,17 @@ export function FinalPaymentDialog({
           >
             Not yet
           </button>
-          <button type="submit" className={ctaButtonClasses({ variant: "burgundy", size: "sm", className: "px-4" })}>
-            Unlock downloads
-          </button>
+          <PortalFormSubmitButton
+            idleLabel="Unlock downloads"
+            pendingLabel="Confirming…"
+            successLabel="Confirmed — downloads unlocked ✓"
+            errorFallback="Couldn’t confirm. Try again."
+            variant="burgundy"
+            size="sm"
+            className="px-4"
+          />
         </div>
-      </form>
+      </PortalFormWithFlash>
     </dialog>
   );
 }

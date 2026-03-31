@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { submitOffboardingReview } from "@/app/portal/actions";
-import { ctaButtonClasses } from "@/components/ui/Button";
+import { PortalFormSubmitButton } from "@/components/portal/PortalFormSubmitButton";
+import { PortalFormWithFlash } from "@/components/portal/PortalFormWithFlash";
 import {
   formFieldNameForOffboardingQuestion,
   OFFBOARDING_QUESTIONS,
 } from "@/lib/portal-offboarding";
+import type { PortalFormFlash } from "@/lib/portal-form-flash";
 
 type Props = {
   projectId: string;
@@ -15,6 +17,11 @@ type Props = {
 
 export function ClientOffboardingForm({ projectId, defaultName }: Props) {
   const [rating, setRating] = useState<number | null>(null);
+
+  const action = useMemo(
+    () => async (_prev: PortalFormFlash | null, fd: FormData) => submitOffboardingReview(projectId, fd),
+    [projectId],
+  );
 
   return (
     <section
@@ -30,7 +37,7 @@ export function ClientOffboardingForm({ projectId, defaultName }: Props) {
         should know&quot; answer as the public quote if you&apos;re happy with that).
       </p>
 
-      <form action={submitOffboardingReview.bind(null, projectId)} className="mt-8 space-y-6">
+      <PortalFormWithFlash action={action} className="mt-8 space-y-6">
         <label className="block max-w-md">
           <span className="mb-1.5 block font-body text-[10px] uppercase tracking-[0.12em] text-burgundy/55">
             Your name
@@ -81,29 +88,28 @@ export function ClientOffboardingForm({ projectId, defaultName }: Props) {
             </span>
             <textarea
               name={formFieldNameForOffboardingQuestion(q.key)}
+              rows={q.multiline ? 5 : 2}
               required={q.required}
-              rows={q.multiline ? 4 : 2}
               maxLength={q.maxLength}
               className="cc-portal-client-input min-h-[5rem] px-4 py-3"
             />
           </label>
         ))}
 
-        <button
-          type="submit"
+        <PortalFormSubmitButton
+          idleLabel="Submit and continue"
+          pendingLabel="Submitting…"
+          successLabel="Thank you — feedback submitted ✓"
+          errorFallback="Couldn’t submit feedback. Try again."
+          variant="ink"
+          size="sm"
+          className="px-6"
           disabled={rating === null}
-          className={ctaButtonClasses({
-            variant: "ink",
-            size: "sm",
-            className: "px-6 disabled:pointer-events-none disabled:opacity-40",
-          })}
-        >
-          Submit and continue
-        </button>
+        />
         {rating === null ? (
           <p className="font-body text-xs text-burgundy/55">Choose a star rating to enable submit.</p>
         ) : null}
-      </form>
+      </PortalFormWithFlash>
     </section>
   );
 }

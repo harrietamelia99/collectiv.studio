@@ -11,18 +11,14 @@ import { PhaseProgressBar } from "@/components/portal/PhaseProgressBar";
 import { PortalSectionCard } from "@/components/portal/PortalSectionCard";
 import { WebsiteBrandColourFields } from "@/components/portal/WebsiteBrandColourFields";
 import { WebsiteLogoVariationsPanel } from "@/components/portal/WebsiteLogoVariationsPanel";
+import { clearWebsiteLogo, removeWebsiteFont, uploadWebsiteFont, uploadWebsiteLogo } from "@/app/portal/actions";
 import {
-  applyUserBrandKitToProject,
-  clearWebsiteLogo,
-  removeWebsiteFont,
-  saveUserBrandKitFromProject,
-  uploadWebsiteFont,
-  uploadWebsiteLogo,
-} from "@/app/portal/actions";
-import {
+  PortalApplyUserBrandKitForm,
+  PortalSaveUserBrandKitForm,
   PortalSaveWebsiteColoursForm,
   PortalWebsiteSignOffForm,
 } from "@/components/portal/portal-flash-action-forms";
+import { PortalFormSubmitButton } from "@/components/portal/PortalFormSubmitButton";
 import { ctaButtonClasses } from "@/components/ui/Button";
 import { loadWebsiteWorkspace } from "@/app/portal/project/[projectId]/website/_lib/load-website-workspace";
 import { loadAccountBrandKitSlice } from "@/lib/portal-account-brand-kit";
@@ -115,19 +111,29 @@ export default async function WebsiteKitPage({ params }: Props) {
             kit you saved before (only fills empty fields).
           </p>
           <div className="flex flex-wrap gap-2">
-            <form action={saveUserBrandKitFromProject}>
+            <PortalSaveUserBrandKitForm>
               <input type="hidden" name="projectId" value={project.id} />
-              <button type="submit" className={ctaButtonClasses({ variant: "outline", size: "sm" })}>
-                Save to my account
-              </button>
-            </form>
+              <PortalFormSubmitButton
+                idleLabel="Save to my account"
+                pendingLabel="Saving…"
+                successLabel="Brand kit saved to your account ✓"
+                errorFallback="Couldn’t save brand kit. Try again."
+                variant="outline"
+                size="sm"
+              />
+            </PortalSaveUserBrandKitForm>
             {accountBrandKit ? (
-              <form action={applyUserBrandKitToProject}>
+              <PortalApplyUserBrandKitForm>
                 <input type="hidden" name="projectId" value={project.id} />
-                <button type="submit" className={ctaButtonClasses({ variant: "burgundy", size: "sm" })}>
-                  Apply account kit
-                </button>
-              </form>
+                <PortalFormSubmitButton
+                  idleLabel="Apply account kit"
+                  pendingLabel="Applying…"
+                  successLabel="Account brand kit applied ✓"
+                  errorFallback="Couldn’t apply brand kit. Try again."
+                  variant="burgundy"
+                  size="sm"
+                />
+              </PortalApplyUserBrandKitForm>
             ) : null}
           </div>
         </div>

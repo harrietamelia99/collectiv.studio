@@ -1,10 +1,12 @@
 "use client";
 
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { postProjectMessage } from "@/app/portal/actions";
 import { PORTAL_CLIENT_FORM_WELL_CLASS } from "@/components/portal/PortalSectionCard";
+import { PortalFormSubmitButton } from "@/components/portal/PortalFormSubmitButton";
+import { PortalFormWithFlash } from "@/components/portal/PortalFormWithFlash";
 import { EmojiPickerButton } from "@/components/ui/EmojiPickerButton";
-import { ctaButtonClasses } from "@/components/ui/Button";
+import type { PortalFormFlash } from "@/lib/portal-form-flash";
 
 type Props = {
   projectId: string;
@@ -14,6 +16,11 @@ type Props = {
 export function ProjectMessageComposer({ projectId, variant }: Props) {
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const fieldId = `project-message-${projectId}`;
+
+  const action = useMemo(
+    () => async (_prev: PortalFormFlash | null, fd: FormData) => postProjectMessage(projectId, fd),
+    [projectId],
+  );
 
   const textareaClass =
     variant === "clientEmphasis"
@@ -46,16 +53,15 @@ export function ProjectMessageComposer({ projectId, variant }: Props) {
             className={textareaClass}
           />
         </div>
-        <button
-          type="submit"
-          className={ctaButtonClasses({
-            variant: "burgundy",
-            size: "md",
-            className: "mt-4 tracking-[0.14em]",
-          })}
-        >
-          Send message
-        </button>
+        <PortalFormSubmitButton
+          idleLabel="Send message"
+          pendingLabel="Sending…"
+          successLabel="Message sent ✓"
+          errorFallback="Couldn’t send your message. Try again."
+          variant="burgundy"
+          size="md"
+          className="mt-4 tracking-[0.14em]"
+        />
       </div>
     ) : (
       <>
@@ -77,22 +83,21 @@ export function ProjectMessageComposer({ projectId, variant }: Props) {
             className={textareaClass}
           />
         </div>
-        <button
-          type="submit"
-          className={ctaButtonClasses({
-            variant: "burgundy",
-            size: "md",
-            className: "mt-4 tracking-[0.14em]",
-          })}
-        >
-          Send message
-        </button>
+        <PortalFormSubmitButton
+          idleLabel="Send message"
+          pendingLabel="Sending…"
+          successLabel="Message sent ✓"
+          errorFallback="Couldn’t send your message. Try again."
+          variant="burgundy"
+          size="md"
+          className="mt-4 tracking-[0.14em]"
+        />
       </>
     );
 
   return (
-    <form action={postProjectMessage.bind(null, projectId)} className={formClass}>
+    <PortalFormWithFlash action={action} className={formClass}>
       {inner}
-    </form>
+    </PortalFormWithFlash>
   );
 }

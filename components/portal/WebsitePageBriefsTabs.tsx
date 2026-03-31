@@ -1,10 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  removeWebsitePageImage,
-  saveWebsitePageBrief,
-} from "@/app/portal/actions";
+import { removeWebsitePageImage } from "@/app/portal/actions";
+import { PortalSaveWebsitePageBriefForm } from "@/components/portal/portal-flash-action-forms";
+import { PortalFormSubmitButton } from "@/components/portal/PortalFormSubmitButton";
 import { portalFilePublicUrl } from "@/lib/portal-file-url";
 import { ctaButtonClasses } from "@/components/ui/Button";
 
@@ -66,10 +65,10 @@ export function WebsitePageBriefsTabs({ projectId, labels, briefs, clientCanEdit
         </div>
 
         {clientCanEdit ? (
-          <form
+          <PortalSaveWebsitePageBriefForm
             key={active}
-            action={saveWebsitePageBrief.bind(null, projectId, active)}
-            encType="multipart/form-data"
+            projectId={projectId}
+            pageIndex={active}
             className="flex w-full max-w-2xl flex-col gap-4 lg:max-w-4xl"
           >
             <label className="flex flex-col gap-1.5">
@@ -110,13 +109,16 @@ export function WebsitePageBriefsTabs({ projectId, labels, briefs, clientCanEdit
                 them below.
               </span>
             </label>
-            <button
-              type="submit"
-              className={ctaButtonClasses({ variant: "burgundy", size: "sm", className: "mt-1 w-fit px-6" })}
-            >
-              Save this page
-            </button>
-          </form>
+            <PortalFormSubmitButton
+              idleLabel="Save this page"
+              pendingLabel="Saving…"
+              successLabel="Page content saved ✓"
+              errorFallback="Couldn’t save this page. Try again."
+              variant="burgundy"
+              size="sm"
+              className="mt-1 w-fit px-6"
+            />
+          </PortalSaveWebsitePageBriefForm>
         ) : (
           <div className="space-y-3 font-body text-sm text-burgundy/75">
             {current.headline?.trim() ? <p className="font-display text-[17px] text-burgundy">{current.headline}</p> : null}

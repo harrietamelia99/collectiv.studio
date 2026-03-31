@@ -30,12 +30,12 @@ import { portalFilePublicUrl } from "@/lib/portal-file-url";
 import { reviewProgressPercent } from "@/lib/portal-progress";
 import {
   acknowledgePrintFinalDeliverables,
-  addReviewAsset,
-  savePrintSpecification,
-  signOffReviewAsset,
   skipPrintInspirationStep,
 } from "@/app/portal/actions";
-import { PortalBrandingMoodForm } from "@/components/portal/portal-flash-action-forms";
+import { ClientReviewAssetSignOffForm } from "@/components/portal/ClientReviewAssetSignOffForm";
+import { StudioAddReviewAssetForm } from "@/components/portal/StudioAddReviewAssetForm";
+import { PortalBrandingMoodForm, PortalSavePrintSpecificationForm } from "@/components/portal/portal-flash-action-forms";
+import { PortalFormSubmitButton } from "@/components/portal/PortalFormSubmitButton";
 import { ctaButtonClasses } from "@/components/ui/Button";
 import { PORTAL_CLIENT_INPUT_CLASS, PortalStepSavedBadge } from "@/components/portal/PortalSectionCard";
 import { loadWebsiteWorkspace } from "@/app/portal/project/[projectId]/website/_lib/load-website-workspace";
@@ -139,7 +139,7 @@ export default async function PrintWorkflowStepPage({ params }: Props) {
       {stepRaw === "brand-kit" ? brandKitSection : null}
 
       {stepRaw === "specification" ? (
-        <form action={savePrintSpecification.bind(null, project.id)} className="mt-10 max-w-xl space-y-4">
+        <PortalSavePrintSpecificationForm projectId={project.id} className="mt-10 max-w-xl space-y-4">
           <label className="flex flex-col gap-1.5">
             <span className="font-body text-sm font-medium text-burgundy/80">Job summary *</span>
             <textarea
@@ -164,11 +164,16 @@ export default async function PrintWorkflowStepPage({ params }: Props) {
             <textarea name="finishing" rows={2} defaultValue={specJson.finishing ?? ""} className={PORTAL_CLIENT_INPUT_CLASS} />
           </label>
           {canEdit ? (
-            <button type="submit" className={ctaButtonClasses({ variant: "burgundy", size: "sm" })}>
-              Submit specification
-            </button>
+            <PortalFormSubmitButton
+              idleLabel="Submit specification"
+              pendingLabel="Submitting…"
+              successLabel="Specification saved ✓"
+              errorFallback="Couldn’t save specification. Try again."
+              variant="burgundy"
+              size="sm"
+            />
           ) : null}
-        </form>
+        </PortalSavePrintSpecificationForm>
       ) : null}
 
       {stepRaw === "inspiration" ? (
@@ -284,13 +289,7 @@ function PrintProofsBody({
                 )}
               </div>
               {canSignOff && !asset.clientSignedOff ? (
-                <form action={signOffReviewAsset} className="md:shrink-0">
-                  <input type="hidden" name="projectId" value={project.id} />
-                  <input type="hidden" name="assetId" value={asset.id} />
-                  <button type="submit" className={ctaButtonClasses({ variant: "burgundy", size: "sm" })}>
-                    Sign off
-                  </button>
-                </form>
+                <ClientReviewAssetSignOffForm projectId={project.id} assetId={asset.id} className="md:shrink-0" />
               ) : null}
             </div>
           </li>
@@ -299,16 +298,13 @@ function PrintProofsBody({
       {studio ? (
         <section className="mt-16 max-w-lg border-t border-burgundy/15 pt-12">
           <h2 className="font-display text-lg text-burgundy">Add print proof</h2>
-          <form action={addReviewAsset} encType="multipart/form-data" className="mt-6 flex flex-col gap-4">
+          <StudioAddReviewAssetForm className="mt-6 flex flex-col gap-4" idleLabel="Upload" variant="outline">
             <input type="hidden" name="projectId" value={project.id} />
             <input type="hidden" name="reviewAssetKind" value="GENERAL" />
             <input name="title" required className={PORTAL_CLIENT_INPUT_CLASS} placeholder="Title" />
             <textarea name="notes" rows={2} className={PORTAL_CLIENT_INPUT_CLASS} />
             <input name="file" type="file" className="font-body text-xs text-burgundy" />
-            <button type="submit" className={ctaButtonClasses({ variant: "outline", size: "sm", className: "w-fit" })}>
-              Upload
-            </button>
-          </form>
+          </StudioAddReviewAssetForm>
         </section>
       ) : null}
     </>

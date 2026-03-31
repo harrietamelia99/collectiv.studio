@@ -1,8 +1,11 @@
 "use client";
 
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { markClientContractSigned } from "@/app/portal/actions";
+import { PortalFormSubmitButton } from "@/components/portal/PortalFormSubmitButton";
+import { PortalFormWithFlash } from "@/components/portal/PortalFormWithFlash";
 import { ctaButtonClasses } from "@/components/ui/Button";
+import type { PortalFormFlash } from "@/lib/portal-form-flash";
 
 type Props = {
   projectId: string;
@@ -11,15 +14,24 @@ type Props = {
 
 export function AgencyMarkContractSignedForm({ projectId, contractSigned }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const action = useMemo(
+    () => async (_prev: PortalFormFlash | null, fd: FormData) => markClientContractSigned(fd),
+    [],
+  );
 
   if (contractSigned) {
     return (
-      <form action={markClientContractSigned}>
+      <PortalFormWithFlash action={action}>
         <input type="hidden" name="projectId" value={projectId} />
-        <button type="submit" className={ctaButtonClasses({ variant: "outline", size: "sm" })}>
-          Clear contract signed
-        </button>
-      </form>
+        <PortalFormSubmitButton
+          idleLabel="Clear contract signed"
+          pendingLabel="Clearing…"
+          successLabel="Contract signed status cleared ✓"
+          errorFallback="Couldn’t update contract status. Try again."
+          variant="outline"
+          size="sm"
+        />
+      </PortalFormWithFlash>
     );
   }
 
@@ -36,7 +48,7 @@ export function AgencyMarkContractSignedForm({ projectId, contractSigned }: Prop
         ref={dialogRef}
         className="max-w-md rounded-xl border border-zinc-200/90 bg-white p-6 shadow-xl backdrop:bg-black/40"
       >
-        <form action={markClientContractSigned}>
+        <PortalFormWithFlash action={action}>
           <input type="hidden" name="projectId" value={projectId} />
           <p className="m-0 font-body text-sm leading-relaxed text-burgundy/85">
             Are you sure? This will mark the contract as signed on behalf of the client.
@@ -49,15 +61,17 @@ export function AgencyMarkContractSignedForm({ projectId, contractSigned }: Prop
             >
               Cancel
             </button>
-            <button
-              type="submit"
+            <PortalFormSubmitButton
+              idleLabel="Confirm"
+              pendingLabel="Marking…"
+              successLabel="Contract marked signed ✓"
+              errorFallback="Couldn’t update contract status. Try again."
+              variant="burgundy"
+              size="sm"
               onClick={() => dialogRef.current?.close()}
-              className={ctaButtonClasses({ variant: "burgundy", size: "sm" })}
-            >
-              Confirm
-            </button>
+            />
           </div>
-        </form>
+        </PortalFormWithFlash>
       </dialog>
     </>
   );

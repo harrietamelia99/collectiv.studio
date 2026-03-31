@@ -15,8 +15,8 @@ import {
   PORTAL_CLIENT_INPUT_CLASS,
 } from "@/components/portal/PortalSectionCard";
 import { PhaseProgressBar } from "@/components/portal/PhaseProgressBar";
-import { saveWebsiteDomainLaunchDetails } from "@/app/portal/actions";
-import { PortalWebsiteSignOffForm } from "@/components/portal/portal-flash-action-forms";
+import { PortalSaveWebsiteDomainForm, PortalWebsiteSignOffForm } from "@/components/portal/portal-flash-action-forms";
+import { PortalFormSubmitButton } from "@/components/portal/PortalFormSubmitButton";
 import { ctaButtonClasses } from "@/components/ui/Button";
 import {
   decryptWebsiteDomainVaultPayload,
@@ -213,7 +213,7 @@ export default async function WebsiteDomainGoLivePage({ params }: Props) {
             This project doesn&apos;t include the website workstream.
           </p>
         ) : (
-          <form action={saveWebsiteDomainLaunchDetails.bind(null, project.id)} className="max-w-xl">
+          <PortalSaveWebsiteDomainForm projectId={project.id} className="max-w-xl">
             <div className={PORTAL_CLIENT_FORM_WELL_CLASS}>
               <div className="flex flex-col gap-5">
                 <label className="flex flex-col gap-1.5">
@@ -288,18 +288,17 @@ export default async function WebsiteDomainGoLivePage({ params }: Props) {
                   ) : null}
                 </div>
               </div>
-              <button
-                type="submit"
-                className={ctaButtonClasses({
-                  variant: "ink",
-                  size: "md",
-                  className: "mt-6 tracking-[0.12em]",
-                })}
-              >
-                Save domain details
-              </button>
+              <PortalFormSubmitButton
+                idleLabel="Save domain details"
+                pendingLabel="Saving…"
+                successLabel="Launch details saved ✓"
+                errorFallback="Couldn’t save launch details. Try again."
+                variant="ink"
+                size="md"
+                className="mt-6 tracking-[0.12em]"
+              />
             </div>
-          </form>
+          </PortalSaveWebsiteDomainForm>
         )}
       </PortalSectionCard>
 

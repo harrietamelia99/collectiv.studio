@@ -28,13 +28,11 @@ import { FinalPaymentDialog, FinalDesignDownloadLink } from "@/components/portal
 import { hasLockedFinalDesignFiles, isFinalDesignFileDownloadLocked } from "@/lib/portal-final-files";
 import { portalFilePublicUrl } from "@/lib/portal-file-url";
 import { reviewProgressPercent } from "@/lib/portal-progress";
-import {
-  acknowledgeSignageFinalDeliverables,
-  addReviewAsset,
-  saveSignageSpecification,
-  signOffReviewAsset,
-} from "@/app/portal/actions";
-import { PortalBrandingMoodForm } from "@/components/portal/portal-flash-action-forms";
+import { acknowledgeSignageFinalDeliverables } from "@/app/portal/actions";
+import { ClientReviewAssetSignOffForm } from "@/components/portal/ClientReviewAssetSignOffForm";
+import { StudioAddReviewAssetForm } from "@/components/portal/StudioAddReviewAssetForm";
+import { PortalBrandingMoodForm, PortalSaveSignageSpecificationForm } from "@/components/portal/portal-flash-action-forms";
+import { PortalFormSubmitButton } from "@/components/portal/PortalFormSubmitButton";
 import { ctaButtonClasses } from "@/components/ui/Button";
 import { PORTAL_CLIENT_INPUT_CLASS, PortalStepSavedBadge } from "@/components/portal/PortalSectionCard";
 import { loadWebsiteWorkspace } from "@/app/portal/project/[projectId]/website/_lib/load-website-workspace";
@@ -203,7 +201,7 @@ export default async function SignageWorkflowStepPage({ params }: Props) {
       ) : null}
 
       {stepRaw === "specification" ? (
-        <form action={saveSignageSpecification.bind(null, project.id)} className="mt-10 max-w-xl space-y-4">
+        <PortalSaveSignageSpecificationForm projectId={project.id} className="mt-10 max-w-xl space-y-4">
           <label className="flex flex-col gap-1.5">
             <span className="font-body text-sm font-medium text-burgundy/80">Job summary *</span>
             <textarea
@@ -233,11 +231,16 @@ export default async function SignageWorkflowStepPage({ params }: Props) {
             />
           </label>
           {canEdit ? (
-            <button type="submit" className={ctaButtonClasses({ variant: "burgundy", size: "sm" })}>
-              Submit specification
-            </button>
+            <PortalFormSubmitButton
+              idleLabel="Submit specification"
+              pendingLabel="Submitting…"
+              successLabel="Specification saved ✓"
+              errorFallback="Couldn’t save specification. Try again."
+              variant="burgundy"
+              size="sm"
+            />
           ) : null}
-        </form>
+        </PortalSaveSignageSpecificationForm>
       ) : null}
 
       {stepRaw === "proofs" ? (
@@ -308,13 +311,7 @@ function SignageProofsBody({
                 )}
               </div>
               {canSignOff && !asset.clientSignedOff ? (
-                <form action={signOffReviewAsset} className="md:shrink-0">
-                  <input type="hidden" name="projectId" value={project.id} />
-                  <input type="hidden" name="assetId" value={asset.id} />
-                  <button type="submit" className={ctaButtonClasses({ variant: "burgundy", size: "sm" })}>
-                    Sign off
-                  </button>
-                </form>
+                <ClientReviewAssetSignOffForm projectId={project.id} assetId={asset.id} className="md:shrink-0" />
               ) : null}
             </div>
           </li>
@@ -323,16 +320,13 @@ function SignageProofsBody({
       {studio ? (
         <section className="mt-16 max-w-lg border-t border-burgundy/15 pt-12">
           <h2 className="font-display text-lg text-burgundy">Add signage item</h2>
-          <form action={addReviewAsset} encType="multipart/form-data" className="mt-6 flex flex-col gap-4">
+          <StudioAddReviewAssetForm className="mt-6 flex flex-col gap-4" idleLabel="Upload" variant="outline">
             <input type="hidden" name="projectId" value={project.id} />
             <input type="hidden" name="reviewAssetKind" value="SIGNAGE" />
             <input name="title" required className={PORTAL_CLIENT_INPUT_CLASS} placeholder="Title" />
             <textarea name="notes" rows={2} className={PORTAL_CLIENT_INPUT_CLASS} placeholder="Notes" />
             <input name="file" type="file" className="font-body text-xs text-burgundy" />
-            <button type="submit" className={ctaButtonClasses({ variant: "outline", size: "sm", className: "w-fit" })}>
-              Upload
-            </button>
-          </form>
+          </StudioAddReviewAssetForm>
         </section>
       ) : null}
     </>
@@ -458,13 +452,7 @@ function SignageFinalBody({
                     )}
                   </div>
                   {!studio && !asset.clientSignedOff && canEdit ? (
-                    <form action={signOffReviewAsset} className="md:shrink-0">
-                      <input type="hidden" name="projectId" value={project.id} />
-                      <input type="hidden" name="assetId" value={asset.id} />
-                      <button type="submit" className={ctaButtonClasses({ variant: "burgundy", size: "sm" })}>
-                        Sign off
-                      </button>
-                    </form>
+                    <ClientReviewAssetSignOffForm projectId={project.id} assetId={asset.id} className="md:shrink-0" />
                   ) : null}
                 </div>
               </li>
@@ -476,7 +464,11 @@ function SignageFinalBody({
               <p className="mt-2 max-w-xl font-body text-sm text-burgundy/65">
                 Add a title, optional notes, and attach a file. Your client is notified when they next open the portal.
               </p>
-              <form action={addReviewAsset} encType="multipart/form-data" className="mt-6 flex max-w-lg flex-col gap-4">
+              <StudioAddReviewAssetForm
+                className="mt-6 flex max-w-lg flex-col gap-4"
+                idleLabel="Add file"
+                variant="outline"
+              >
                 <input type="hidden" name="projectId" value={project.id} />
                 <input type="hidden" name="reviewAssetKind" value="GENERAL" />
                 <label className="flex flex-col gap-1.5">
@@ -491,10 +483,7 @@ function SignageFinalBody({
                   <span className="font-body text-[10px] uppercase tracking-[0.12em] text-burgundy/55">File</span>
                   <input name="file" type="file" className="font-body text-xs text-burgundy" />
                 </label>
-                <button type="submit" className={ctaButtonClasses({ variant: "outline", size: "sm", className: "w-fit" })}>
-                  Add file
-                </button>
-              </form>
+              </StudioAddReviewAssetForm>
             </section>
           ) : null}
         </div>

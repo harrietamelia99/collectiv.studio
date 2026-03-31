@@ -17,6 +17,7 @@ import {
   type WorkflowStream,
 } from "@/lib/portal-workflow-reopen";
 import { notifyStudioTeamMention } from "@/lib/studio-inbox-notify";
+import { type PortalFormFlash, portalFlashErr, portalFlashOk } from "@/lib/portal-form-flash";
 import {
   AGENCY_INBOX_DISMISS_CALENDAR,
   AGENCY_INBOX_DISMISS_THREAD,
@@ -210,18 +211,24 @@ export async function deleteStudioTimeOff(timeOffId: string): Promise<void> {
   revalidatePath("/portal");
 }
 
-export async function postStudioTeamChatMessage(formData: FormData): Promise<void> {
+export async function postStudioTeamChatMessage(formData: FormData): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.id || !isStudioUser(session.user.email)) {
+    return portalFlashErr("Couldn’t send message. Try again.");
+  }
 
   const author = await prisma.studioTeamMember.findUnique({
     where: { userId: session.user.id },
     include: { user: { select: { name: true, email: true } } },
   });
-  if (!author) return;
+  if (!author) {
+    return portalFlashErr("Couldn’t send message. Try again.");
+  }
 
   const body = String(formData.get("body") ?? "").trim();
-  if (!body || body.length > 4000) return;
+  if (!body || body.length > 4000) {
+    return portalFlashErr("Message is empty or too long.");
+  }
 
   const membersRaw = await prisma.studioTeamMember.findMany({
     include: { user: { select: { name: true, email: true } } },
@@ -255,6 +262,7 @@ export async function postStudioTeamChatMessage(formData: FormData): Promise<voi
   }
 
   revalidatePath("/portal");
+  return portalFlashOk("Message sent ✓");
 }
 
 export async function markStudioNotificationRead(notificationId: string): Promise<void> {
@@ -460,9 +468,11 @@ export async function dismissStudioAgencyInboxItem(formData: FormData): Promise<
   return { ok: false };
 }
 
-export async function updateProjectAssignedStudioAdmin(projectId: string, formData: FormData): Promise<void> {
+export async function updateProjectAssignedStudioAdmin(projectId: string, formData: FormData): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.email || !isStudioUser(session.user.email)) {
+    return portalFlashErr("Couldn’t save assignee. Try again.");
+  }
 
   const viewerMember = session.user.id
     ? await prisma.studioTeamMember.findUnique({
@@ -471,16 +481,22 @@ export async function updateProjectAssignedStudioAdmin(projectId: string, formDa
       })
     : null;
   /** Ops lead (Issy) assigns Harriet / May; other studio personas cannot change assignee. */
-  if (viewerMember?.personaSlug !== "isabella") return;
+  if (viewerMember?.personaSlug !== "isabella") {
+    return portalFlashErr("Couldn’t save assignee. Try again.");
+  }
 
   const project = await prisma.project.findUnique({ where: { id: projectId } });
-  if (!project) return;
+  if (!project) {
+    return portalFlashErr("Couldn’t save assignee. Try again.");
+  }
 
   const raw = String(formData.get("assignedStudioUserId") ?? "").trim();
   let assignedStudioUserId: string | null = null;
   if (raw) {
     const u = await prisma.user.findUnique({ where: { id: raw }, select: { id: true, email: true } });
-    if (!u || !isStudioUser(u.email)) return;
+    if (!u || !isStudioUser(u.email)) {
+      return portalFlashErr("Couldn’t save assignee. Try again.");
+    }
     assignedStudioUserId = u.id;
   }
 
@@ -490,15 +506,22 @@ export async function updateProjectAssignedStudioAdmin(projectId: string, formDa
   });
   revalidatePath("/portal");
   revalidatePath(`/portal/project/${projectId}`);
+  return portalFlashOk("Assignee saved ✓");
 }
 
 /** Issy: full contract text shown to the client before they sign (per project). */
-export async function saveProjectContractTerms(projectId: string, formData: FormData): Promise<void> {
-  if (!(await sessionStudioPersonaIsIssy())) return;
+export async function saveProjectContractTerms(projectId: string, formData: FormData): Promise<PortalFormFlash> {
+  if (!(await sessionStudioPersonaIsIssy())) {
+    return portalFlashErr("Couldn’t save contract text. Try again.");
+  }
   const project = await prisma.project.findUnique({ where: { id: projectId } });
-  if (!project) return;
+  if (!project) {
+    return portalFlashErr("Couldn’t save contract text. Try again.");
+  }
   const text = String(formData.get("contractTermsText") ?? "");
-  if (text.length > 500_000) return;
+  if (text.length > 500_000) {
+    return portalFlashErr("Contract text is too long.");
+  }
   const prevTrim = (project.contractTermsText ?? "").trim();
   const nextTrim = text.trim();
   await prisma.project.update({
@@ -528,6 +551,7 @@ export async function saveProjectContractTerms(projectId: string, formData: Form
       });
     }
   }
+  return portalFlashOk("Contract text saved ✓");
 }
 
 const REOPEN_STREAMS = new Set<string>(["website", "branding", "signage", "print"]);
@@ -559,27 +583,40 @@ export async function reopenClientWorkflowStep(formData: FormData): Promise<void
   revalidatePath(`/portal/project/${projectId}/${stream}/${slug}`);
 }
 
-export async function addProjectInternalNote(projectId: string, formData: FormData): Promise<void> {
+export async function addProjectInternalNote(projectId: string, formData: FormData): Promise<PortalFormFlash> {
   const body = String(formData.get("body") ?? "").trim().slice(0, 8000);
-  if (!body) return;
+  if (!body) {
+    return portalFlashErr("Add note text before saving.");
+  }
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.id || !isStudioUser(session.user.email)) {
+    return portalFlashErr("Couldn’t save note. Try again.");
+  }
   const project = await prisma.project.findUnique({ where: { id: projectId } });
-  if (!project) return;
+  if (!project) {
+    return portalFlashErr("Couldn’t save note. Try again.");
+  }
   await prisma.projectInternalNote.create({
     data: { projectId, authorId: session.user.id, body },
   });
   revalidatePath(`/portal/project/${projectId}`);
+  return portalFlashOk("Internal note saved ✓");
 }
 
-export async function toggleStudioWorkflowStepReviewed(formData: FormData): Promise<void> {
+export async function toggleStudioWorkflowStepReviewed(formData: FormData): Promise<PortalFormFlash> {
   const projectId = String(formData.get("projectId") ?? "").trim();
   const stepKey = String(formData.get("stepKey") ?? "").trim();
-  if (!projectId || !stepKey) return;
+  if (!projectId || !stepKey) {
+    return portalFlashErr("Couldn’t update review flag. Try again.");
+  }
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.id || !isStudioUser(session.user.email)) {
+    return portalFlashErr("Couldn’t update review flag. Try again.");
+  }
   const project = await prisma.project.findUnique({ where: { id: projectId } });
-  if (!project) return;
+  if (!project) {
+    return portalFlashErr("Couldn’t update review flag. Try again.");
+  }
   let map: Record<string, string> = {};
   try {
     const v = JSON.parse(project.studioReviewedStepsJson || "{}") as unknown;
@@ -587,6 +624,7 @@ export async function toggleStudioWorkflowStepReviewed(formData: FormData): Prom
   } catch {
     map = {};
   }
+  const wasReviewed = Boolean(map[stepKey]);
   if (map[stepKey]) delete map[stepKey];
   else map[stepKey] = new Date().toISOString();
   await prisma.project.update({
@@ -594,15 +632,23 @@ export async function toggleStudioWorkflowStepReviewed(formData: FormData): Prom
     data: { studioReviewedStepsJson: JSON.stringify(map) },
   });
   revalidatePath(`/portal/project/${projectId}`);
+  return portalFlashOk(wasReviewed ? "Review flag cleared ✓" : "Marked reviewed ✓");
 }
 
-export async function toggleStudioWebsiteLiveConfirmed(formData: FormData): Promise<void> {
+export async function toggleStudioWebsiteLiveConfirmed(formData: FormData): Promise<PortalFormFlash> {
   const projectId = String(formData.get("projectId") ?? "").trim();
-  if (!projectId) return;
+  if (!projectId) {
+    return portalFlashErr("Couldn’t update site status. Try again.");
+  }
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.id || !isStudioUser(session.user.email)) {
+    return portalFlashErr("Couldn’t update site status. Try again.");
+  }
   const project = await prisma.project.findUnique({ where: { id: projectId } });
-  if (!project) return;
+  if (!project) {
+    return portalFlashErr("Couldn’t update site status. Try again.");
+  }
+  const wasLive = Boolean(project.studioWebsiteLiveConfirmedAt);
   await prisma.project.update({
     where: { id: projectId },
     data: {
@@ -610,6 +656,7 @@ export async function toggleStudioWebsiteLiveConfirmed(formData: FormData): Prom
     },
   });
   revalidatePath(`/portal/project/${projectId}`);
+  return portalFlashOk(wasLive ? "Site live confirmation cleared ✓" : "Site marked live ✓");
 }
 
 /** Issy only — permanently deletes the project and related DB rows (cascade + todos/dismissals). */

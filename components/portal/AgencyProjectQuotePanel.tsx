@@ -1,9 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { saveProjectQuote, sendProjectQuote } from "@/app/portal/actions";
-import { ctaButtonClasses } from "@/components/ui/Button";
+import { PortalFormSubmitButton } from "@/components/portal/PortalFormSubmitButton";
+import { PortalFormWithFlash } from "@/components/portal/PortalFormWithFlash";
 import { PORTAL_CLIENT_INPUT_CLASS } from "@/components/portal/PortalSectionCard";
+import type { PortalFormFlash } from "@/lib/portal-form-flash";
 import type { QuoteLineRow } from "@/lib/portal-quote-lines";
 import { formatPoundsTotal, parseQuoteLineItemsJson, sumQuoteLinePounds } from "@/lib/portal-quote-lines";
 
@@ -25,11 +27,27 @@ export function AgencyProjectQuotePanel({
   const parsed = useMemo(() => parseQuoteLineItemsJson(initialLineItemsJson), [initialLineItemsJson]);
   const [intro, setIntro] = useState(initialIntro);
   const [lines, setLines] = useState<QuoteLineRow[]>(() => (parsed.length ? parsed : [emptyLine()]));
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const [sentAtState, setSentAtState] = useState<Date | null>(sentAt);
+
+  useEffect(() => {
+    setSentAtState(sentAt);
+  }, [sentAt]);
 
   const total = sumQuoteLinePounds(lines);
   const validLines = lines.filter((l) => l.label.trim() && l.amount.trim());
   const lineItemsJson = JSON.stringify(validLines);
   const canSend = validLines.length > 0;
+
+  const saveAction = useMemo(
+    () => async (_p: PortalFormFlash | null, fd: FormData) => saveProjectQuote(projectId, fd),
+    [projectId],
+  );
+
+  const sendAction = useMemo(
+    () => async (_p: PortalFormFlash | null, fd: FormData) => sendProjectQuote(projectId, fd),
+    [projectId],
+  );
 
   return (
     <div id="agency-project-quote" className="scroll-mt-28 mt-8 border-t border-zinc-100 pt-8">
@@ -38,7 +56,14 @@ export function AgencyProjectQuotePanel({
         Short summary plus line items in pounds. After you send, the client sees this above their contract.
       </p>
 
-      <form action={saveProjectQuote.bind(null, projectId)} className="mt-4 space-y-4">
+      <PortalFormWithFlash
+        action={saveAction}
+        className="mt-4 space-y-4"
+        defaultSuccessMessage="Quote saved ✓"
+        onFlash={(f) => {
+          if (f.ok) setLastSavedAt(new Date());
+        }}
+      >
         <label className="block font-body text-xs font-medium text-burgundy/70">
           Project summary (one sentence)
           <input
@@ -87,11 +112,7 @@ export function AgencyProjectQuotePanel({
               </label>
               <button
                 type="button"
-                className={ctaButtonClasses({
-                  variant: "outline",
-                  size: "sm",
-                  className: "w-full shrink-0 sm:w-auto",
-                })}
+                className="rounded-[var(--cc-pill-radius)] border border-burgundy bg-transparent px-5 py-2.5 font-body text-[11px] uppercase tracking-[0.07em] text-burgundy hover:bg-burgundy/[0.06] sm:w-auto"
                 onClick={() => setLines((prev) => prev.filter((_, j) => j !== i))}
                 disabled={lines.length <= 1}
               >
@@ -101,7 +122,7 @@ export function AgencyProjectQuotePanel({
           ))}
           <button
             type="button"
-            className={ctaButtonClasses({ variant: "outline", size: "sm" })}
+            className="rounded-[var(--cc-pill-radius)] border border-burgundy bg-transparent px-5 py-2.5 font-body text-[11px] uppercase tracking-[0.07em] text-burgundy hover:bg-burgundy/[0.06]"
             onClick={() => setLines((prev) => [...prev, emptyLine()])}
           >
             Add line
@@ -113,36 +134,53 @@ export function AgencyProjectQuotePanel({
           <span className="font-body text-base font-semibold tabular-nums text-burgundy">{formatPoundsTotal(total)}</span>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <button type="submit" className={ctaButtonClasses({ variant: "burgundy", size: "sm" })}>
-            Save quote
-          </button>
+        <div className="flex flex-col gap-1">
+          <PortalFormSubmitButton
+            idleLabel="Save Quote"
+            pendingLabel="Saving…"
+            successLabel="Quote saved ✓"
+            errorFallback="Save failed - try again"
+            variant="burgundy"
+            size="sm"
+          />
+          {lastSavedAt ? (
+            <p className="font-body text-xs text-burgundy/60">
+              Last saved at{" "}
+              {lastSavedAt.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}
+            </p>
+          ) : null}
         </div>
-      </form>
+      </PortalFormWithFlash>
 
       <div className="mt-4 rounded-lg border border-zinc-200/80 bg-white px-4 py-3 font-body text-sm text-burgundy/80">
-        {sentAt ? (
+        {sentAtState ? (
           <p className="m-0">
             <span className="font-medium text-burgundy">Sent to client</span> ·{" "}
-            {sentAt.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}
+            {sentAtState.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}
           </p>
         ) : (
           <p className="m-0 text-burgundy/65">Quote not sent yet — the client only sees it after you send.</p>
         )}
       </div>
 
-      <form action={sendProjectQuote.bind(null, projectId)} className="mt-3">
-        <button
-          type="submit"
+      <PortalFormWithFlash
+        action={sendAction}
+        className="mt-3"
+        defaultSuccessMessage="Quote sent ✓"
+        onFlash={(f) => {
+          if (f.ok) setSentAtState(new Date());
+        }}
+      >
+        <PortalFormSubmitButton
+          idleLabel={sentAtState ? "Resend Quote" : "Send Quote to Client"}
+          pendingLabel="Sending…"
+          successLabel="Quote sent ✓"
+          errorFallback="Failed to send - try again"
+          variant="outline"
+          size="sm"
           disabled={!canSend}
-          className={ctaButtonClasses({
-            variant: "outline",
-            size: "sm",
-            className: !canSend ? "cursor-not-allowed opacity-50" : "",
-          })}
-        >
-          Send quote to client
-        </button>
+          className={!canSend ? "cursor-not-allowed opacity-50" : ""}
+        />
         {!canSend ? (
           <p className="mt-2 font-body text-xs text-burgundy/55">
             Add at least one line with a description and price, then save, before sending.
@@ -150,7 +188,7 @@ export function AgencyProjectQuotePanel({
         ) : (
           <p className="mt-2 font-body text-xs text-burgundy/55">Save first if you changed the quote, then send.</p>
         )}
-      </form>
+      </PortalFormWithFlash>
     </div>
   );
 }

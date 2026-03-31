@@ -1,19 +1,17 @@
 import Link from "next/link";
 import type { ContentCalendarItem, Project, ProjectQuote, ReviewAsset, WebsitePageBrief } from "@prisma/client";
 import {
-  markProjectComplete,
-  markStudioDepositReceived,
-  resetClientFinalPaymentAcknowledgment,
-  setPortalKind,
-  setProjectPaymentStatus,
-} from "@/app/portal/actions";
-import {
-  addProjectInternalNote,
-  saveProjectContractTerms,
-  toggleStudioWebsiteLiveConfirmed,
-  toggleStudioWorkflowStepReviewed,
-  updateProjectAssignedStudioAdmin,
-} from "@/app/portal/agency-actions";
+  AgencyInternalNoteForm,
+  AgencyMarkDepositForm,
+  AgencyMarkProjectCompleteForm,
+  AgencyMarkSiteLiveForm,
+  AgencyMarkStepReviewedForm,
+  AgencyPortalKindForm,
+  AgencyResetFinalPaymentForm,
+  AgencySaveAssigneeForm,
+  AgencySaveContractTermsForm,
+  AgencySubscriptionPaymentForm,
+} from "@/components/portal/AgencyStudioProjectForms";
 import { AgencyIssyDeleteProjectSection } from "@/components/portal/AgencyIssyDeleteProjectSection";
 import { AgencyMarkContractSignedForm } from "@/components/portal/AgencyMarkContractSignedForm";
 import { AgencyOpenFullClientHubButton } from "@/components/portal/AgencyOpenFullClientHubButton";
@@ -27,14 +25,7 @@ import { clientJourneyCombinedProgressPercent } from "@/lib/agency-combined-prog
 import { agencyStepClientActivityLine } from "@/lib/agency-step-client-activity";
 import { buildClientConversationStripData } from "@/lib/portal-conversation-strip";
 import { clientHasFullPortalAccess } from "@/lib/portal-client-full-access";
-import { PAYMENT_STATUSES, paymentStatusStudioLabel } from "@/lib/portal-payment-status";
-import {
-  PORTAL_KINDS_STUDIO_ASSIGNABLE,
-  clientVisibleAreasSummary,
-  normalizePortalKind,
-  portalKindLabel,
-  visiblePortalSections,
-} from "@/lib/portal-project-kind";
+import { normalizePortalKind, portalKindLabel, visiblePortalSections } from "@/lib/portal-project-kind";
 import type { WorkflowStepRow } from "@/lib/portal-workflow";
 import {
   buildBrandingStepRows,
@@ -53,7 +44,7 @@ import { weeklyDeliverablesSummaryLine } from "@/lib/social-batch-calendar";
 import type { ClientWorkflowAccessOptions } from "@/lib/portal-brand-kit-gate";
 import type { AccountBrandKitSlice } from "@/lib/portal-workflow";
 import type { PersonaSlug } from "@/lib/studio-team-config";
-import { HubIconDownload, HubIconGrid, HubIconPayment, HubIconSettings } from "@/components/portal/ProjectHubIcons";
+import { HubIconDownload, HubIconGrid, HubIconPayment } from "@/components/portal/ProjectHubIcons";
 import type { ReactNode } from "react";
 
 type InternalNoteRow = {
@@ -216,35 +207,13 @@ function AgencyStepCard({
             Open step
           </Link>
           {showMarkReviewed(stream, slug, project) ? (
-            <form action={toggleStudioWorkflowStepReviewed}>
-              <input type="hidden" name="projectId" value={projectId} />
-              <input type="hidden" name="stepKey" value={key} />
-              <button
-                type="submit"
-                className={ctaButtonClasses({
-                  variant: "outline",
-                  size: "sm",
-                  className: "w-full whitespace-nowrap",
-                })}
-              >
-                {reviewed ? "Clear studio review flag" : "Mark reviewed"}
-              </button>
-            </form>
+            <AgencyMarkStepReviewedForm projectId={projectId} stepKey={key} reviewed={reviewed} />
           ) : null}
           {stream === "website" && slug === "domain" ? (
-            <form action={toggleStudioWebsiteLiveConfirmed}>
-              <input type="hidden" name="projectId" value={projectId} />
-              <button
-                type="submit"
-                className={ctaButtonClasses({
-                  variant: "outline",
-                  size: "sm",
-                  className: "w-full whitespace-nowrap",
-                })}
-              >
-                {project.studioWebsiteLiveConfirmedAt ? "Undo site live confirmation" : "Mark site live (studio)"}
-              </button>
-            </form>
+            <AgencyMarkSiteLiveForm
+              projectId={projectId}
+              confirmed={Boolean(project.studioWebsiteLiveConfirmedAt)}
+            />
           ) : null}
         </div>
       </div>
@@ -569,7 +538,7 @@ export async function AgencyProjectStudioView({
               <>
                 {studioAdminOptions.length > 0 ? (
                   canAssignProjectLead ? (
-                    <form action={updateProjectAssignedStudioAdmin.bind(null, project.id)} className="space-y-2">
+                    <AgencySaveAssigneeForm projectId={project.id}>
                       <label className="block font-body text-xs font-medium text-burgundy/70">
                         Assigned lead
                         <select
@@ -588,13 +557,7 @@ export async function AgencyProjectStudioView({
                           ))}
                         </select>
                       </label>
-                      <button
-                        type="submit"
-                        className={ctaButtonClasses({ variant: "burgundy", size: "sm", className: "w-full" })}
-                      >
-                        Save assignee
-                      </button>
-                    </form>
+                    </AgencySaveAssigneeForm>
                   ) : (
                     <div className="font-body text-sm text-burgundy/75">
                       <span className="font-medium text-burgundy">Lead: </span>
@@ -609,28 +572,7 @@ export async function AgencyProjectStudioView({
                     and have each sign in once.
                   </p>
                 )}
-                <form action={setPortalKind.bind(null, project.id)} className="space-y-2 border-t border-zinc-100 pt-4">
-                  <label className="flex items-center gap-2 font-body text-xs font-medium text-burgundy/70">
-                    <HubIconSettings className="h-4 w-4 text-burgundy/50" aria-hidden />
-                    Portal layout
-                  </label>
-                  <select name="portalKind" defaultValue={project.portalKind} className={PORTAL_CLIENT_INPUT_CLASS}>
-                    {project.portalKind === "ONE_OFF" ? (
-                      <option value="ONE_OFF">{portalKindLabel("ONE_OFF")} (legacy)</option>
-                    ) : null}
-                    {PORTAL_KINDS_STUDIO_ASSIGNABLE.map((k) => (
-                      <option key={k} value={k}>
-                        {portalKindLabel(k)}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="font-body text-[11px] leading-relaxed text-burgundy/55">
-                    Client sees {clientVisibleAreasSummary(project.portalKind)}.
-                  </p>
-                  <button type="submit" className={ctaButtonClasses({ variant: "outline", size: "sm", className: "w-full" })}>
-                    Save type
-                  </button>
-                </form>
+                <AgencyPortalKindForm projectId={project.id} project={project} />
               </>
             ) : (
               <div className="font-body text-sm text-burgundy/75">
@@ -664,18 +606,10 @@ export async function AgencyProjectStudioView({
               Shown on the client project page before they sign. After someone signs, their snapshot is kept; changes here
               apply to new signers only.
             </p>
-            <form action={saveProjectContractTerms.bind(null, project.id)} className="mt-4 space-y-3">
-              <textarea
-                name="contractTermsText"
-                rows={14}
-                defaultValue={project.contractTermsText ?? ""}
-                className={`${PORTAL_CLIENT_INPUT_CLASS} min-h-[12rem] font-body text-sm leading-relaxed`}
-                placeholder="Paste or write the full service agreement for this project…"
-              />
-              <button type="submit" className={ctaButtonClasses({ variant: "burgundy", size: "sm" })}>
-                Save contract text
-              </button>
-            </form>
+            <AgencySaveContractTermsForm
+              projectId={project.id}
+              defaultText={project.contractTermsText ?? ""}
+            />
           </div>
           <dl className="mt-8 grid gap-3 font-body text-sm sm:grid-cols-3">
             <div className="rounded-lg border border-zinc-200/80 bg-zinc-50/50 px-4 py-3">
@@ -724,12 +658,10 @@ export async function AgencyProjectStudioView({
               contractSigned={Boolean(project.clientContractSignedAt)}
             />
             {showDeposit ? (
-              <form action={markStudioDepositReceived}>
-                <input type="hidden" name="projectId" value={project.id} />
-                <button type="submit" className={ctaButtonClasses({ variant: "outline", size: "sm" })}>
-                  {project.studioDepositMarkedPaidAt ? "Clear deposit paid" : "Mark deposit paid"}
-                </button>
-              </form>
+              <AgencyMarkDepositForm
+                projectId={project.id}
+                depositPaid={Boolean(project.studioDepositMarkedPaidAt)}
+              />
             ) : null}
             <AgencyOpenFullClientHubButton
               projectId={project.id}
@@ -781,32 +713,11 @@ export async function AgencyProjectStudioView({
           <p className="mt-2 font-body text-sm text-burgundy/60">
             The client sees this on their dashboard once their hub is open.
           </p>
-          <form action={setProjectPaymentStatus} className="mt-6 flex max-w-xl flex-col gap-4">
-            <input type="hidden" name="projectId" value={project.id} />
-            <label className="flex flex-col gap-2">
-              <span className="font-body text-sm font-medium text-burgundy/80">Status</span>
-              <select name="paymentStatus" defaultValue={project.paymentStatus} className={PORTAL_CLIENT_INPUT_CLASS}>
-                {PAYMENT_STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {paymentStatusStudioLabel(s)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="flex flex-col gap-2">
-              <span className="font-body text-sm font-medium text-burgundy/80">Note to client (optional)</span>
-              <textarea
-                name="paymentNoteForClient"
-                rows={2}
-                maxLength={500}
-                defaultValue={project.paymentNoteForClient ?? ""}
-                className={PORTAL_CLIENT_INPUT_CLASS}
-              />
-            </label>
-            <button type="submit" className={ctaButtonClasses({ variant: "burgundy", size: "sm", className: "w-fit" })}>
-              Save subscription &amp; payment status
-            </button>
-          </form>
+          <AgencySubscriptionPaymentForm
+            projectId={project.id}
+            defaultStatus={project.paymentStatus}
+            defaultNote={project.paymentNoteForClient ?? ""}
+          />
         </section>
       ) : null}
 
@@ -850,13 +761,7 @@ export async function AgencyProjectStudioView({
             ))
           )}
         </ul>
-        <form action={addProjectInternalNote.bind(null, project.id)} className="mt-6 space-y-3 border-t border-zinc-200 pt-6">
-          <label className="block font-body text-sm font-medium text-zinc-700">Add a note</label>
-          <textarea name="body" rows={3} className={PORTAL_CLIENT_INPUT_CLASS} placeholder="Handover, context, reminders…" />
-          <button type="submit" className={ctaButtonClasses({ variant: "burgundy", size: "sm" })}>
-            Save internal note
-          </button>
-        </form>
+        <AgencyInternalNoteForm projectId={project.id} />
       </section>
 
       {isIssy ? (
@@ -865,11 +770,7 @@ export async function AgencyProjectStudioView({
             Wrap-up
           </h2>
           {!project.studioMarkedCompleteAt ? (
-            <form action={markProjectComplete.bind(null, project.id)}>
-              <button type="submit" className={ctaButtonClasses({ variant: "outline", size: "sm" })}>
-                Mark project complete (client feedback form)
-              </button>
-            </form>
+            <AgencyMarkProjectCompleteForm projectId={project.id} />
           ) : (
             <p className="font-body text-sm text-burgundy/70">
               Marked complete{" "}
@@ -895,12 +796,7 @@ export async function AgencyProjectStudioView({
                     })}
                   </span>
                 </p>
-                <form action={resetClientFinalPaymentAcknowledgment}>
-                  <input type="hidden" name="projectId" value={project.id} />
-                  <button type="submit" className={ctaButtonClasses({ variant: "outline", size: "sm" })}>
-                    Reset confirmation
-                  </button>
-                </form>
+                <AgencyResetFinalPaymentForm projectId={project.id} />
               </div>
             ) : (
               <p className="mt-3 font-body text-sm text-burgundy/60">Client has not confirmed final payment yet.</p>

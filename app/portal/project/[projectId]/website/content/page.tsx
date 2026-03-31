@@ -10,8 +10,8 @@ import {
 } from "@/components/portal/PortalSectionCard";
 import { PhaseProgressBar } from "@/components/portal/PhaseProgressBar";
 import { WebsitePageBriefsTabs } from "@/components/portal/WebsitePageBriefsTabs";
-import { setWebsiteSitemap } from "@/app/portal/actions";
-import { PortalWebsiteSignOffForm } from "@/components/portal/portal-flash-action-forms";
+import { PortalSetWebsiteSitemapForm, PortalWebsiteSignOffForm } from "@/components/portal/portal-flash-action-forms";
+import { PortalFormSubmitButton } from "@/components/portal/PortalFormSubmitButton";
 import { ctaButtonClasses } from "@/components/ui/Button";
 import {
   briefsForTabs,
@@ -146,7 +146,7 @@ export default async function WebsiteContentPage({ params }: Props) {
               variant={sectionVariant}
             >
               <div className={formWellClass}>
-                <form action={setWebsiteSitemap.bind(null, project.id)} className="flex max-w-full flex-col gap-4 lg:max-w-3xl">
+                <PortalSetWebsiteSitemapForm projectId={project.id} className="flex max-w-full flex-col gap-4 lg:max-w-3xl">
                   {canStudioEditSitemap ? (
                     <label className="flex flex-col gap-1.5">
                       <span className="font-body text-[10px] font-semibold uppercase tracking-[0.12em] text-burgundy">
@@ -189,10 +189,16 @@ export default async function WebsiteContentPage({ params }: Props) {
                       className={PORTAL_CLIENT_INPUT_CLASS}
                     />
                   </label>
-                  <button type="submit" className={ctaButtonClasses({ variant: "outline", size: "sm", className: "w-fit" })}>
-                    {canStudioEditSitemap ? "Update site structure" : "Save page names"}
-                  </button>
-                </form>
+                  <PortalFormSubmitButton
+                    idleLabel={canStudioEditSitemap ? "Update site structure" : "Save page names"}
+                    pendingLabel="Saving…"
+                    successLabel="Sitemap saved ✓"
+                    errorFallback="Couldn’t save sitemap. Try again."
+                    variant="outline"
+                    size="sm"
+                    className="w-fit"
+                  />
+                </PortalSetWebsiteSitemapForm>
               </div>
             </PortalSectionCard>
           ) : null}

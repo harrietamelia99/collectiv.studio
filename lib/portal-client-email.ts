@@ -255,12 +255,19 @@ export async function notifyClientStudioMessage(projectId: string): Promise<void
 export async function notifyClientQuoteSent(projectId: string): Promise<void> {
   const r = await resolveRecipient(projectId);
   if (!r) return;
-  const subject = `Collectiv. Studio — your quote is ready · ${r.projectName}`;
+  const subject = "Your quote from Collectiv. Studio is ready";
   const html = buildClientAlertHtml({
     greetingSafe: r.greeting,
-    paragraphs: [escapeHtml("Your project quote is ready to view in the portal.")],
+    paragraphs: [
+      escapeHtml(
+        "We’ve prepared your quote for this project — everything you need is on your project page in the client portal.",
+      ),
+      escapeHtml(
+        "Open the link below when you’re ready to review the line items and next steps. If anything is unclear, reply from your project thread and we’ll help.",
+      ),
+    ],
     ctaPath: `/portal/project/${projectId}`,
-    ctaLabel: "View quote",
+    ctaLabel: "View your project & quote",
     footerLine: r.projectName,
   });
   await deliverClientEmail(r.email, subject, html);

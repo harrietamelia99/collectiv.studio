@@ -29,11 +29,9 @@ import { hasLockedFinalDesignFiles, isFinalDesignFileDownloadLocked } from "@/li
 import { portalFilePublicUrl } from "@/lib/portal-file-url";
 import { reviewProgressPercent } from "@/lib/portal-progress";
 import { reopenClientWorkflowStep } from "@/app/portal/agency-actions";
-import {
-  acknowledgeBrandingFinalDeliverables,
-  addReviewAsset,
-  signOffReviewAsset,
-} from "@/app/portal/actions";
+import { acknowledgeBrandingFinalDeliverables } from "@/app/portal/actions";
+import { ClientReviewAssetSignOffForm } from "@/components/portal/ClientReviewAssetSignOffForm";
+import { StudioAddReviewAssetForm } from "@/components/portal/StudioAddReviewAssetForm";
 import { PortalBrandingMoodForm } from "@/components/portal/portal-flash-action-forms";
 import { BrandQuestionnaireForm, BrandQuestionnaireReadOnly } from "@/components/portal/BrandQuestionnaireForm";
 import { ctaButtonClasses } from "@/components/ui/Button";
@@ -334,13 +332,7 @@ function ProofsSection({
                 )}
               </div>
               {canSignOff && !asset.clientSignedOff ? (
-                <form action={signOffReviewAsset} className="md:shrink-0">
-                  <input type="hidden" name="projectId" value={project.id} />
-                  <input type="hidden" name="assetId" value={asset.id} />
-                  <button type="submit" className={ctaButtonClasses({ variant: "burgundy", size: "sm", className: "w-full md:w-auto" })}>
-                    Sign off
-                  </button>
-                </form>
+                <ClientReviewAssetSignOffForm projectId={project.id} assetId={asset.id} className="md:shrink-0" />
               ) : null}
             </div>
           </li>
@@ -349,7 +341,7 @@ function ProofsSection({
       {studio ? (
         <section className="mt-16 max-w-lg border-t border-burgundy/15 pt-12">
           <h2 className="font-display text-cc-h3 text-burgundy">Add branding deliverable</h2>
-          <form action={addReviewAsset} encType="multipart/form-data" className="mt-6 flex flex-col gap-4">
+          <StudioAddReviewAssetForm className="mt-6 flex flex-col gap-4">
             <input type="hidden" name="projectId" value={project.id} />
             <input type="hidden" name="reviewAssetKind" value="BRANDING" />
             <label className="flex flex-col gap-1.5">
@@ -378,10 +370,7 @@ function ProofsSection({
                 className="font-body text-[12px] text-burgundy file:mr-3 file:rounded-full file:border file:border-burgundy/20 file:bg-cream file:px-4 file:py-2 file:font-body file:text-[10px] file:uppercase file:tracking-[0.1em]"
               />
             </label>
-            <button type="submit" className={ctaButtonClasses({ variant: "outline", size: "md", className: "w-fit" })}>
-              Add deliverable
-            </button>
-          </form>
+          </StudioAddReviewAssetForm>
         </section>
       ) : null}
     </>
@@ -527,16 +516,7 @@ function FinalFilesSection({
                     )}
                   </div>
                   {!studio && !asset.clientSignedOff ? (
-                    <form action={signOffReviewAsset} className="md:shrink-0">
-                      <input type="hidden" name="projectId" value={project.id} />
-                      <input type="hidden" name="assetId" value={asset.id} />
-                      <button
-                        type="submit"
-                        className={ctaButtonClasses({ variant: "burgundy", size: "sm", className: "w-full md:w-auto" })}
-                      >
-                        Sign off
-                      </button>
-                    </form>
+                    <ClientReviewAssetSignOffForm projectId={project.id} assetId={asset.id} className="md:shrink-0" />
                   ) : null}
                 </div>
               </li>
@@ -548,7 +528,11 @@ function FinalFilesSection({
               <p className="mt-2 max-w-xl font-body text-sm text-burgundy/65">
                 Adds a shared deliverable (PDF, export, etc.) your client signs off here — not an identity proof round.
               </p>
-              <form action={addReviewAsset} encType="multipart/form-data" className="mt-6 flex max-w-lg flex-col gap-4">
+              <StudioAddReviewAssetForm
+                className="mt-6 flex max-w-lg flex-col gap-4"
+                idleLabel="Add shared file"
+                successLabel="File uploaded ✓"
+              >
                 <input type="hidden" name="projectId" value={project.id} />
                 <input type="hidden" name="reviewAssetKind" value="GENERAL" />
                 <label className="flex flex-col gap-1.5">
@@ -577,10 +561,7 @@ function FinalFilesSection({
                     className="font-body text-[12px] text-burgundy file:mr-3 file:rounded-full file:border file:border-burgundy/20 file:bg-cream file:px-4 file:py-2 file:font-body file:text-[10px] file:uppercase file:tracking-[0.1em]"
                   />
                 </label>
-                <button type="submit" className={ctaButtonClasses({ variant: "outline", size: "md", className: "w-fit" })}>
-                  Add shared file
-                </button>
-              </form>
+              </StudioAddReviewAssetForm>
             </section>
           ) : null}
         </>

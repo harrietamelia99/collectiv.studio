@@ -7,6 +7,7 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
+  useState,
   useTransition,
   type ComponentProps,
   type MutableRefObject,
@@ -31,6 +32,7 @@ import type { SocialCalendarItem } from "@/components/portal/SocialContentCalend
 import { StudioPostScheduleActions } from "@/components/portal/StudioPostScheduleActions";
 import type { CalendarActivityEntry } from "@/lib/calendar-activity-log";
 import { isSocialCalendarMediaVideoUrl } from "@/lib/social-calendar-media";
+import type { PortalFormFlash } from "@/lib/portal-form-flash";
 
 function activityEntryTitle(kind: string): string {
   switch (kind) {
@@ -177,8 +179,50 @@ export function SocialCalendarPostModal({
   const clientRevisionMobileRef = useRef<HTMLTextAreaElement>(null);
   const clientCommentMobileRef = useRef<HTMLTextAreaElement>(null);
   const [pending, startTransition] = useTransition();
+  const [actionBanner, setActionBanner] = useState<{ ok: boolean; text: string } | null>(null);
+  const flashTimerRef = useRef<number | null>(null);
   const isStudio = mode === "studio";
   const projectId = projectIdProp ?? post?.projectId ?? "";
+
+  const handleServerFlash = useCallback(
+    (r: PortalFormFlash, opts?: { refresh?: boolean; closeModalOnSuccess?: boolean }) => {
+      if (flashTimerRef.current) {
+        clearTimeout(flashTimerRef.current);
+        flashTimerRef.current = null;
+      }
+      if (!r.ok) {
+        setActionBanner({ ok: false, text: r.error });
+        return;
+      }
+      setActionBanner({ ok: true, text: r.message ?? "Done ✓" });
+      if (opts?.refresh !== false) router.refresh();
+      const holdMs = opts?.closeModalOnSuccess ? 2000 : 3000;
+      const closeModal = Boolean(opts?.closeModalOnSuccess);
+      flashTimerRef.current = window.setTimeout(() => {
+        flashTimerRef.current = null;
+        setActionBanner(null);
+        if (closeModal) onClose();
+      }, holdMs);
+    },
+    [router, onClose],
+  );
+
+  useEffect(() => {
+    if (flashTimerRef.current) {
+      clearTimeout(flashTimerRef.current);
+      flashTimerRef.current = null;
+    }
+    setActionBanner(null);
+  }, [post?.id]);
+
+  useEffect(() => {
+    return () => {
+      if (flashTimerRef.current) {
+        clearTimeout(flashTimerRef.current);
+        flashTimerRef.current = null;
+      }
+    };
+  }, []);
 
   const navRing =
     navigationRing && navigationRing.length > 0 ? navigationRing : postsForDay;
@@ -485,6 +529,20 @@ export function SocialCalendarPostModal({
             <div className="mx-auto w-full max-w-2xl space-y-4 lg:max-w-none lg:space-y-5 lg:pr-2 lg:pt-1">
               {statusRow}
 
+              {actionBanner ? (
+                <div
+                  role="status"
+                  aria-live="polite"
+                  className={
+                    actionBanner.ok
+                      ? "rounded-xl border border-burgundy/90 bg-cream px-4 py-3 font-body text-sm leading-relaxed text-burgundy"
+                      : "rounded-xl border border-rose-200/90 bg-rose-50/95 px-4 py-3 font-body text-sm leading-relaxed text-rose-800/90"
+                  }
+                >
+                  {actionBanner.text}
+                </div>
+              ) : null}
+
               {isStudio ? (
                 <>
                   <p className="rounded-lg border border-burgundy/10 bg-burgundy/[0.03] px-4 py-3 font-body text-xs leading-relaxed text-burgundy/70">
@@ -533,8 +591,8 @@ export function SocialCalendarPostModal({
                           e.preventDefault();
                           const fd = new FormData(e.currentTarget);
                           startTransition(async () => {
-                            await saveStudioCalendarPost(projectIdForSave, post.id, fd);
-                            router.refresh();
+                            const r = await saveStudioCalendarPost(projectIdForSave, post.id, fd);
+                            handleServerFlash(r, { refresh: true });
                           });
                         }}
                       >
@@ -699,12 +757,15 @@ export function SocialCalendarPostModal({
                               })}
                               onClick={() =>
                                 startTransition(async () => {
-                                  await submitCalendarPostForClientReview(projectIdForSave, post.id);
-                                  router.refresh();
+                                  const r = await submitCalendarPostForClientReview(
+                                    projectIdForSave,
+                                    post.id,
+                                  );
+                                  handleServerFlash(r, { refresh: true });
                                 })
                               }
                             >
-                              {pending ? "Working…" : "Submit for approval"}
+                              {pending ? "Submitting…" : "Submit for approval"}
                             </button>
                           ) : null}
                           {canStudioReopen ? (
@@ -875,9 +936,8 @@ export function SocialCalendarPostModal({
                           const fd = new FormData(e.currentTarget);
                           fd.set("feedbackAction", "revision");
                           startTransition(async () => {
-                            await saveCalendarItemFeedback(projectId, post.id, fd);
-                            router.refresh();
-                            onClose();
+                            const r = await saveCalendarItemFeedback(projectId, post.id, fd);
+                            handleServerFlash(r, { refresh: true, closeModalOnSuccess: true });
                           });
                         }}
                       >
@@ -932,9 +992,8 @@ export function SocialCalendarPostModal({
                 const fd = new FormData(e.currentTarget);
                           fd.set("feedbackAction", "comment");
                 startTransition(async () => {
-                  await saveCalendarItemFeedback(projectId, post.id, fd);
-                  router.refresh();
-                  onClose();
+                  const r = await saveCalendarItemFeedback(projectId, post.id, fd);
+                  handleServerFlash(r, { refresh: true, closeModalOnSuccess: true });
                 });
               }}
             >
@@ -992,13 +1051,12 @@ export function SocialCalendarPostModal({
                   onClick={() => {
                             if (!projectId) return;
                     startTransition(async () => {
-                      await signOffCalendarItem(projectId, post.id);
-                      router.refresh();
-                      onClose();
+                      const r = await signOffCalendarItem(projectId, post.id);
+                      handleServerFlash(r, { refresh: true, closeModalOnSuccess: true });
                     });
                   }}
                 >
-                          {pending ? "Working…" : batchMode ? "Approve this post" : "Approve for scheduling"}
+                          {pending ? "Approving…" : batchMode ? "Approve this post" : "Approve for scheduling"}
                 </button>
               </div>
                     ) : clientLocked ? (
@@ -1021,9 +1079,8 @@ export function SocialCalendarPostModal({
                           const fd = new FormData(e.currentTarget);
                           fd.set("feedbackAction", "revision");
                           startTransition(async () => {
-                            await saveCalendarItemFeedback(projectId, post.id, fd);
-                            router.refresh();
-                            onClose();
+                            const r = await saveCalendarItemFeedback(projectId, post.id, fd);
+                            handleServerFlash(r, { refresh: true, closeModalOnSuccess: true });
                           });
                         }}
                       >
@@ -1058,9 +1115,8 @@ export function SocialCalendarPostModal({
                           const fd = new FormData(e.currentTarget);
                           fd.set("feedbackAction", "comment");
                           startTransition(async () => {
-                            await saveCalendarItemFeedback(projectId, post.id, fd);
-                            router.refresh();
-                            onClose();
+                            const r = await saveCalendarItemFeedback(projectId, post.id, fd);
+                            handleServerFlash(r, { refresh: true, closeModalOnSuccess: true });
                           });
                         }}
                       >
@@ -1103,13 +1159,12 @@ export function SocialCalendarPostModal({
                           onClick={() => {
                             if (!projectId) return;
                             startTransition(async () => {
-                              await signOffCalendarItem(projectId, post.id);
-                              router.refresh();
-                              onClose();
+                              const r = await signOffCalendarItem(projectId, post.id);
+                              handleServerFlash(r, { refresh: true, closeModalOnSuccess: true });
                             });
                           }}
                         >
-                          {pending ? "Working…" : batchMode ? "Approve this post" : "Approve for scheduling"}
+                          {pending ? "Approving…" : batchMode ? "Approve this post" : "Approve for scheduling"}
                         </button>
                       ) : null}
                       {canClientRequestRevision ? (
@@ -1197,12 +1252,12 @@ export function SocialCalendarPostModal({
                 })}
                 onClick={() =>
                   startTransition(async () => {
-                    await submitCalendarPostForClientReview(projectIdForSave, post.id);
-                    router.refresh();
+                    const r = await submitCalendarPostForClientReview(projectIdForSave, post.id);
+                    handleServerFlash(r, { refresh: true });
                   })
                 }
               >
-                {pending ? "Working…" : "Submit for approval"}
+                {pending ? "Submitting…" : "Submit for approval"}
               </button>
             ) : null}
           </div>

@@ -31,6 +31,7 @@ import {
 } from "@/lib/studio-inbox-notify";
 import { rethrowPortalUploadAction, saveProjectUpload, validateUploadExtension } from "@/lib/portal-uploads";
 import { normalizeCalendarChannelsFromForm } from "@/lib/calendar-channels";
+import { type PortalFormFlash, portalFlashErr, portalFlashOk } from "@/lib/portal-form-flash";
 
 function revProject(projectId: string) {
   revalidatePath("/portal");
@@ -85,24 +86,38 @@ export async function saveSocialWeeklySchedule(projectId: string, formData: Form
  * Studio-only: update calendar post copy, hashtags, and creative (legacy + batch workflows).
  * Clients use `saveCalendarItemFeedback` / approve actions only.
  */
-export async function saveStudioCalendarPost(projectId: string, itemId: string, formData: FormData): Promise<void> {
+export async function saveStudioCalendarPost(
+  projectId: string,
+  itemId: string,
+  formData: FormData,
+): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || !isStudioUser(session.user.email) || !session.user.id) return;
+  if (!session?.user?.email || !isStudioUser(session.user.email) || !session.user.id) {
+    return portalFlashErr("Couldn’t save post. Try again.");
+  }
   const project = await prisma.project.findUnique({ where: { id: projectId } });
-  if (!project) return;
+  if (!project) {
+    return portalFlashErr("Couldn’t save post. Try again.");
+  }
   const sm = await prisma.studioTeamMember.findUnique({
     where: { userId: session.user.id },
     select: { personaSlug: true },
   });
-  if (!studioMayAccessProjectSocialCalendar(project, session.user.id, sm?.personaSlug ?? null)) return;
+  if (!studioMayAccessProjectSocialCalendar(project, session.user.id, sm?.personaSlug ?? null)) {
+    return portalFlashErr("Couldn’t save post. Try again.");
+  }
 
   const vis = visiblePortalSections(project.portalKind);
-  if (!vis.social) return;
+  if (!vis.social) {
+    return portalFlashErr("Couldn’t save post. Try again.");
+  }
 
   const item = await prisma.contentCalendarItem.findFirst({
     where: { id: itemId, projectId },
   });
-  if (!item) return;
+  if (!item) {
+    return portalFlashErr("Couldn’t save post. Try again.");
+  }
 
   const caption = String(formData.get("caption") ?? "").trim().slice(0, 8000);
   const hashtags = String(formData.get("hashtags") ?? "").trim().slice(0, 2000);
@@ -115,9 +130,13 @@ export async function saveStudioCalendarPost(projectId: string, itemId: string, 
     const lower = file.name.toLowerCase();
     const asVideo = [".mp4", ".mov", ".webm", ".m4v"].some((x) => lower.endsWith(x));
     const bad = validateUploadExtension(file.name, asVideo ? "video" : "raster");
-    if (bad) return;
+    if (bad) {
+      return portalFlashErr("That file type isn’t allowed.");
+    }
     const buf = Buffer.from(await file.arrayBuffer());
-    if (buf.length > 8 * 1024 * 1024) return;
+    if (buf.length > 8 * 1024 * 1024) {
+      return portalFlashErr("Creative file is too large (max 8 MB).");
+    }
     try {
       imagePath = await saveProjectUpload(projectId, file.name, buf, "socialCalendarCreative");
     } catch (e) {
@@ -153,7 +172,7 @@ export async function saveStudioCalendarPost(projectId: string, itemId: string, 
       },
     });
     revProject(projectId);
-    return;
+    return portalFlashOk("Post saved ✓");
   }
 
   const st = item.postWorkflowStatus;
@@ -175,7 +194,7 @@ export async function saveStudioCalendarPost(projectId: string, itemId: string, 
       },
     });
     revProject(projectId);
-    return;
+    return portalFlashOk("Post saved ✓");
   }
 
   if (st === "PENDING_APPROVAL") {
@@ -202,7 +221,7 @@ export async function saveStudioCalendarPost(projectId: string, itemId: string, 
       },
     });
     revProject(projectId);
-    return;
+    return portalFlashOk("Post saved ✓");
   }
 
   if (st === "APPROVED") {
@@ -222,11 +241,18 @@ export async function saveStudioCalendarPost(projectId: string, itemId: string, 
       },
     });
     revProject(projectId);
+    return portalFlashOk("Post saved ✓");
   }
+
+  return portalFlashErr("Couldn’t save post in its current state.");
 }
 
 /** @deprecated Prefer `saveStudioCalendarPost` — kept for call-site compatibility. */
-export async function saveBatchCalendarPostDraft(projectId: string, itemId: string, formData: FormData): Promise<void> {
+export async function saveBatchCalendarPostDraft(
+  projectId: string,
+  itemId: string,
+  formData: FormData,
+): Promise<PortalFormFlash> {
   return saveStudioCalendarPost(projectId, itemId, formData);
 }
 
@@ -304,23 +330,38 @@ export async function approveAllSocialMonthPosts(projectId: string, monthYm: str
 }
 
 /** Studio: send one filled draft (or post-revision draft) to the client for review. */
-export async function submitCalendarPostForClientReview(projectId: string, itemId: string): Promise<void> {
+export async function submitCalendarPostForClientReview(
+  projectId: string,
+  itemId: string,
+): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || !isStudioUser(session.user.email) || !session.user.id) return;
+  if (!session?.user?.email || !isStudioUser(session.user.email) || !session.user.id) {
+    return portalFlashErr("Couldn’t submit for approval. Try again.");
+  }
   const project = await prisma.project.findUnique({ where: { id: projectId } });
-  if (!project) return;
+  if (!project) {
+    return portalFlashErr("Couldn’t submit for approval. Try again.");
+  }
   const sm = await prisma.studioTeamMember.findUnique({
     where: { userId: session.user.id },
     select: { personaSlug: true },
   });
-  if (!studioMayAccessProjectSocialCalendar(project, session.user.id, sm?.personaSlug ?? null)) return;
+  if (!studioMayAccessProjectSocialCalendar(project, session.user.id, sm?.personaSlug ?? null)) {
+    return portalFlashErr("Couldn’t submit for approval. Try again.");
+  }
 
   const item = await prisma.contentCalendarItem.findFirst({
     where: { id: itemId, projectId },
   });
-  if (!item) return;
-  if (!postHasCreativeOrCaption(item.imagePath, item.caption)) return;
-  if (!["DRAFT", "REVISION_NEEDED", "AWAITING_CONTENT"].includes(item.postWorkflowStatus)) return;
+  if (!item) {
+    return portalFlashErr("Couldn’t submit for approval. Try again.");
+  }
+  if (!postHasCreativeOrCaption(item.imagePath, item.caption)) {
+    return portalFlashErr("Add creative and caption before submitting for approval.");
+  }
+  if (!["DRAFT", "REVISION_NEEDED", "AWAITING_CONTENT"].includes(item.postWorkflowStatus)) {
+    return portalFlashErr("This post can’t be submitted in its current state.");
+  }
 
   const wasRevision = item.postWorkflowStatus === "REVISION_NEEDED";
   const log = appendCalendarActivityLog(item.calendarActivityLogJson, {
@@ -354,4 +395,5 @@ export async function submitCalendarPostForClientReview(projectId: string, itemI
   });
 
   revProject(projectId);
+  return portalFlashOk("Submitted for approval ✓");
 }
