@@ -44,8 +44,10 @@ export function HomeInstagramSectionFallback() {
             {handle}
           </a>
           <p className="mt-4 max-w-xl font-body text-sm leading-relaxed text-burgundy/65">
-            Project snapshots, launches, and behind-the-scenes - follow us on Instagram. A live grid appears here once
-            the feed is connected on the server.
+            Project snapshots, launches, and behind-the-scenes — follow us on Instagram. The grid loads when the server
+            has a valid Meta access token (see <code className="font-mono text-[11px] text-burgundy/75">INSTAGRAM_ACCESS_TOKEN</code>{" "}
+            in <code className="font-mono text-[11px] text-burgundy/75">.env.example</code>). On Vercel, add the same
+            variables under Project → Settings → Environment Variables, then redeploy.
           </p>
         </div>
         <FeedSkeleton />

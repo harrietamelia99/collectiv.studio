@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useReducedMotion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { ctaButtonClasses } from "@/components/ui/Button";
 
 const STORAGE_KEY = "cc-launch-signup-dismissed";
 const MODAL_IMAGE = "/images/portfolio-petite.png";
@@ -170,13 +171,13 @@ export function LaunchSignupModal() {
                 <br />
                 April 2026
               </h2>
-              <p className="mt-4 max-w-md font-body text-[11px] font-normal leading-relaxed tracking-[0.04em] text-burgundy/75 sm:text-[12px] md:mt-5 md:tracking-[0.035em]">
+              <p className="cc-copy-muted mt-4 max-w-md md:mt-5">
                 Reserve your place before spaces fill, and take the first step towards creating the
                 brand of your dreams.
               </p>
 
               <form
-                className="mt-6 flex flex-col gap-3 sm:mt-7 sm:flex-row sm:items-stretch sm:gap-2"
+                className="mt-6 flex flex-col gap-3 sm:mt-7 sm:flex-row sm:items-stretch sm:gap-3"
                 onSubmit={onSubmit}
                 noValidate
               >
@@ -192,12 +193,17 @@ export function LaunchSignupModal() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="min-h-[2.75rem] w-full flex-1 rounded-none border border-burgundy/22 bg-white px-4 font-body text-[11px] tracking-[0.06em] text-burgundy placeholder:text-burgundy/38 outline-none ring-burgundy/15 transition-[border-color,box-shadow] focus:border-burgundy/45 focus:ring-2 sm:min-h-[2.85rem] sm:text-[12px]"
+                  className="min-h-[2.75rem] w-full flex-1 rounded-[var(--cc-pill-radius)] border border-burgundy/20 bg-white px-4 font-body text-sm text-burgundy placeholder:text-burgundy/38 outline-none transition-[border-color,box-shadow] duration-200 focus:border-burgundy/45 focus:ring-2 focus:ring-burgundy/15 sm:min-h-[3rem] sm:px-5"
                 />
                 <button
                   type="submit"
                   disabled={busy}
-                  className="cc-no-lift inline-flex min-h-[2.75rem] shrink-0 items-center justify-center rounded-none border border-burgundy bg-burgundy px-6 font-body text-[9px] font-medium uppercase tracking-[0.16em] text-cream transition-opacity hover:opacity-[0.94] disabled:opacity-60 sm:min-h-[2.85rem] sm:px-7 sm:text-[10px] sm:tracking-[0.18em]"
+                  className={ctaButtonClasses({
+                    variant: "burgundy",
+                    size: "md",
+                    isSubmit: true,
+                    className: "min-h-[2.75rem] w-full shrink-0 sm:w-auto sm:min-h-[3rem] sm:min-w-[9.5rem] sm:px-8",
+                  })}
                 >
                   {busy ? "…" : "Sign up"}
                 </button>
