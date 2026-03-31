@@ -15,6 +15,8 @@ type Props = {
   signedAt: Date | null;
   signedTypedName: string | null;
   signedSnapshotText: string | null;
+  /** Quote accepted in portal but contract text not published yet — friendlier copy than “preparing agreement”. */
+  quoteAcceptedAwaitingTerms?: boolean;
 };
 
 function contractTextToParagraphs(text: string): string[] {
@@ -32,6 +34,7 @@ export function ClientContractSignOff({
   signedAt,
   signedTypedName,
   signedSnapshotText,
+  quoteAcceptedAwaitingTerms = false,
 }: Props) {
   const router = useRouter();
   const termsTrimmed = contractTermsText.trim();
@@ -127,8 +130,17 @@ export function ClientContractSignOff({
           Service agreement
         </h2>
         <p className="mt-3 max-w-xl font-body text-sm leading-relaxed text-burgundy/75">
-          The studio is preparing your written agreement. It will appear here when ready — then you can read it in full
-          and sign digitally before your project workspace opens.
+          {quoteAcceptedAwaitingTerms ? (
+            <>
+              Your quote has been accepted. Your service agreement will appear here shortly — then you can read it in
+              full and sign digitally before your project workspace opens.
+            </>
+          ) : (
+            <>
+              The studio is preparing your written agreement. It will appear here when ready — then you can read it in
+              full and sign digitally before your project workspace opens.
+            </>
+          )}
         </p>
       </section>
     );

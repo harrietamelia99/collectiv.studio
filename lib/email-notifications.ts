@@ -286,6 +286,66 @@ export async function emailNotifyIssyClientSignedContract(opts: {
   });
 }
 
+// --- Issy: client accepted quote in portal ---
+
+export async function emailNotifyIssyQuoteAccepted(opts: {
+  projectName: string;
+  projectId: string;
+  clientName: string;
+  acceptedAtLabel: string;
+  recipientEmails: string[];
+}): Promise<void> {
+  if (opts.recipientEmails.length === 0) return;
+  const openUrl = `${portalOrigin()}/portal/project/${opts.projectId}#agency-project-quote`;
+  const html = collectivEmailShell({
+    greetingHtml: `<p style="margin:0 0 16px;font-size:15px;">Hello,</p>`,
+    bodyParagraphsHtml: [
+      `<strong>${escapeHtml(opts.clientName)}</strong> has accepted the quote for <strong>${escapeHtml(opts.projectName)}</strong>.`,
+      "Please prepare their service agreement in the portal so they can review and sign.",
+    ],
+    detailHtml: `<p style="margin:0;"><strong>Accepted:</strong> ${escapeHtml(opts.acceptedAtLabel)}</p>`,
+    cta: { href: openUrl, label: "Open project" },
+  });
+  await sendBrandedTransactional({
+    to: opts.recipientEmails,
+    subject: `Quote accepted - ${opts.projectName}`,
+    html,
+    logTag: "issy-quote-accepted",
+  });
+}
+
+// --- Issy: client declined quote in portal ---
+
+export async function emailNotifyIssyQuoteDeclined(opts: {
+  projectName: string;
+  projectId: string;
+  clientName: string;
+  reasonNote: string | null;
+  recipientEmails: string[];
+}): Promise<void> {
+  if (opts.recipientEmails.length === 0) return;
+  const openUrl = `${portalOrigin()}/portal/project/${opts.projectId}#agency-project-quote`;
+  const reasonBlock =
+    opts.reasonNote && opts.reasonNote.trim()
+      ? `<p style="margin:0 0 8px;"><strong>Client note:</strong></p><p style="margin:0;white-space:pre-wrap;">${escapeHtml(opts.reasonNote.trim().slice(0, 4000))}</p>`
+      : `<p style="margin:0;">No note was left.</p>`;
+  const html = collectivEmailShell({
+    greetingHtml: `<p style="margin:0 0 16px;font-size:15px;">Hello,</p>`,
+    bodyParagraphsHtml: [
+      `<strong>${escapeHtml(opts.clientName)}</strong> has declined the quote for <strong>${escapeHtml(opts.projectName)}</strong>.`,
+      "You may adjust the quote and resend it from the project page when you’re ready.",
+    ],
+    detailHtml: reasonBlock,
+    cta: { href: openUrl, label: "Open project" },
+  });
+  await sendBrandedTransactional({
+    to: opts.recipientEmails,
+    subject: `Quote declined - ${opts.projectName}`,
+    html,
+    logTag: "issy-quote-declined",
+  });
+}
+
 // --- Client: deposit paid, hub unlocked ---
 
 export async function emailNotifyClientDepositPaidHubUnlocked(opts: {

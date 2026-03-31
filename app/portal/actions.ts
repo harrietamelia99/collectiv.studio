@@ -31,6 +31,8 @@ import { deleteUploadThingFileByStoredValue } from "@/lib/uploadthing";
 import { appendCalendarActivityLog } from "@/lib/calendar-activity-log";
 import {
   notifyIssyClientSignedContractInPortal,
+  notifyIssyQuoteAcceptedInPortal,
+  notifyIssyQuoteDeclinedInPortal,
   notifyStudioTeamCalendarClientComment,
   notifyStudioTeamCalendarFeedback,
   notifyStudioTeamCalendarPostApproved,
@@ -55,6 +57,11 @@ import {
   parseWebsiteLogoVariations,
 } from "@/lib/website-logo-variations";
 import { parseInspirationLinksJson } from "@/lib/portal-inspiration-links";
+import {
+  QUOTE_STATUS_ACCEPTED,
+  QUOTE_STATUS_DECLINED,
+  QUOTE_STATUS_PENDING,
+} from "@/lib/portal-quote-status";
 import { parseQuoteLineItemsJson, quoteAllowedForProject } from "@/lib/portal-quote-lines";
 import { normalizePaymentStatus } from "@/lib/portal-payment-status";
 import {
@@ -2358,11 +2365,120 @@ export async function sendProjectQuote(projectId: string, _formData?: FormData):
 
   await prisma.projectQuote.update({
     where: { projectId },
-    data: { sentAt: new Date() },
+    data: {
+      sentAt: new Date(),
+      ...(q.quoteStatus === QUOTE_STATUS_DECLINED
+        ? {
+            quoteStatus: QUOTE_STATUS_PENDING,
+            quoteDeclineReason: "",
+            quoteRespondedAt: null,
+          }
+        : {}),
+    },
   });
   await notifyClientQuoteSent(projectId);
   await revalidateProject(projectId);
   return portalFlashOk("Quote sent ✓");
+}
+
+export type ClientQuoteResponseResult =
+  | { ok: true; confirmationMessage: string }
+  | { ok: false; error: string };
+
+/** Client: accept sent quote (cannot undo). */
+export async function acceptProjectQuote(projectId: string): Promise<ClientQuoteResponseResult> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id || isStudioUser(session.user.email)) {
+    return { ok: false, error: "Something went wrong - try again" };
+  }
+  const project = await getProjectForSession(projectId, session);
+  if (!project || project.userId !== session.user.id) {
+    return { ok: false, error: "Something went wrong - try again" };
+  }
+  const q = await prisma.projectQuote.findUnique({ where: { projectId } });
+  if (!q?.sentAt) {
+    return { ok: false, error: "Something went wrong - try again" };
+  }
+  if (q.quoteStatus !== QUOTE_STATUS_PENDING) {
+    return { ok: false, error: "Something went wrong - try again" };
+  }
+
+  const now = new Date();
+  await prisma.projectQuote.update({
+    where: { projectId },
+    data: {
+      quoteStatus: QUOTE_STATUS_ACCEPTED,
+      quoteRespondedAt: now,
+      quoteDeclineReason: "",
+    },
+  });
+
+  const clientName =
+    [project.user?.name, project.user?.businessName].filter(Boolean).join(" · ") ||
+    project.user?.email ||
+    "Client";
+
+  await notifyIssyQuoteAcceptedInPortal({
+    projectId,
+    projectName: project.name,
+    clientName,
+    respondedAt: now,
+  });
+  await revalidateProject(projectId);
+
+  return {
+    ok: true,
+    confirmationMessage:
+      "Quote accepted - the studio has been notified and will prepare your agreement shortly.",
+  };
+}
+
+/** Client: decline sent quote with optional note for the studio. */
+export async function declineProjectQuote(projectId: string, reasonRaw: string): Promise<ClientQuoteResponseResult> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id || isStudioUser(session.user.email)) {
+    return { ok: false, error: "Something went wrong - try again" };
+  }
+  const project = await getProjectForSession(projectId, session);
+  if (!project || project.userId !== session.user.id) {
+    return { ok: false, error: "Something went wrong - try again" };
+  }
+  const q = await prisma.projectQuote.findUnique({ where: { projectId } });
+  if (!q?.sentAt) {
+    return { ok: false, error: "Something went wrong - try again" };
+  }
+  if (q.quoteStatus !== QUOTE_STATUS_PENDING) {
+    return { ok: false, error: "Something went wrong - try again" };
+  }
+
+  const reason = reasonRaw.trim().slice(0, 4000);
+  const now = new Date();
+  await prisma.projectQuote.update({
+    where: { projectId },
+    data: {
+      quoteStatus: QUOTE_STATUS_DECLINED,
+      quoteRespondedAt: now,
+      quoteDeclineReason: reason,
+    },
+  });
+
+  const clientName =
+    [project.user?.name, project.user?.businessName].filter(Boolean).join(" · ") ||
+    project.user?.email ||
+    "Client";
+
+  await notifyIssyQuoteDeclinedInPortal({
+    projectId,
+    projectName: project.name,
+    clientName,
+    reason,
+  });
+  await revalidateProject(projectId);
+
+  return {
+    ok: true,
+    confirmationMessage: "Quote declined - the studio has been notified.",
+  };
 }
 
 export async function saveProjectInspirationLinks(projectId: string, formData: FormData): Promise<PortalFormFlash> {

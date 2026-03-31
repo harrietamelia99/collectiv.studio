@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { QuoteLine } from "@/lib/portal-quote-lines";
 import { formatPoundsTotal, sumQuoteLinePounds } from "@/lib/portal-quote-lines";
 
@@ -5,9 +6,11 @@ type Props = {
   intro: string;
   lines: QuoteLine[];
   sentAt: Date;
+  /** Accept / decline controls rendered below the total (client portal only). */
+  responseSlot?: ReactNode;
 };
 
-export function ClientQuoteView({ intro, lines, sentAt }: Props) {
+export function ClientQuoteView({ intro, lines, sentAt, responseSlot }: Props) {
   const total = sumQuoteLinePounds(lines);
 
   return (
@@ -46,6 +49,9 @@ export function ClientQuoteView({ intro, lines, sentAt }: Props) {
         <span className="font-body text-sm font-semibold uppercase tracking-[0.06em] text-burgundy/75">Total</span>
         <span className="font-display text-xl tabular-nums text-burgundy md:text-2xl">{formatPoundsTotal(total)}</span>
       </div>
+      {responseSlot ? (
+        <div className="mt-8 border-t border-burgundy/10 pt-8">{responseSlot}</div>
+      ) : null}
     </section>
   );
 }

@@ -34,6 +34,7 @@ import { clientNeedsOffboardingForm } from "@/lib/portal-offboarding";
 import { buildClientConversationStripData } from "@/lib/portal-conversation-strip";
 import { ClientWorkflowHubTile } from "@/components/portal/ClientWorkflowHubTile";
 import { ClientContractSignOff } from "@/components/portal/ClientContractSignOff";
+import { ClientQuoteResponseControls } from "@/components/portal/ClientQuoteResponseControls";
 import { ClientQuoteView } from "@/components/portal/ClientQuoteView";
 import { ProjectHubQuickNav, type HubNavItem } from "@/components/portal/ProjectHubQuickNav";
 import {
@@ -53,6 +54,7 @@ import {
 import { clientHasFullPortalAccess } from "@/lib/portal-client-full-access";
 import { parseInspirationLinksJson } from "@/lib/portal-inspiration-links";
 import { parseSocialOnboardingJson } from "@/lib/social-onboarding";
+import { normalizeQuoteClientStatus, QUOTE_STATUS_ACCEPTED } from "@/lib/portal-quote-status";
 import { parseQuoteLineItemsJson } from "@/lib/portal-quote-lines";
 import { loadAccountBrandKitSlice } from "@/lib/portal-account-brand-kit";
 import { loadClientWorkflowAccessOpts } from "@/lib/portal-brand-kit-gate";
@@ -471,7 +473,18 @@ export default async function ProjectOverviewPage({ params }: Props) {
 
       {projectQuote?.sentAt ? (
         <div id="project-quote-client" className="scroll-mt-28 mt-6">
-          <ClientQuoteView intro={projectQuote.intro} lines={quoteLines} sentAt={projectQuote.sentAt} />
+          <ClientQuoteView
+            intro={projectQuote.intro}
+            lines={quoteLines}
+            sentAt={projectQuote.sentAt}
+            responseSlot={
+              <ClientQuoteResponseControls
+                projectId={project.id}
+                initialStatus={normalizeQuoteClientStatus(projectQuote.quoteStatus)}
+                initialDeclineReason={projectQuote.quoteDeclineReason ?? ""}
+              />
+            }
+          />
         </div>
       ) : null}
 
@@ -482,6 +495,11 @@ export default async function ProjectOverviewPage({ params }: Props) {
         signedAt={project.clientContractSignedAt}
         signedTypedName={project.contractSignedTypedName ?? null}
         signedSnapshotText={project.contractSignedSnapshotText ?? null}
+        quoteAcceptedAwaitingTerms={
+          Boolean(projectQuote?.sentAt) &&
+          normalizeQuoteClientStatus(projectQuote?.quoteStatus) === QUOTE_STATUS_ACCEPTED &&
+          !(project.contractTermsText ?? "").trim()
+        }
       />
 
       {portalUnlockedForClient ? (

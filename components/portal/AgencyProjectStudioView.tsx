@@ -309,7 +309,16 @@ export async function AgencyProjectStudioView({
   canAssignProjectLead: boolean;
   internalNotes: InternalNoteRow[];
   viewerPersonaSlug: PersonaSlug;
-  projectQuote: Pick<ProjectQuote, "intro" | "lineItemsJson" | "sentAt" | "updatedAt"> | null;
+  projectQuote: Pick<
+    ProjectQuote,
+    | "intro"
+    | "lineItemsJson"
+    | "sentAt"
+    | "updatedAt"
+    | "quoteStatus"
+    | "quoteDeclineReason"
+    | "quoteRespondedAt"
+  > | null;
 }) {
   /** Client-side locking and step status so agency cards match the client journey (not “everything in progress”). */
   const statusRowsAsClient = false;
@@ -599,6 +608,9 @@ export async function AgencyProjectStudioView({
             initialIntro={projectQuote?.intro ?? ""}
             initialLineItemsJson={projectQuote?.lineItemsJson ?? "[]"}
             sentAt={projectQuote?.sentAt ?? null}
+            quoteStatus={projectQuote?.quoteStatus ?? null}
+            quoteDeclineReason={projectQuote?.quoteDeclineReason ?? null}
+            quoteRespondedAt={projectQuote?.quoteRespondedAt ?? null}
           />
           <div id="agency-contract-terms" className="scroll-mt-28 mt-8 border-t border-zinc-100 pt-8">
             <h3 className="font-display text-base tracking-[-0.02em] text-burgundy">Client contract text</h3>

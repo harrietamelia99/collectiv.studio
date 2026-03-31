@@ -4,6 +4,8 @@ import {
   emailNotifyAssigneesCalendarClientComment,
   emailNotifyAssigneesClientMessage,
   emailNotifyIssyClientSignedContract,
+  emailNotifyIssyQuoteAccepted,
+  emailNotifyIssyQuoteDeclined,
   emailNotifyMayClientApprovedAllPostsForMonth,
   emailNotifyMayClientApprovedSocialPost,
   emailNotifyMayClientRequestedSocialChanges,
@@ -396,6 +398,87 @@ export async function notifyIssyClientSignedContractInPortal(opts: {
     signedName,
     signedAtLabel: when,
     signedIp,
+    recipientEmails: recipients,
+  });
+}
+
+/** Issy: client accepted quote — in-app notification + email. */
+export async function notifyIssyQuoteAcceptedInPortal(opts: {
+  projectId: string;
+  projectName: string;
+  clientName: string;
+  respondedAt: Date;
+}): Promise<void> {
+  const { projectId, projectName, clientName, respondedAt } = opts;
+  const issyMembers = await prisma.studioTeamMember.findMany({
+    where: { personaSlug: "isabella" },
+    select: { userId: true },
+  });
+
+  const when = respondedAt.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+  const title = `Quote accepted · ${projectName}`.slice(0, 200);
+  const body = `${clientName} · ${when}`.slice(0, PREVIEW);
+  const href = `/portal/project/${projectId}#agency-project-quote`;
+
+  if (issyMembers.length > 0) {
+    await prisma.$transaction(
+      issyMembers.map((m) =>
+        prisma.studioNotification.create({
+          data: { userId: m.userId, kind: "QUOTE_ACCEPTED_CLIENT", title, body, href },
+        }),
+      ),
+    );
+    revalidatePath("/portal");
+  }
+
+  const recipients = await resolveIssyContractNotificationEmails();
+  if (recipients.length === 0) return;
+
+  await emailNotifyIssyQuoteAccepted({
+    projectName,
+    projectId,
+    clientName,
+    acceptedAtLabel: when,
+    recipientEmails: recipients,
+  });
+}
+
+/** Issy: client declined quote — in-app notification + email. */
+export async function notifyIssyQuoteDeclinedInPortal(opts: {
+  projectId: string;
+  projectName: string;
+  clientName: string;
+  reason: string;
+}): Promise<void> {
+  const { projectId, projectName, clientName, reason } = opts;
+  const issyMembers = await prisma.studioTeamMember.findMany({
+    where: { personaSlug: "isabella" },
+    select: { userId: true },
+  });
+
+  const title = `Quote declined · ${projectName}`.slice(0, 200);
+  const body = (reason.trim() ? reason.trim() : "No note left").slice(0, PREVIEW);
+  const href = `/portal/project/${projectId}#agency-project-quote`;
+
+  if (issyMembers.length > 0) {
+    await prisma.$transaction(
+      issyMembers.map((m) =>
+        prisma.studioNotification.create({
+          data: { userId: m.userId, kind: "QUOTE_DECLINED_CLIENT", title, body, href },
+        }),
+      ),
+    );
+    revalidatePath("/portal");
+  }
+
+  const recipients = await resolveIssyContractNotificationEmails();
+  if (recipients.length === 0) return;
+
+  await emailNotifyIssyQuoteDeclined({
+    projectName,
+    projectId,
+    clientName,
+    reasonNote: reason.trim() || null,
     recipientEmails: recipients,
   });
 }

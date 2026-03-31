@@ -331,6 +331,7 @@ model StudioTimeOff {
 }
 
 /// Line items JSON: [{ "label": string, "detail"?: string, "amount": string }]
+/// quoteStatus: PENDING | ACCEPTED | DECLINED — client response after quote is sent.
 model ProjectQuote {
   id            String    @id @default(cuid())
   projectId     String    @unique
@@ -338,6 +339,10 @@ model ProjectQuote {
   intro         String    @default("")
   lineItemsJson String    @default("[]")
   sentAt        DateTime?
+  /// PENDING until the client accepts or declines; studio may reset to PENDING when resending after a decline.
+  quoteStatus         String    @default("PENDING")
+  quoteDeclineReason  String    @default("")
+  quoteRespondedAt    DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }

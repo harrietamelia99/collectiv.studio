@@ -6,6 +6,12 @@ import { PortalFormSubmitButton } from "@/components/portal/PortalFormSubmitButt
 import { PortalFormWithFlash } from "@/components/portal/PortalFormWithFlash";
 import { PORTAL_CLIENT_INPUT_CLASS } from "@/components/portal/PortalSectionCard";
 import type { PortalFormFlash } from "@/lib/portal-form-flash";
+import {
+  normalizeQuoteClientStatus,
+  QUOTE_STATUS_ACCEPTED,
+  QUOTE_STATUS_DECLINED,
+  type QuoteClientStatus,
+} from "@/lib/portal-quote-status";
 import type { QuoteLineRow } from "@/lib/portal-quote-lines";
 import { formatPoundsTotal, parseQuoteLineItemsJson, sumQuoteLinePounds } from "@/lib/portal-quote-lines";
 
@@ -14,7 +20,21 @@ type Props = {
   initialIntro: string;
   initialLineItemsJson: string;
   sentAt: Date | null;
+  quoteStatus: string | null;
+  quoteDeclineReason: string | null;
+  quoteRespondedAt: Date | null;
 };
+
+function quoteStatusLabel(s: QuoteClientStatus): string {
+  switch (s) {
+    case QUOTE_STATUS_ACCEPTED:
+      return "Accepted";
+    case QUOTE_STATUS_DECLINED:
+      return "Declined";
+    default:
+      return "Pending";
+  }
+}
 
 const emptyLine = (): QuoteLineRow => ({ label: "", detail: "", amount: "" });
 
@@ -23,6 +43,9 @@ export function AgencyProjectQuotePanel({
   initialIntro,
   initialLineItemsJson,
   sentAt,
+  quoteStatus,
+  quoteDeclineReason,
+  quoteRespondedAt,
 }: Props) {
   const parsed = useMemo(() => parseQuoteLineItemsJson(initialLineItemsJson), [initialLineItemsJson]);
   const [intro, setIntro] = useState(initialIntro);
@@ -152,7 +175,7 @@ export function AgencyProjectQuotePanel({
         </div>
       </PortalFormWithFlash>
 
-      <div className="mt-4 rounded-lg border border-zinc-200/80 bg-white px-4 py-3 font-body text-sm text-burgundy/80">
+      <div className="mt-4 space-y-3 rounded-lg border border-zinc-200/80 bg-white px-4 py-3 font-body text-sm text-burgundy/80">
         {sentAtState ? (
           <p className="m-0">
             <span className="font-medium text-burgundy">Sent to client</span> ·{" "}
@@ -161,6 +184,49 @@ export function AgencyProjectQuotePanel({
         ) : (
           <p className="m-0 text-burgundy/65">Quote not sent yet — the client only sees it after you send.</p>
         )}
+        {sentAtState ? (
+          <div className="border-t border-zinc-100 pt-3">
+            <p className="m-0 text-[10px] font-semibold uppercase tracking-[0.1em] text-burgundy/50">
+              Client response
+            </p>
+            <p className="mt-2 m-0">
+              <span
+                className={
+                  normalizeQuoteClientStatus(quoteStatus) === QUOTE_STATUS_ACCEPTED
+                    ? "font-semibold text-emerald-900"
+                    : normalizeQuoteClientStatus(quoteStatus) === QUOTE_STATUS_DECLINED
+                      ? "font-semibold text-rose-900"
+                      : "font-semibold text-burgundy/80"
+                }
+              >
+                {quoteStatusLabel(normalizeQuoteClientStatus(quoteStatus))}
+              </span>
+              {normalizeQuoteClientStatus(quoteStatus) === QUOTE_STATUS_ACCEPTED && quoteRespondedAt ? (
+                <span className="text-burgundy/65">
+                  {" "}
+                  · {quoteRespondedAt.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}
+                </span>
+              ) : null}
+              {normalizeQuoteClientStatus(quoteStatus) === QUOTE_STATUS_DECLINED && quoteRespondedAt ? (
+                <span className="text-burgundy/65">
+                  {" "}
+                  · {quoteRespondedAt.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}
+                </span>
+              ) : null}
+            </p>
+            {normalizeQuoteClientStatus(quoteStatus) === QUOTE_STATUS_DECLINED &&
+            (quoteDeclineReason ?? "").trim() ? (
+              <div className="mt-3 rounded-lg border border-rose-100/90 bg-rose-50/40 px-3 py-2">
+                <p className="m-0 text-[10px] font-semibold uppercase tracking-[0.1em] text-rose-900/55">
+                  Client note
+                </p>
+                <p className="mt-1 m-0 whitespace-pre-wrap text-sm leading-relaxed text-burgundy/90">
+                  {(quoteDeclineReason ?? "").trim()}
+                </p>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       <PortalFormWithFlash
