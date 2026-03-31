@@ -51,3 +51,21 @@ export function formatQuoteLineAmountForDisplay(raw: string): string {
   if (n === null) return raw.trim() || "—";
   return formatPoundsTotal(n);
 }
+
+/** Split quote total into deposit and balance using integer percent (0–100), rounded to pence. */
+export function quoteDepositSplit(totalPounds: number, depositPercent: number): {
+  depositPounds: number;
+  balancePounds: number;
+  balancePercentDisplay: number;
+  depositPercentDisplay: number;
+} {
+  const p = Math.min(100, Math.max(0, Math.round(depositPercent)));
+  const depositPounds = Math.round(totalPounds * 100 * (p / 100)) / 100;
+  const balancePounds = Math.round((totalPounds - depositPounds) * 100) / 100;
+  return {
+    depositPounds,
+    balancePounds,
+    balancePercentDisplay: 100 - p,
+    depositPercentDisplay: p,
+  };
+}

@@ -23,6 +23,8 @@ type Props = {
   quoteStatus: string | null;
   quoteDeclineReason: string | null;
   quoteRespondedAt: Date | null;
+  initialDepositPercent: number;
+  initialDepositNote: string;
 };
 
 function quoteStatusLabel(s: QuoteClientStatus): string {
@@ -46,16 +48,27 @@ export function AgencyProjectQuotePanel({
   quoteStatus,
   quoteDeclineReason,
   quoteRespondedAt,
+  initialDepositPercent,
+  initialDepositNote,
 }: Props) {
   const parsed = useMemo(() => parseQuoteLineItemsJson(initialLineItemsJson), [initialLineItemsJson]);
   const [intro, setIntro] = useState(initialIntro);
   const [lines, setLines] = useState<QuoteLineRow[]>(() => (parsed.length ? parsed : [emptyLine()]));
+  const [depositPercentInput, setDepositPercentInput] = useState(() =>
+    initialDepositPercent === 50 ? "" : String(initialDepositPercent),
+  );
+  const [depositNote, setDepositNote] = useState(initialDepositNote);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [sentAtState, setSentAtState] = useState<Date | null>(sentAt);
 
   useEffect(() => {
     setSentAtState(sentAt);
   }, [sentAt]);
+
+  useEffect(() => {
+    setDepositPercentInput(initialDepositPercent === 50 ? "" : String(initialDepositPercent));
+    setDepositNote(initialDepositNote);
+  }, [initialDepositPercent, initialDepositNote]);
 
   const total = sumQuoteLinePounds(lines);
   const validLines = lines.filter((l) => l.label.trim() && l.amount.trim());
@@ -156,6 +169,43 @@ export function AgencyProjectQuotePanel({
           <span className="font-body text-sm font-semibold text-burgundy">Total (from line amounts)</span>
           <span className="font-body text-base font-semibold tabular-nums text-burgundy">{formatPoundsTotal(total)}</span>
         </div>
+
+        <input
+          type="hidden"
+          name="depositPercent"
+          value={depositPercentInput.trim() === "" ? "50" : depositPercentInput.trim()}
+        />
+
+        <label className="block font-body text-xs font-medium text-burgundy/70">
+          Deposit percentage
+          <input
+            type="number"
+            min={0}
+            max={100}
+            step={1}
+            inputMode="numeric"
+            value={depositPercentInput}
+            onChange={(e) => setDepositPercentInput(e.target.value)}
+            className={`${PORTAL_CLIENT_INPUT_CLASS} mt-1.5 max-w-[8rem] tabular-nums`}
+            placeholder="50"
+            aria-describedby="deposit-percent-hint"
+          />
+          <span id="deposit-percent-hint" className="mt-1 block font-body text-[11px] font-normal text-burgundy/50">
+            Upfront % of the quote total for the client breakdown. Leave blank for 50%.
+          </span>
+        </label>
+
+        <label className="block font-body text-xs font-medium text-burgundy/70">
+          Deposit note (optional)
+          <textarea
+            name="depositNote"
+            value={depositNote}
+            onChange={(e) => setDepositNote(e.target.value)}
+            className={`${PORTAL_CLIENT_INPUT_CLASS} mt-1.5 min-h-[4.5rem] resize-y`}
+            placeholder='e.g. "Balance due before final files are released" or "Subscription billed monthly in advance"'
+            maxLength={2000}
+          />
+        </label>
 
         <div className="flex flex-col gap-1">
           <PortalFormSubmitButton

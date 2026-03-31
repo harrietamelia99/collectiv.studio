@@ -318,6 +318,8 @@ export async function AgencyProjectStudioView({
     | "quoteStatus"
     | "quoteDeclineReason"
     | "quoteRespondedAt"
+    | "depositPercent"
+    | "depositNote"
   > | null;
 }) {
   /** Client-side locking and step status so agency cards match the client journey (not “everything in progress”). */
@@ -611,6 +613,8 @@ export async function AgencyProjectStudioView({
             quoteStatus={projectQuote?.quoteStatus ?? null}
             quoteDeclineReason={projectQuote?.quoteDeclineReason ?? null}
             quoteRespondedAt={projectQuote?.quoteRespondedAt ?? null}
+            initialDepositPercent={projectQuote?.depositPercent ?? 50}
+            initialDepositNote={projectQuote?.depositNote ?? ""}
           />
           <div id="agency-contract-terms" className="scroll-mt-28 mt-8 border-t border-zinc-100 pt-8">
             <h3 className="font-display text-base tracking-[-0.02em] text-burgundy">Client contract text</h3>

@@ -477,6 +477,9 @@ export default async function ProjectOverviewPage({ params }: Props) {
             intro={projectQuote.intro}
             lines={quoteLines}
             sentAt={projectQuote.sentAt}
+            portalKind={project.portalKind}
+            depositPercent={projectQuote.depositPercent ?? 50}
+            depositNote={projectQuote.depositNote ?? ""}
             responseSlot={
               <ClientQuoteResponseControls
                 projectId={project.id}

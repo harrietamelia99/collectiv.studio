@@ -3,18 +3,90 @@ import type { QuoteLine } from "@/lib/portal-quote-lines";
 import {
   formatPoundsTotal,
   formatQuoteLineAmountForDisplay,
+  quoteDepositSplit,
   sumQuoteLinePounds,
 } from "@/lib/portal-quote-lines";
+import { normalizePortalKind } from "@/lib/portal-project-kind";
 
 type Props = {
   intro: string;
   lines: QuoteLine[];
   sentAt: Date;
-  /** Accept / decline controls rendered below the total (client portal only). */
+  portalKind: string;
+  depositPercent: number;
+  depositNote: string;
+  /** Accept / decline controls below deposit disclaimer (client portal only). */
   responseSlot?: ReactNode;
 };
 
-export function ClientQuoteView({ intro, lines, sentAt, responseSlot }: Props) {
+function ClientQuoteDepositBlock({
+  portalKind,
+  totalPounds,
+  depositPercent,
+  depositNote,
+}: {
+  portalKind: string;
+  totalPounds: number;
+  depositPercent: number;
+  depositNote: string;
+}) {
+  const isSocial = normalizePortalKind(portalKind) === "SOCIAL";
+
+  if (isSocial) {
+    return (
+      <div className="mt-6 border-t border-burgundy/15 pt-5">
+        <p className="m-0 max-w-2xl font-body text-xs leading-relaxed text-burgundy/60">
+          This is a monthly rolling subscription. Your first payment is due before your start date. By accepting this
+          quote you agree to these payment terms.
+        </p>
+      </div>
+    );
+  }
+
+  const { depositPounds, balancePounds, balancePercentDisplay, depositPercentDisplay } = quoteDepositSplit(
+    totalPounds,
+    depositPercent,
+  );
+
+  const customNote = depositNote.trim();
+  const disclaimer = customNote
+    ? customNote
+    : `A ${depositPercentDisplay}% deposit is required to secure your project start date. The remaining balance is due before final files are released. By accepting this quote you agree to these payment terms.`;
+
+  return (
+    <div className="mt-6 space-y-4 border-t border-burgundy/15 pt-5">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+        <span className="font-body text-[11px] font-semibold uppercase tracking-[0.08em] text-burgundy/75">
+          Deposit due now
+        </span>
+        <span className="shrink-0 font-body text-sm font-semibold tabular-nums text-burgundy sm:text-right">
+          {formatPoundsTotal(depositPounds)}{" "}
+          <span className="font-normal text-burgundy/70">({depositPercentDisplay}%)</span>
+        </span>
+      </div>
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+        <span className="font-body text-[11px] font-semibold uppercase tracking-[0.08em] text-burgundy/75">
+          Balance due on completion
+        </span>
+        <span className="shrink-0 font-body text-sm font-semibold tabular-nums text-burgundy sm:text-right">
+          {formatPoundsTotal(balancePounds)}{" "}
+          <span className="font-normal text-burgundy/70">({balancePercentDisplay}%)</span>
+        </span>
+      </div>
+      <p className="m-0 max-w-2xl font-body text-xs leading-relaxed text-burgundy/60">{disclaimer}</p>
+    </div>
+  );
+}
+
+export function ClientQuoteView({
+  intro,
+  lines,
+  sentAt,
+  portalKind,
+  depositPercent,
+  depositNote,
+  responseSlot,
+}: Props) {
   const total = sumQuoteLinePounds(lines);
 
   return (
@@ -53,6 +125,12 @@ export function ClientQuoteView({ intro, lines, sentAt, responseSlot }: Props) {
         <span className="font-body text-sm font-semibold uppercase tracking-[0.06em] text-burgundy/75">Total</span>
         <span className="font-display text-xl tabular-nums text-burgundy md:text-2xl">{formatPoundsTotal(total)}</span>
       </div>
+      <ClientQuoteDepositBlock
+        portalKind={portalKind}
+        totalPounds={total}
+        depositPercent={depositPercent}
+        depositNote={depositNote}
+      />
       {responseSlot ? (
         <div className="mt-8 border-t border-burgundy/10 pt-8">{responseSlot}</div>
       ) : null}

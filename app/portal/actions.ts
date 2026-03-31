@@ -2334,10 +2334,29 @@ export async function saveProjectQuote(projectId: string, formData: FormData): P
   const lines = parseQuoteLineItemsJson(lineItemsJson);
   const normalized = JSON.stringify(lines);
 
+  const depositPctRaw = String(formData.get("depositPercent") ?? "").trim();
+  let depositPercent = 50;
+  if (depositPctRaw) {
+    const n = Number.parseInt(depositPctRaw, 10);
+    if (Number.isFinite(n)) depositPercent = Math.min(100, Math.max(0, n));
+  }
+  const depositNote = String(formData.get("depositNote") ?? "").trim().slice(0, 2000);
+
   await prisma.projectQuote.upsert({
     where: { projectId },
-    create: { projectId, intro: intro.slice(0, 4000), lineItemsJson: normalized },
-    update: { intro: intro.slice(0, 4000), lineItemsJson: normalized },
+    create: {
+      projectId,
+      intro: intro.slice(0, 4000),
+      lineItemsJson: normalized,
+      depositPercent,
+      depositNote,
+    },
+    update: {
+      intro: intro.slice(0, 4000),
+      lineItemsJson: normalized,
+      depositPercent,
+      depositNote,
+    },
   });
   await revalidateProject(projectId);
   return portalFlashOk("Quote saved ✓");

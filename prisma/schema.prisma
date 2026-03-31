@@ -343,6 +343,10 @@ model ProjectQuote {
   quoteStatus         String    @default("PENDING")
   quoteDeclineReason  String    @default("")
   quoteRespondedAt    DateTime?
+  /// Upfront deposit as % of quote total (0–100). Client breakdown uses this; default 50.
+  depositPercent Int     @default(50)
+  /// Optional payment context for the client disclaimer; when empty, a default template is shown.
+  depositNote   String    @default("")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
