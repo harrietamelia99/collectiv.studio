@@ -15,5 +15,7 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     id?: string;
+    portalRole?: "CLIENT" | "AGENCY";
+    agencyRole?: "ISSY" | "HARRIET" | "MAY" | null;
   }
 }

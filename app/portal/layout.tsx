@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
@@ -7,6 +8,7 @@ import { isStudioUser } from "@/lib/portal-access";
 import { PortalBottomSpacer } from "@/components/portal/PortalBottomSpacer";
 import { PortalChrome } from "@/components/portal/PortalChrome";
 import { PortalSmoothScroll } from "@/components/portal/PortalSmoothScroll";
+import { PORTAL_AUTH_SHELL_HEADER } from "@/lib/portal-auth-shell-header";
 import { PortalProviders } from "./providers";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +28,21 @@ export const viewport: Viewport = {
 };
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
+  const isAuthShell = headers().get(PORTAL_AUTH_SHELL_HEADER) === "1";
+
+  if (isAuthShell) {
+    return (
+      <PortalProviders>
+        <PortalSmoothScroll />
+        <div className="portal-app-shell flex min-h-dvh flex-col overscroll-y-contain bg-cream text-burgundy [color-scheme:light] [-webkit-tap-highlight-color:rgba(37,13,24,0.07)] [&_a]:touch-manipulation [&_button]:touch-manipulation">
+          <div className="mx-auto flex w-full max-w-[min(100%,1280px)] flex-1 flex-col px-4 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))] pt-6 sm:px-5 sm:pt-8 md:px-8 md:pt-10 lg:px-10 lg:pb-24 lg:pt-12">
+            {children}
+          </div>
+        </div>
+      </PortalProviders>
+    );
+  }
+
   const session = await getServerSession(authOptions);
   const studio = isStudioUser(session?.user?.email);
   const dbAvailable = await getPortalDatabaseAvailable();

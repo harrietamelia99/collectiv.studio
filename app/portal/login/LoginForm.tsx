@@ -1,13 +1,12 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import Link from "next/link";
 import { ctaButtonClasses } from "@/components/ui/Button";
 
 export function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/portal";
   const registered = searchParams.get("registered");
@@ -30,13 +29,14 @@ export function LoginForm() {
           password,
           redirect: false,
         });
-        setPending(false);
         if (res?.error) {
+          setPending(false);
           setError("Email or password is incorrect.");
           return;
         }
-        router.push(callbackUrl.startsWith("/") ? callbackUrl : "/portal");
-        router.refresh();
+        /** Full navigation: avoids a race where soft navigation runs before the session cookie applies (double-click / no-op). */
+        const safe = callbackUrl.startsWith("/") ? callbackUrl : "/portal";
+        window.location.assign(safe);
       }}
     >
       {registered ? (

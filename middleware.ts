@@ -1,18 +1,30 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { PORTAL_AUTH_SHELL_HEADER } from "@/lib/portal-auth-shell-header";
 import { nextAuthSecret } from "@/lib/nextauth-secret";
 
-export async function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-  if (!pathname.startsWith("/portal")) return NextResponse.next();
-  if (
+function isPortalPublicAuthPath(pathname: string) {
+  return (
     pathname === "/portal/login" ||
     pathname === "/portal/register" ||
     pathname === "/portal/forgot-password" ||
     pathname === "/portal/reset-password"
-  ) {
-    return NextResponse.next();
+  );
+}
+
+/** Lets `app/portal/layout` skip DB + heavy chrome on sign-in pages (faster first paint). */
+function nextWithPortalAuthShell(req: NextRequest) {
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set(PORTAL_AUTH_SHELL_HEADER, "1");
+  return NextResponse.next({ request: { headers: requestHeaders } });
+}
+
+export async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+  if (!pathname.startsWith("/portal")) return NextResponse.next();
+  if (isPortalPublicAuthPath(pathname)) {
+    return nextWithPortalAuthShell(req);
   }
   const secret = nextAuthSecret();
   if (!secret) {

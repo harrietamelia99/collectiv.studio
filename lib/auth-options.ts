@@ -51,29 +51,49 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
+    /** Resolve agency persona once at sign-in so `/api/auth/session` stays DB-free for normal requests. */
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
+        const email = user.email?.trim().toLowerCase() ?? "";
+        if (email && isStudioUser(email)) {
+          token.portalRole = "AGENCY";
+          const m = await prisma.studioTeamMember.findUnique({
+            where: { userId: user.id },
+            select: { personaSlug: true },
+          });
+          token.agencyRole = agencyRoleFromPersona(m?.personaSlug ?? null);
+        } else {
+          token.portalRole = "CLIENT";
+          token.agencyRole = null;
+        }
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user && token.id) {
-        session.user.id = token.id as string;
-        if (token.email) session.user.email = token.email as string;
-        const email = session.user.email;
-        if (email && isStudioUser(email)) {
-          session.user.portalRole = "AGENCY";
-          const m = await prisma.studioTeamMember.findUnique({
-            where: { userId: session.user.id },
-            select: { personaSlug: true },
-          });
-          session.user.agencyRole = agencyRoleFromPersona(m?.personaSlug ?? null);
-        } else {
-          session.user.portalRole = "CLIENT";
-          session.user.agencyRole = null;
-        }
+      if (!session.user || !token.id) return session;
+      session.user.id = token.id as string;
+      if (token.email) session.user.email = token.email as string;
+
+      if (token.portalRole) {
+        session.user.portalRole = token.portalRole as "CLIENT" | "AGENCY";
+        session.user.agencyRole = (token.agencyRole as typeof session.user.agencyRole) ?? null;
+        return session;
+      }
+
+      /** Legacy JWTs (before portalRole on token): fall back to DB once per session fetch. */
+      const email = session.user.email;
+      if (email && isStudioUser(email)) {
+        session.user.portalRole = "AGENCY";
+        const m = await prisma.studioTeamMember.findUnique({
+          where: { userId: session.user.id },
+          select: { personaSlug: true },
+        });
+        session.user.agencyRole = agencyRoleFromPersona(m?.personaSlug ?? null);
+      } else {
+        session.user.portalRole = "CLIENT";
+        session.user.agencyRole = null;
       }
       return session;
     },

@@ -143,6 +143,7 @@ export function Navbar() {
               </a>
               <Link
                 href={portalAccountHref}
+                prefetch={false}
                 className={`cc-desktop-flex hidden text-burgundy transition-[transform,opacity] duration-[0.18s] hover:translate-y-[-3px] hover:opacity-85 lg:flex ${
                   portalActive ? "underline underline-offset-4" : ""
                 }`}
@@ -294,6 +295,7 @@ export function Navbar() {
               </a>
               <Link
                 href={portalAccountHref}
+                prefetch={false}
                 onClick={() => setOpen(false)}
                 className={`inline-flex items-center gap-2.5 font-body text-[12px] font-normal transition-colors hover:text-burgundy ${
                   portalActive ? "text-burgundy" : "text-burgundy/80"
