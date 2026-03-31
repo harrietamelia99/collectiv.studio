@@ -176,10 +176,10 @@ export async function emailNotifyClientWelcomeAfterSelfRegistration(opts: {
   const html = collectivEmailShell({
     greetingHtml: `<p style="margin:0 0 16px;font-size:15px;">Hi ${escapeHtml(name)},</p>`,
     bodyParagraphsHtml: [
-      "Your Collectiv. Studio client portal account is set up and ready.",
-      "The agency will be in touch with next steps — keep an eye on your inbox.",
+      "Thank you for registering — your Collectiv. Studio client portal account is ready.",
+      "We’re delighted you’re here. The team will be in touch soon with next steps; keep an eye on your inbox.",
     ],
-    cta: { href: loginUrl, label: "Sign in" },
+    cta: { href: loginUrl, label: "Sign In" },
   });
   await sendBrandedTransactional({
     to: opts.to.trim().toLowerCase(),
@@ -189,7 +189,10 @@ export async function emailNotifyClientWelcomeAfterSelfRegistration(opts: {
   });
 }
 
-/** Issy (isabella persona) when a client registers; falls back to STUDIO_NOTIFICATION_EMAIL / first STUDIO_EMAIL if no Issy row. */
+/**
+ * Issy (isabella persona) when a client **self-registers** at `/portal/register`.
+ * Falls back to STUDIO_NOTIFICATION_EMAIL / first STUDIO_EMAIL if no Issy row.
+ */
 export async function emailNotifyStudioNewClientRegistered(opts: {
   clientEmail: string;
   clientName: string | null;
@@ -223,7 +226,7 @@ export async function emailNotifyStudioNewClientRegistered(opts: {
   });
   await sendBrandedTransactional({
     to,
-    subject: "New client registered on the portal",
+    subject: "New client registered",
     html,
     logTag: "studio-new-client",
   });

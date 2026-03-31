@@ -1,10 +1,8 @@
-import { emailNotifyStudioNewClientRegistered } from "@/lib/email-notifications";
 import { isSafeWebhookUrl } from "@/lib/webhook-url";
 
 /**
- * Notify the studio when a client registers.
- * - Set `PORTAL_STUDIO_NOTIFY_WEBHOOK` for Zapier/Make (or any POST endpoint).
- * - With `RESEND_API_KEY`, sends a branded email to Issy (isabella persona), with fallback to `STUDIO_NOTIFICATION_EMAIL` or first `STUDIO_EMAIL`.
+ * Notify the studio when a client registers (webhook). Issy’s Resend email for **self-service** `/portal/register`
+ * is sent separately from `registerUser` via `emailNotifyStudioNewClientRegistered`.
  */
 export async function notifyStudioClientRegistered(payload: {
   email: string;
@@ -38,12 +36,6 @@ export async function notifyStudioClientRegistered(payload: {
       console.warn("[portal] PORTAL_STUDIO_NOTIFY_WEBHOOK rejected by URL safety check");
     }
   }
-
-  await emailNotifyStudioNewClientRegistered({
-    clientEmail: payload.email,
-    clientName: payload.name,
-    clientPhone: payload.phone ?? null,
-  });
 
   if (!url && !process.env.RESEND_API_KEY?.trim() && process.env.NODE_ENV === "development") {
     // eslint-disable-next-line no-console
