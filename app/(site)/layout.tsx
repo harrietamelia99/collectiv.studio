@@ -2,6 +2,7 @@ import { Footer } from "@/components/layout/Footer";
 import { LaunchSignupModal } from "@/components/layout/LaunchSignupModal";
 import { Navbar } from "@/components/layout/Navbar";
 import { SiteChatWidget } from "@/components/layout/SiteChatWidget";
+import { SiteSessionProvider } from "./site-session-provider";
 
 export default function SiteLayout({
   children,
@@ -9,7 +10,7 @@ export default function SiteLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
+    <SiteSessionProvider>
       <Navbar />
       <main id="top" className="cc-site-main pt-[92px] lg:pt-[100px]">
         {children}
@@ -17,6 +18,6 @@ export default function SiteLayout({
       <Footer />
       <LaunchSignupModal />
       <SiteChatWidget />
-    </>
+    </SiteSessionProvider>
   );
 }

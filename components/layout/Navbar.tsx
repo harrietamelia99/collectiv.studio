@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { ctaButtonClasses } from "@/components/ui/Button";
 import { Logo } from "@/components/ui/Logo";
 import { AccountIcon, InstagramIcon } from "@/components/ui/SocialIcons";
@@ -31,8 +32,12 @@ function NavLink({
 
 export function Navbar() {
   const pathname = usePathname();
+  const { status } = useSession();
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLElement>(null);
+
+  /** Logged-out (and while session is loading): send users straight to login. */
+  const portalAccountHref = status === "authenticated" ? "/portal" : "/portal/login";
 
   useEffect(() => {
     setOpen(false);
@@ -137,11 +142,11 @@ export function Navbar() {
                 <InstagramIcon className="h-5 w-5" />
               </a>
               <Link
-                href="/portal"
+                href={portalAccountHref}
                 className={`cc-desktop-flex hidden text-burgundy transition-[transform,opacity] duration-[0.18s] hover:translate-y-[-3px] hover:opacity-85 lg:flex ${
                   portalActive ? "underline underline-offset-4" : ""
                 }`}
-                aria-label="Client portal"
+                aria-label={status === "authenticated" ? "Client portal" : "Sign in to client portal"}
               >
                 <AccountIcon className="h-5 w-5" />
               </Link>
@@ -288,11 +293,12 @@ export function Navbar() {
                 <span className="uppercase tracking-[0.08em]">Instagram</span>
               </a>
               <Link
-                href="/portal"
+                href={portalAccountHref}
                 onClick={() => setOpen(false)}
                 className={`inline-flex items-center gap-2.5 font-body text-[12px] font-normal transition-colors hover:text-burgundy ${
                   portalActive ? "text-burgundy" : "text-burgundy/80"
                 }`}
+                aria-label={status === "authenticated" ? "Client portal" : "Sign in to client portal"}
               >
                 <AccountIcon className="h-[18px] w-[18px]" />
                 <span className="uppercase tracking-[0.08em]">Client portal</span>
