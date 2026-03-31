@@ -97,6 +97,7 @@ import { removeOldAvatarFile, saveClientAvatarFile } from "@/lib/portal-client-a
 import { copyUserBrandKitToNewProject, upsertUserBrandKitFromBrandingProject } from "@/lib/user-brand-kit-sync";
 import {
   notifyClientAccountVerified,
+  notifyClientWorkspaceUnlocked,
   notifyClientCalendarContentAdded,
   notifyClientCalendarPostRemoved,
   notifyClientDiscoveryApproved,
@@ -206,6 +207,7 @@ function canClientUseBrandKitUploads(project: {
   clientVerifiedAt: Date | null;
   clientContractSignedAt: Date | null;
   studioDepositMarkedPaidAt: Date | null;
+  workspaceUnlockedAt?: Date | null;
 }): boolean {
   if (!clientHasFullPortalAccess(project)) return false;
   if (project.discoveryApprovedAt) return true;
@@ -1590,7 +1592,55 @@ export async function verifyClient(projectId: string, formData?: FormData): Prom
   await revalidateProject(projectId);
 }
 
-/** Studio: mark client contract signed (granular gate). Social-only needs this alone for full access. */
+/** Issy only: open full hub after contract + deposit rules met; email + client bell notification. */
+export async function unlockClientWorkspaceAndNotify(
+  projectId: string,
+  _formData?: FormData,
+): Promise<PortalFormFlash> {
+  void _formData;
+  if (!(await sessionStudioPersonaIsIssy())) {
+    return portalFlashErr("You don’t have permission to unlock this workspace.");
+  }
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    select: {
+      userId: true,
+      portalKind: true,
+      clientContractSignedAt: true,
+      studioDepositMarkedPaidAt: true,
+      workspaceUnlockedAt: true,
+      clientVerifiedAt: true,
+    },
+  });
+  if (!project) {
+    return portalFlashErr("Something went wrong - try again");
+  }
+  if (clientHasFullPortalAccess(project)) {
+    return portalFlashErr("Something went wrong - try again");
+  }
+  if (!project.userId) {
+    return portalFlashErr("The client needs a registered portal account before you can unlock the workspace.");
+  }
+  if (!project.clientContractSignedAt) {
+    return portalFlashErr("Mark the contract as signed first.");
+  }
+  const nk = normalizePortalKind(project.portalKind);
+  const depositRequired = nk !== "SOCIAL";
+  if (depositRequired && !project.studioDepositMarkedPaidAt) {
+    return portalFlashErr("Mark the deposit as paid first.");
+  }
+
+  const now = new Date();
+  await prisma.project.update({
+    where: { id: projectId },
+    data: { workspaceUnlockedAt: now },
+  });
+  await notifyClientWorkspaceUnlocked(projectId);
+  await revalidateProject(projectId);
+  return portalFlashOk("Workspace unlocked ✓");
+}
+
+/** Studio: mark client contract signed (granular gate). Full hub still requires Issy workspace unlock or legacy verify. */
 export async function markClientContractSigned(formData: FormData): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
   if (!isStudioUser(session?.user?.email)) {

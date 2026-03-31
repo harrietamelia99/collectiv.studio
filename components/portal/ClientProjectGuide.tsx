@@ -57,7 +57,8 @@ export function ClientProjectGuide({
           {quoteSent ? (
             <>
               Your quote is on this page below. Once your agreement is signed and any project deposit is paid, we&apos;ll
-              open your full workspace here — the studio confirms that with the &quot;Open full client hub&quot; step.
+              open your full workspace here — the studio will unlock it and notify you when your contract and deposit are
+              complete.
               (Social media subscriptions are rolling — we&apos;ll open your hub when your retainer is live.)
             </>
           ) : (

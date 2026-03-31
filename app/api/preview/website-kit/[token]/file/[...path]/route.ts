@@ -20,6 +20,7 @@ export async function GET(
       id: true,
       portalKind: true,
       clientVerifiedAt: true,
+      workspaceUnlockedAt: true,
       clientContractSignedAt: true,
       studioDepositMarkedPaidAt: true,
     },

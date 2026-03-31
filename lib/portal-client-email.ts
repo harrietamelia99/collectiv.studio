@@ -3,6 +3,7 @@ import { createClientInAppNotificationForProject } from "@/lib/client-in-app-not
 import { labelForChannel, parseCalendarChannelsJson } from "@/lib/calendar-channels";
 import { formatContentCalendarWhen } from "@/lib/format-content-calendar-when";
 import { normalizePortalKind, visiblePortalSections } from "@/lib/portal-project-kind";
+import { workspaceUnlockNextStepParagraph } from "@/lib/portal-workspace-unlock-copy";
 import { isStudioEmailAddress } from "@/lib/portal-studio-users";
 import {
   collectivEmailShell,
@@ -275,6 +276,33 @@ export async function notifyClientQuoteSent(projectId: string): Promise<void> {
     kind: "QUOTE",
     title: "Your quote is ready",
     body: "",
+    href: `/portal/project/${projectId}`,
+  });
+}
+
+/** Issy unlocked full workspace — email + in-app notification. */
+export async function notifyClientWorkspaceUnlocked(projectId: string): Promise<void> {
+  const r = await resolveRecipient(projectId);
+  if (!r) return;
+  const next = workspaceUnlockNextStepParagraph(r.portalKind);
+  const subject = `Your ${r.projectName} workspace is now open`;
+  const html = buildClientAlertHtml({
+    greetingSafe: r.greeting,
+    paragraphs: [
+      escapeHtml(
+        "Great news — your quote and agreement are all sorted. Your project workspace is now open and ready for you.",
+      ),
+      escapeHtml(next),
+    ],
+    ctaPath: `/portal/project/${projectId}`,
+    ctaLabel: "Open my workspace",
+    footerLine: "Signed off as Collectiv. Studio",
+  });
+  await deliverClientEmail(r.email, subject, html);
+  await createClientInAppNotificationForProject(projectId, {
+    kind: "WORKSPACE_UNLOCKED",
+    title: "Your workspace is open",
+    body: "Your workspace is open - see what's next inside your project.",
     href: `/portal/project/${projectId}`,
   });
 }

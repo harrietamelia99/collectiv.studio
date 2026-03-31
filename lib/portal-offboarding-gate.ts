@@ -21,6 +21,7 @@ export async function redirectClientIfOffboardingRequired(
       clientVerifiedAt: true,
       clientContractSignedAt: true,
       studioDepositMarkedPaidAt: true,
+      workspaceUnlockedAt: true,
       studioMarkedCompleteAt: true,
     },
   });

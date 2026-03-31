@@ -75,6 +75,8 @@ model Project {
   contractSignedSnapshotText String?
   /// Studio confirms deposit received — required with contract for full access on non–social-only projects.
   studioDepositMarkedPaidAt DateTime?
+  /// Issy (isabella): unlocks full client workspace after contract (+ deposit when required); triggers email + bell.
+  workspaceUnlockedAt DateTime?
   /// Legacy: previously unlocked the website workstream; website access now follows contract + deposit (`clientHasFullPortalAccess`).
   discoveryApprovedAt DateTime?
   /// JSON map `"stream:slug" -> ISO date` — studio marked they reviewed a workflow step (agency dashboard only).

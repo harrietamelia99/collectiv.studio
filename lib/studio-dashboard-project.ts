@@ -185,7 +185,7 @@ function deriveNextFocus(
   if (project.studioMarkedCompleteAt) return "Project marked complete — offboarding if needed.";
   if (!project.userId) return "Client hasn’t registered yet — follow up on the invite.";
   if (!clientHasFullPortalAccess(project)) {
-    return "Confirm contract (and deposit if required) or use Open full client hub so they can use the portal.";
+    return "When contract (and deposit, if required) are done, use Unlock workspace & notify client on the project page.";
   }
   if (sections.website && !project.websiteKitSignedOff) {
     return "Website kit in progress — colours, fonts, copy, then sign-off.";

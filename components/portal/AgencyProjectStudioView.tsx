@@ -14,7 +14,7 @@ import {
 } from "@/components/portal/AgencyStudioProjectForms";
 import { AgencyIssyDeleteProjectSection } from "@/components/portal/AgencyIssyDeleteProjectSection";
 import { AgencyMarkContractSignedForm } from "@/components/portal/AgencyMarkContractSignedForm";
-import { AgencyOpenFullClientHubButton } from "@/components/portal/AgencyOpenFullClientHubButton";
+import { AgencyUnlockWorkspaceNotifyButton } from "@/components/portal/AgencyUnlockWorkspaceNotifyButton";
 import { AgencyProjectQuotePanel } from "@/components/portal/AgencyProjectQuotePanel";
 import { PhaseProgressBar } from "@/components/portal/PhaseProgressBar";
 import { ResendClientInviteButton } from "@/components/portal/ResendClientInviteButton";
@@ -679,11 +679,12 @@ export async function AgencyProjectStudioView({
                 depositPaid={Boolean(project.studioDepositMarkedPaidAt)}
               />
             ) : null}
-            <AgencyOpenFullClientHubButton
+            <AgencyUnlockWorkspaceNotifyButton
               projectId={project.id}
               depositRequired={showDeposit}
               contractSigned={Boolean(project.clientContractSignedAt)}
               depositPaid={Boolean(project.studioDepositMarkedPaidAt)}
+              workspaceUnlockedAt={project.workspaceUnlockedAt ?? null}
               hubLocked={!portalUnlocked}
             />
           </div>
