@@ -11,9 +11,12 @@ import {
 import { PortalEmptyState } from "@/components/portal/PortalEmptyState";
 import { ClipboardList, FolderKanban } from "lucide-react";
 
-type Props = { createdBanner?: "single" | "pair" | null };
+type Props = {
+  createdBanner?: "single" | "pair" | null;
+  deletedBanner?: "project" | "account" | null;
+};
 
-export function StudioAgencyDashboardOffline({ createdBanner = null }: Props) {
+export function StudioAgencyDashboardOffline({ createdBanner = null, deletedBanner = null }: Props) {
   return (
     <div className="space-y-12">
       {createdBanner === "pair" ? (
@@ -30,6 +33,21 @@ export function StudioAgencyDashboardOffline({ createdBanner = null }: Props) {
           role="status"
         >
           Your new project will show in the client list after the database is available.
+        </div>
+      ) : null}
+      {deletedBanner === "project" ? (
+        <div
+          className="rounded-xl border border-emerald-200/90 bg-emerald-50/80 px-5 py-4 font-body text-sm text-emerald-950 shadow-sm"
+          role="status"
+        >
+          Project deleted successfully.
+        </div>
+      ) : deletedBanner === "account" ? (
+        <div
+          className="rounded-xl border border-emerald-200/90 bg-emerald-50/80 px-5 py-4 font-body text-sm text-emerald-950 shadow-sm"
+          role="status"
+        >
+          Client account deleted successfully.
         </div>
       ) : null}
 

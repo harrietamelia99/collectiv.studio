@@ -4,6 +4,7 @@ import { completeAgencyTodo } from "@/app/portal/agency-actions";
 import { AgencyCreateProjectForm } from "@/components/portal/AgencyCreateProjectForm";
 import { AgencyDashboardAddTodoForm } from "@/components/portal/AgencyDashboardAddTodoForm";
 import { AgencyDashboardCompletedTodoActions } from "@/components/portal/AgencyDashboardCompletedTodoActions";
+import { AgencyIssyDeleteClientAccountButton } from "@/components/portal/AgencyIssyDeleteClientAccountButton";
 import { AgencyTodoDeleteConfirmButton } from "@/components/portal/AgencyTodoDeleteConfirmButton";
 import { StudioAgencyCommsPanels } from "@/components/portal/StudioAgencyCommsPanels";
 import type { CalendarInboxRowUi, ThreadInboxRowUi } from "@/components/portal/StudioAgencyClientInboxSections";
@@ -95,9 +96,13 @@ function dashboardNextFocusForViewer(slug: PersonaSlug, nextFocus: string): stri
   return nextFocus;
 }
 
-type Props = { userId: string; createdBanner?: "single" | "pair" | null };
+type Props = {
+  userId: string;
+  createdBanner?: "single" | "pair" | null;
+  deletedBanner?: "project" | "account" | null;
+};
 
-export async function StudioAgencyDashboard({ userId, createdBanner = null }: Props) {
+export async function StudioAgencyDashboard({ userId, createdBanner = null, deletedBanner = null }: Props) {
   await runSocialUpcomingMonthFillReminders();
 
   const [member, viewer] = await Promise.all([
@@ -564,6 +569,21 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null }: Pr
         >
           Nice — your new project is in the list below. Open it whenever you&apos;re ready to add details or verify your
           client.
+        </div>
+      ) : null}
+      {deletedBanner === "project" ? (
+        <div
+          className="rounded-xl border border-emerald-200/90 bg-emerald-50/80 px-5 py-4 font-body text-sm leading-relaxed text-emerald-950 shadow-sm"
+          role="status"
+        >
+          Project deleted successfully.
+        </div>
+      ) : deletedBanner === "account" ? (
+        <div
+          className="rounded-xl border border-emerald-200/90 bg-emerald-50/80 px-5 py-4 font-body text-sm leading-relaxed text-emerald-950 shadow-sm"
+          role="status"
+        >
+          Client account deleted successfully.
         </div>
       ) : null}
       <div className="space-y-4 sm:space-y-5">
@@ -1151,6 +1171,15 @@ function ProjectCard({
           )}
         </div>
       </div>
+
+      {viewerPersona === "isabella" && card.clientUserId && card.clientAccountEmail ? (
+        <div className="mt-4 w-full border-t border-rose-100/90 pt-4">
+          <AgencyIssyDeleteClientAccountButton
+            clientUserId={card.clientUserId}
+            clientEmail={card.clientAccountEmail}
+          />
+        </div>
+      ) : null}
 
       <div className="mt-auto w-full shrink-0 pt-5 sm:pt-6">
         <Link

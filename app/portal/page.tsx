@@ -36,7 +36,7 @@ import { PortalEmptyState } from "@/components/portal/PortalEmptyState";
 import { PhaseProgressBar } from "@/components/portal/PhaseProgressBar";
 import { AlertCircle, ChevronRight, FolderKanban } from "lucide-react";
 
-type Search = { created?: string };
+type Search = { created?: string; projectDeleted?: string; accountDeleted?: string };
 
 function portalKindIcon(portalKind: string): ComponentType<SVGProps<SVGSVGElement>> {
   switch (normalizePortalKind(portalKind)) {
@@ -239,6 +239,8 @@ export default async function PortalHomePage({ searchParams }: { searchParams?: 
   const studio = isStudioUser(session.user.email);
   const created = searchParams?.created === "1";
   const createdPair = searchParams?.created === "pair";
+  const deletedBanner =
+    searchParams?.projectDeleted === "1" ? ("project" as const) : searchParams?.accountDeleted === "1" ? ("account" as const) : null;
 
   /** Studio logins use the dashboard with every project; everyone else is treated as a client only. */
   if (studio) {
@@ -271,10 +273,14 @@ export default async function PortalHomePage({ searchParams }: { searchParams?: 
               <StudioAgencyDashboard
                 userId={session.user.id}
                 createdBanner={createdPair ? "pair" : created ? "single" : null}
+                deletedBanner={deletedBanner}
               />
             </>
           ) : (
-            <StudioAgencyDashboardOffline createdBanner={createdPair ? "pair" : created ? "single" : null} />
+            <StudioAgencyDashboardOffline
+              createdBanner={createdPair ? "pair" : created ? "single" : null}
+              deletedBanner={deletedBanner}
+            />
           )
         ) : null}
 

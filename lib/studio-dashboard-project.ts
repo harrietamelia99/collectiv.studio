@@ -22,6 +22,9 @@ export type ProjectCardModel = {
   id: string;
   name: string;
   portalKind: string;
+  /** Registered client account linked to this project — Issy-only delete account control. */
+  clientUserId: string | null;
+  clientAccountEmail: string | null;
   clientLabel: string;
   /** Studio-only: assigned admin display name */
   assignedLeadLabel: string | null;
@@ -153,6 +156,8 @@ export function buildStudioProjectCard(
     id: project.id,
     name: project.name,
     portalKind: project.portalKind,
+    clientUserId: project.userId ?? null,
+    clientAccountEmail: project.user?.email?.trim() ?? null,
     clientLabel: clientLabelFromProject(project),
     assignedLeadLabel: assignedLeadLabelFromUser(project.assignedStudioUser ?? null),
     statusText: st.text,

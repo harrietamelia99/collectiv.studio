@@ -2,6 +2,7 @@
 
 import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { agencyTodoDueInCalendarDays } from "@/lib/agency-todo-deadlines";
@@ -609,4 +610,40 @@ export async function toggleStudioWebsiteLiveConfirmed(formData: FormData): Prom
     },
   });
   revalidatePath(`/portal/project/${projectId}`);
+}
+
+/** Issy only — permanently deletes the project and related DB rows (cascade + todos/dismissals). */
+export async function deleteStudioProjectByIssy(formData: FormData): Promise<void> {
+  if (!(await sessionStudioPersonaIsIssy())) return;
+  const projectId = String(formData.get("projectId") ?? "").trim();
+  const confirmName = String(formData.get("confirmName") ?? "").trim();
+  if (!projectId || !confirmName) return;
+  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { name: true } });
+  if (!project || project.name !== confirmName) return;
+  await prisma.$transaction([
+    prisma.studioAgencyInboxDismissal.deleteMany({ where: { projectId } }),
+    prisma.agencyTodo.deleteMany({ where: { projectId } }),
+    prisma.project.delete({ where: { id: projectId } }),
+  ]);
+  revalidatePath("/portal");
+  redirect("/portal?projectDeleted=1");
+}
+
+/** Issy only — deletes a non-studio client user and all owned data (projects cascade). */
+export async function deleteStudioClientTestAccountByIssy(formData: FormData): Promise<void> {
+  if (!(await sessionStudioPersonaIsIssy())) return;
+  const clientUserId = String(formData.get("clientUserId") ?? "").trim();
+  const confirmEmail = String(formData.get("confirmEmail") ?? "").trim().toLowerCase();
+  if (!clientUserId || !confirmEmail) return;
+  const user = await prisma.user.findUnique({
+    where: { id: clientUserId },
+    select: { id: true, email: true },
+  });
+  if (!user || user.email.toLowerCase() !== confirmEmail) return;
+  if (isStudioUser(user.email)) return;
+  const team = await prisma.studioTeamMember.findUnique({ where: { userId: user.id }, select: { id: true } });
+  if (team) return;
+  await prisma.user.delete({ where: { id: user.id } });
+  revalidatePath("/portal");
+  redirect("/portal?accountDeleted=1");
 }

@@ -14,6 +14,7 @@ import {
   toggleStudioWorkflowStepReviewed,
   updateProjectAssignedStudioAdmin,
 } from "@/app/portal/agency-actions";
+import { AgencyIssyDeleteProjectSection } from "@/components/portal/AgencyIssyDeleteProjectSection";
 import { AgencyMarkContractSignedForm } from "@/components/portal/AgencyMarkContractSignedForm";
 import { AgencyOpenFullClientHubButton } from "@/components/portal/AgencyOpenFullClientHubButton";
 import { AgencyProjectQuotePanel } from "@/components/portal/AgencyProjectQuotePanel";
@@ -905,6 +906,7 @@ export async function AgencyProjectStudioView({
               <p className="mt-3 font-body text-sm text-burgundy/60">Client has not confirmed final payment yet.</p>
             )}
           </div>
+          <AgencyIssyDeleteProjectSection projectId={project.id} projectName={project.name} />
         </section>
       ) : null}
     </div>
