@@ -113,9 +113,33 @@ if (!nextAuthUrl.ok) {
 
 const studio = process.env.STUDIO_EMAIL?.trim();
 if (!studio) {
-  warn("STUDIO_EMAIL is empty — agency logins must be listed here (comma-separated)");
+  warn("STUDIO_EMAIL is empty — list every studio login here (comma-separated, lower/upper case ignored when matching)");
 } else {
   good("STUDIO_EMAIL is set");
+  const studioSet = new Set(
+    studio
+      .split(",")
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean),
+  );
+  for (const key of [
+    "STUDIO_PERSONA_ISABELLA_EMAIL",
+    "STUDIO_PERSONA_HARRIET_EMAIL",
+    "STUDIO_PERSONA_MAY_EMAIL",
+  ]) {
+    const persona = process.env[key]?.trim().toLowerCase();
+    if (!persona) {
+      warn(`${key} is unset — set it to the real User email for that persona (see .env.example)`);
+      continue;
+    }
+    if (!studioSet.has(persona)) {
+      warn(
+        `${key} (${persona}) is not in STUDIO_EMAIL — that login will not get studio portal access until you add it`,
+      );
+    } else {
+      good(`${key} is included in STUDIO_EMAIL`);
+    }
+  }
 }
 
 const ut = need("UPLOADTHING_TOKEN");
