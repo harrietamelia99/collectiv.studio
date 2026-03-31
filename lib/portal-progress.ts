@@ -1,7 +1,7 @@
 import type { ContentCalendarItem, Project, ReviewAsset, WebsitePageBrief } from "@prisma/client";
 import type { SocialOnboardingData } from "@/lib/social-onboarding";
 import { clientHasFullPortalAccess } from "@/lib/portal-client-full-access";
-import { parsePageImagePaths } from "@/lib/website-kit-pages";
+import { parsePageImagePaths, parseWebsiteFontPaths } from "@/lib/website-kit-pages";
 import type { ClientWorkflowAccessOptions } from "@/lib/portal-brand-kit-gate";
 import type { AccountBrandKitSlice } from "@/lib/portal-workflow";
 import {
@@ -12,14 +12,7 @@ import {
   workflowStepRowsToHubCards,
 } from "@/lib/portal-workflow";
 
-export function parseWebsiteFontPaths(raw: string): string[] {
-  try {
-    const v = JSON.parse(raw) as unknown;
-    return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
-  } catch {
-    return [];
-  }
-}
+export { parseWebsiteFontPaths };
 
 export function socialProgressPercent(items: Pick<ContentCalendarItem, "clientSignedOff">[]): number {
   if (!items.length) return 0;

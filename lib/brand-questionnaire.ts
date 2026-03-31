@@ -1,5 +1,7 @@
 /** Brand questionnaire v2 — JSON stored in `Project.brandingQuestionnaireJson`. */
 
+import { MAX_STORED_ASSET_URL_OR_PATH_LEN } from "@/lib/portal-asset-constants";
+
 export const BRAND_Q_VERSION = 2 as const;
 
 export const BUSINESS_JOURNEY_OPTIONS = [
@@ -127,8 +129,6 @@ function clamp(s: string, max: number): string {
 }
 
 const MAX_TAG_ITEM_LEN = 80;
-/** UploadThing / legacy paths — must not be truncated to tag length. */
-const MAX_STORED_ASSET_PATH_LEN = 4096;
 
 function asStringArray(x: unknown, maxElementLength: number): string[] {
   if (!Array.isArray(x)) return [];
@@ -161,7 +161,7 @@ export function parseBrandQuestionnaireJson(raw: string | null | undefined): Bra
         colourPreferences: clamp(String(v.colourPreferences ?? ""), 8000),
         visualStyleTags: asStringArray(v.visualStyleTags, MAX_TAG_ITEM_LEN),
         visualInspirationNotes: clamp(String(v.visualInspirationNotes ?? ""), 8000),
-        visualInspirationImagePaths: asStringArray(v.visualInspirationImagePaths, MAX_STORED_ASSET_PATH_LEN).slice(
+        visualInspirationImagePaths: asStringArray(v.visualInspirationImagePaths, MAX_STORED_ASSET_URL_OR_PATH_LEN).slice(
           0,
           5,
         ),
@@ -169,7 +169,7 @@ export function parseBrandQuestionnaireJson(raw: string | null | undefined): Bra
         whatMakesDifferent: clamp(String(v.whatMakesDifferent ?? ""), 8000),
         hasExistingAssets: clamp(String(v.hasExistingAssets ?? ""), 20),
         existingAssetsNotes: clamp(String(v.existingAssetsNotes ?? ""), 8000),
-        existingAssetsFilePaths: asStringArray(v.existingAssetsFilePaths, MAX_STORED_ASSET_PATH_LEN).slice(0, 10),
+        existingAssetsFilePaths: asStringArray(v.existingAssetsFilePaths, MAX_STORED_ASSET_URL_OR_PATH_LEN).slice(0, 10),
       };
     }
     const mission = clamp(String(v.brandMission ?? ""), 8000);

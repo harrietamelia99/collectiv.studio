@@ -1,4 +1,5 @@
 import path from "path";
+import { MAX_STORED_ASSET_URL_OR_PATH_LEN } from "@/lib/portal-asset-constants";
 import { uploadBufferToUploadThing } from "@/lib/uploadthing";
 
 const RASTER_EXT = new Set([".jpg", ".jpeg", ".png", ".webp"]);
@@ -63,6 +64,19 @@ export function safeSegment(name: string): string {
   return name.replace(/[^a-zA-Z0-9._-]+/g, "_").slice(0, 120) || "file";
 }
 
+/** Normalise and validate a value we persist as `filePath` / `imagePath` / logo URL (UploadThing or legacy disk key). */
+export function assertValidStoredPortalUploadRef(stored: string): string {
+  const s = stored.trim();
+  if (!s) throw new Error("Upload succeeded but no file URL was returned.");
+  if (s.length > MAX_STORED_ASSET_URL_OR_PATH_LEN) {
+    throw new Error("Stored file reference exceeds maximum length.");
+  }
+  if (!/^https?:\/\//i.test(s) && !s.includes("/")) {
+    throw new Error("Upload returned an unexpected path format.");
+  }
+  return s;
+}
+
 /**
  * Validates `kind`, uploads to UploadThing, returns public `ufsUrl` for Prisma (same string fields as before).
  */
@@ -75,12 +89,8 @@ export async function saveProjectUpload(
   void projectId;
   const bad = validateUploadExtension(originalName, kind);
   if (bad) throw new Error(bad);
-  const stored = (await uploadBufferToUploadThing(originalName, data)).trim();
-  if (!stored) throw new Error("Upload succeeded but no file URL was returned.");
-  if (!/^https?:\/\//i.test(stored) && !stored.includes("/")) {
-    throw new Error("Upload returned an unexpected path format.");
-  }
-  return stored;
+  const raw = (await uploadBufferToUploadThing(originalName, data)).trim();
+  return assertValidStoredPortalUploadRef(raw);
 }
 
 /** Web font files (woff/woff2/ttf/otf) — not restricted to image/video routes. */
@@ -90,9 +100,8 @@ export async function saveFontUpload(projectId: string, originalName: string, da
   if (!/\.(woff2?|ttf|otf)$/.test(lower)) {
     throw new Error("Fonts must be WOFF, WOFF2, TTF, or OTF.");
   }
-  const stored = (await uploadBufferToUploadThing(originalName, data)).trim();
-  if (!stored) throw new Error("Upload succeeded but no file URL was returned.");
-  return stored;
+  const raw = (await uploadBufferToUploadThing(originalName, data)).trim();
+  return assertValidStoredPortalUploadRef(raw);
 }
 
 /** Map upload / Prisma failures to a short, user-safe message for UI or server-action errors. */

@@ -7,6 +7,7 @@ import type { Prisma } from "@prisma/client";
 import type { Session } from "next-auth";
 import { getServerSession } from "next-auth";
 import bcrypt from "bcryptjs";
+import { MAX_STORED_ASSET_URL_OR_PATH_LEN } from "@/lib/portal-asset-constants";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 import { getProjectForSession, isStudioUser, studioMayAccessProjectSocialCalendar } from "@/lib/portal-access";
@@ -115,7 +116,11 @@ import {
 function parseFontPaths(raw: string): string[] {
   try {
     const v = JSON.parse(raw) as unknown;
-    return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
+    if (!Array.isArray(v)) return [];
+    return v
+      .filter((x): x is string => typeof x === "string")
+      .map((s) => s.trim().slice(0, MAX_STORED_ASSET_URL_OR_PATH_LEN))
+      .filter(Boolean);
   } catch {
     return [];
   }
@@ -1230,27 +1235,26 @@ export async function saveClientProfilePhoto(formData: FormData): Promise<void> 
   });
   if (!user) return;
 
-  let rel: string;
   try {
     const buf = Buffer.from(await file.arrayBuffer());
-    rel = await saveClientAvatarFile(userId, file.name, buf);
-  } catch {
-    return;
-  }
+    const rel = await saveClientAvatarFile(userId, file.name, buf);
+    await removeOldAvatarFile(user.profilePhotoPath);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { profilePhotoPath: rel },
+    });
 
-  await removeOldAvatarFile(user.profilePhotoPath);
-  await prisma.user.update({
-    where: { id: userId },
-    data: { profilePhotoPath: rel },
-  });
-
-  revalidatePath("/portal");
-  const projects = await prisma.project.findMany({
-    where: { userId },
-    select: { id: true },
-  });
-  for (const p of projects) {
-    await revalidateProject(p.id);
+    revalidatePath("/portal");
+    const projects = await prisma.project.findMany({
+      where: { userId },
+      select: { id: true },
+    });
+    for (const p of projects) {
+      await revalidateProject(p.id);
+    }
+  } catch (e) {
+    console.error("[portal upload] saveClientProfilePhoto", e);
+    throw new Error(formatPortalUploadFailureForUser(e));
   }
 }
 
@@ -1305,21 +1309,25 @@ export async function addReviewAsset(formData: FormData): Promise<void> {
     try {
       filePath = await saveProjectUpload(projectId, file.name, buf, "reviewAsset");
     } catch (e) {
-      rethrowPortalUploadAction("addReviewAsset", e);
+      rethrowPortalUploadAction("addReviewAsset upload", e);
     }
   }
 
-  await prisma.reviewAsset.create({
-    data: {
-      projectId,
-      kind,
-      title,
-      notes,
-      filePath,
-    },
-  });
-  await notifyClientReviewAssetAdded(projectId, kind, title);
-  await revalidateProject(projectId);
+  try {
+    await prisma.reviewAsset.create({
+      data: {
+        projectId,
+        kind,
+        title,
+        notes,
+        filePath,
+      },
+    });
+    await notifyClientReviewAssetAdded(projectId, kind, title);
+    await revalidateProject(projectId);
+  } catch (e) {
+    rethrowPortalUploadAction("addReviewAsset persist", e);
+  }
 }
 
 export async function ensureWebsiteKitPreviewToken(projectId: string, formData?: FormData): Promise<void> {

@@ -1,7 +1,7 @@
 import { unlink } from "fs/promises";
 import path from "path";
 import { deleteUploadThingFileByStoredValue, uploadBufferToUploadThing } from "@/lib/uploadthing";
-import { uploadRoot, validateUploadExtension } from "@/lib/portal-uploads";
+import { assertValidStoredPortalUploadRef, uploadRoot, validateUploadExtension } from "@/lib/portal-uploads";
 
 export function portalClientAvatarPublicUrl(userId: string, stored: string): string {
   const s = stored.trim();
@@ -20,7 +20,8 @@ export async function saveClientAvatarFile(
   const bad = validateUploadExtension(originalName, "raster");
   if (bad) throw new Error(bad);
   if (data.length > 4 * 1024 * 1024) throw new Error("Image must be 4MB or smaller.");
-  return uploadBufferToUploadThing(originalName, data);
+  const raw = (await uploadBufferToUploadThing(originalName, data)).trim();
+  return assertValidStoredPortalUploadRef(raw);
 }
 
 export async function removeOldAvatarFile(previousRelative: string | null | undefined): Promise<void> {

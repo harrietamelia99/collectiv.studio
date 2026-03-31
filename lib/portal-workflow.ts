@@ -2,7 +2,7 @@ import type { Project, ReviewAsset, WebsitePageBrief } from "@prisma/client";
 import type { ClientWorkflowAccessOptions } from "@/lib/portal-brand-kit-gate";
 import { parseInspirationLinksJson } from "@/lib/portal-inspiration-links";
 import { hasLockedFinalDesignFiles } from "@/lib/portal-final-files";
-import { parsePageImagePaths } from "@/lib/website-kit-pages";
+import { parsePageImagePaths, parseWebsiteFontPaths } from "@/lib/website-kit-pages";
 import { clientHasFullPortalAccess } from "@/lib/portal-client-full-access";
 import { normalizePortalKind, visiblePortalSections } from "@/lib/portal-project-kind";
 import { legacyBrandingQuestionnaireFilled } from "@/lib/brand-questionnaire";
@@ -47,15 +47,6 @@ export type AccountBrandKitSlice = {
   websiteFontPaths: string;
   websiteLogoPath: string | null;
 } | null;
-
-function parseWebsiteFontPaths(raw: string): string[] {
-  try {
-    const v = JSON.parse(raw) as unknown;
-    return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
-  } catch {
-    return [];
-  }
-}
 
 function fontsOk(project: Pick<Project, "websiteFontPaths">): boolean {
   return parseWebsiteFontPaths(project.websiteFontPaths).length > 0;

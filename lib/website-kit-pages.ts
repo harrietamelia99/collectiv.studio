@@ -1,3 +1,23 @@
+import { MAX_STORED_ASSET_URL_OR_PATH_LEN } from "@/lib/portal-asset-constants";
+
+function normalizeJsonAssetPathString(s: string): string {
+  return s.trim().slice(0, MAX_STORED_ASSET_URL_OR_PATH_LEN);
+}
+
+/** Parse `Project.websiteFontPaths` JSON — each entry may be an UploadThing URL or legacy key. */
+export function parseWebsiteFontPaths(raw: string | null | undefined): string[] {
+  try {
+    const v = JSON.parse(raw ?? "[]") as unknown;
+    if (!Array.isArray(v)) return [];
+    return v
+      .filter((x): x is string => typeof x === "string")
+      .map((s) => normalizeJsonAssetPathString(s))
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
 /** Parse `Project.websitePageLabels` JSON into a string array. */
 export function parseWebsitePageLabels(raw: string | null | undefined, fallbackCount: number): string[] {
   try {
@@ -21,7 +41,11 @@ function padLabels(labels: string[], count: number): string[] {
 export function parsePageImagePaths(raw: string | null | undefined): string[] {
   try {
     const v = JSON.parse(raw ?? "[]") as unknown;
-    return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
+    if (!Array.isArray(v)) return [];
+    return v
+      .filter((x): x is string => typeof x === "string")
+      .map((s) => normalizeJsonAssetPathString(s))
+      .filter(Boolean);
   } catch {
     return [];
   }

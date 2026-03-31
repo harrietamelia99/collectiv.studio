@@ -1,3 +1,5 @@
+import { MAX_STORED_ASSET_URL_OR_PATH_LEN } from "@/lib/portal-asset-constants";
+
 export const LOGO_VARIATION_KIND_OPTIONS = [
   { value: "secondary", label: "Secondary logo" },
   { value: "submark", label: "Submark" },
@@ -24,7 +26,8 @@ export function parseWebsiteLogoVariations(raw: string | null | undefined): Webs
     for (const row of v) {
       if (!row || typeof row !== "object") continue;
       const o = row as Record<string, unknown>;
-      const path = typeof o.path === "string" ? o.path.trim() : "";
+      const path =
+        typeof o.path === "string" ? o.path.trim().slice(0, MAX_STORED_ASSET_URL_OR_PATH_LEN) : "";
       if (!path) continue;
       let kind = typeof o.kind === "string" ? o.kind.trim() : "other";
       if (!ALLOWED_KINDS.has(kind)) kind = "other";
