@@ -364,10 +364,7 @@ export default async function ProjectOverviewPage({ params }: Props) {
     const agencyNav: HubNavItem[] = [
       { href: "#agency-project-header", label: "Overview", Icon: HubIconGrid },
       ...(slug === "isabella"
-        ? ([
-            { href: "#agency-onboarding", label: "Onboarding", Icon: HubIconChecklist },
-            { href: "#agency-project-quote", label: "Quote", Icon: HubIconFolder },
-          ] as HubNavItem[])
+        ? ([{ href: "#agency-onboarding", label: "Onboarding", Icon: HubIconChecklist }] as HubNavItem[])
         : []),
       { href: "#agency-project-steps", label: slug === "may" ? "Social & steps" : "Project steps", Icon: HubIconWebsite },
       ...(slug === "isabella"

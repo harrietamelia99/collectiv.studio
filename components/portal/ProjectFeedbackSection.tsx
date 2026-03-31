@@ -36,6 +36,8 @@ type Props = {
    * messages read as “yours” in the client-styled card).
    */
   messagesThreadRole?: "client" | "studio";
+  /** Replaces the default thread intro (e.g. agency project page copy). */
+  feedbackDescription?: string;
 };
 
 function studioInitials(name: string): string {
@@ -220,8 +222,10 @@ export function ProjectFeedbackSection({
   conversationParticipants = null,
   studioCanDeleteMessages = false,
   messagesThreadRole,
+  feedbackDescription,
 }: Props) {
   const descriptionText =
+    feedbackDescription ??
     "Leave notes for the studio or reply in the same thread. Use this alongside sign-offs so nothing gets lost in email.";
 
   const threadRole = messagesThreadRole ?? (clientVisualEmphasis ? "client" : "studio");

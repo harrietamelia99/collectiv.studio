@@ -1,13 +1,11 @@
 import Link from "next/link";
 import type { ContentCalendarItem, Project, ProjectQuote, ReviewAsset, WebsitePageBrief } from "@prisma/client";
 import {
-  markClientContractSigned,
   markProjectComplete,
   markStudioDepositReceived,
   resetClientFinalPaymentAcknowledgment,
   setPortalKind,
   setProjectPaymentStatus,
-  verifyClient,
 } from "@/app/portal/actions";
 import {
   addProjectInternalNote,
@@ -16,6 +14,8 @@ import {
   toggleStudioWorkflowStepReviewed,
   updateProjectAssignedStudioAdmin,
 } from "@/app/portal/agency-actions";
+import { AgencyMarkContractSignedForm } from "@/components/portal/AgencyMarkContractSignedForm";
+import { AgencyOpenFullClientHubButton } from "@/components/portal/AgencyOpenFullClientHubButton";
 import { AgencyProjectQuotePanel } from "@/components/portal/AgencyProjectQuotePanel";
 import { PhaseProgressBar } from "@/components/portal/PhaseProgressBar";
 import { ResendClientInviteButton } from "@/components/portal/ResendClientInviteButton";
@@ -23,6 +23,7 @@ import { ProjectFeedbackSection } from "@/components/portal/ProjectFeedbackSecti
 import { PORTAL_CLIENT_INPUT_CLASS } from "@/components/portal/PortalSectionCard";
 import { ctaButtonClasses } from "@/components/ui/Button";
 import { clientJourneyCombinedProgressPercent } from "@/lib/agency-combined-progress";
+import { agencyStepClientActivityLine } from "@/lib/agency-step-client-activity";
 import { buildClientConversationStripData } from "@/lib/portal-conversation-strip";
 import { clientHasFullPortalAccess } from "@/lib/portal-client-full-access";
 import { PAYMENT_STATUSES, paymentStatusStudioLabel } from "@/lib/portal-payment-status";
@@ -154,6 +155,9 @@ function AgencyStepCard({
   project,
   reviewedMap,
   portalUnlocked,
+  assets,
+  pageBriefs,
+  accountBrandKit,
 }: {
   projectId: string;
   stream: "website" | "branding" | "signage" | "print";
@@ -162,12 +166,25 @@ function AgencyStepCard({
   project: Project;
   reviewedMap: Record<string, string>;
   portalUnlocked: boolean;
+  assets: ReviewAsset[];
+  pageBriefs: Pick<WebsitePageBrief, "pageIndex" | "headline" | "bodyCopy" | "imagePaths">[];
+  accountBrandKit: AccountBrandKitSlice;
 }) {
   const slug = row.slug;
   const key = `${stream}:${slug}`;
   const reviewed = studioHasReviewedStep(reviewedMap, key);
   const help = AGENCY_STEP_HELP[key] ?? "Open this step in the portal to work with the client.";
   const status = clientJourneyLabel(row, stream, slug, project, portalUnlocked);
+  const clientActivity = agencyStepClientActivityLine({
+    stream,
+    slug,
+    row,
+    project,
+    portalUnlocked,
+    assets,
+    pageBriefs,
+    accountKit: accountBrandKit,
+  });
   const previewFeedback =
     stream === "website" && slug === "preview" ? project.websitePreviewClientFeedback?.trim() : null;
 
@@ -179,6 +196,9 @@ function AgencyStepCard({
             Step {stepNo} · {status}
           </p>
           <h3 className="mt-1 font-display text-lg tracking-[-0.02em] text-burgundy">{row.label}</h3>
+          <p className="mt-1.5 inline-flex max-w-prose rounded-md border border-burgundy/10 bg-burgundy/[0.04] px-2.5 py-1 font-body text-[11px] leading-snug text-burgundy/75">
+            {clientActivity}
+          </p>
           <p className="mt-2 font-body text-sm leading-relaxed text-burgundy/70">{help}</p>
           {previewFeedback ? (
             <div className="mt-3 rounded-lg border border-amber-200/80 bg-amber-50/60 px-3 py-2 font-body text-sm text-amber-950/90">
@@ -240,6 +260,9 @@ function WorkflowBlock({
   reviewedMap,
   startStepNo,
   portalUnlocked,
+  assets,
+  pageBriefs,
+  accountBrandKit,
 }: {
   title: string;
   projectId: string;
@@ -249,6 +272,9 @@ function WorkflowBlock({
   reviewedMap: Record<string, string>;
   startStepNo: number;
   portalUnlocked: boolean;
+  assets: ReviewAsset[];
+  pageBriefs: Pick<WebsitePageBrief, "pageIndex" | "headline" | "bodyCopy" | "imagePaths">[];
+  accountBrandKit: AccountBrandKitSlice;
 }) {
   return (
     <div className="space-y-4">
@@ -264,6 +290,9 @@ function WorkflowBlock({
             project={project}
             reviewedMap={reviewedMap}
             portalUnlocked={portalUnlocked}
+            assets={assets}
+            pageBriefs={pageBriefs}
+            accountBrandKit={accountBrandKit}
           />
         ))}
       </ul>
@@ -378,6 +407,9 @@ export async function AgencyProjectStudioView({
         reviewedMap={reviewedMap}
         startStepNo={stepNo}
         portalUnlocked={portalUnlocked}
+        assets={assets}
+        pageBriefs={websitePageBriefs}
+        accountBrandKit={accountBrandKit}
       />,
     );
     stepNo += brandingRows.length;
@@ -394,6 +426,9 @@ export async function AgencyProjectStudioView({
         reviewedMap={reviewedMap}
         startStepNo={stepNo}
         portalUnlocked={portalUnlocked}
+        assets={assets}
+        pageBriefs={websitePageBriefs}
+        accountBrandKit={accountBrandKit}
       />,
     );
     stepNo += websiteRows.length;
@@ -410,6 +445,9 @@ export async function AgencyProjectStudioView({
         reviewedMap={reviewedMap}
         startStepNo={stepNo}
         portalUnlocked={portalUnlocked}
+        assets={assets}
+        pageBriefs={websitePageBriefs}
+        accountBrandKit={accountBrandKit}
       />,
     );
     stepNo += signageRows.length;
@@ -426,6 +464,9 @@ export async function AgencyProjectStudioView({
         reviewedMap={reviewedMap}
         startStepNo={stepNo}
         portalUnlocked={portalUnlocked}
+        assets={assets}
+        pageBriefs={websitePageBriefs}
+        accountBrandKit={accountBrandKit}
       />,
     );
     stepNo += printRows.length;
@@ -519,11 +560,7 @@ export async function AgencyProjectStudioView({
               </div>
             </div>
             <div className="mt-6 max-w-xl">
-              <PhaseProgressBar
-                label="Overall project progress (matches client steps)"
-                percent={combinedPct}
-                hint="Weighted across every active workstream on this project."
-              />
+              <PhaseProgressBar label="Overall project progress" percent={combinedPct} />
             </div>
           </div>
           <div className="flex w-full flex-col gap-4 border-t border-zinc-200/90 pt-6 lg:w-80 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
@@ -610,8 +647,8 @@ export async function AgencyProjectStudioView({
         <section id="agency-onboarding" className="scroll-mt-28 rounded-xl border border-zinc-200/90 bg-white p-5 shadow-sm sm:p-6">
           <h2 className="font-display text-lg tracking-[-0.02em] text-burgundy">Onboarding &amp; hub access</h2>
           <p className="mt-1 font-body text-sm text-burgundy/60">
-            Contract and deposit gates match what the client needs before the workspace opens. Hub unlocks automatically
-            when those conditions are met.
+            Quote, contract, and deposit live here. The client&apos;s workspace opens when your project rules are
+            satisfied.
           </p>
           <AgencyProjectQuotePanel
             key={projectQuote?.updatedAt?.getTime() ?? `new-${project.id}`}
@@ -623,9 +660,8 @@ export async function AgencyProjectStudioView({
           <div id="agency-contract-terms" className="scroll-mt-28 mt-8 border-t border-zinc-100 pt-8">
             <h3 className="font-display text-base tracking-[-0.02em] text-burgundy">Client contract text</h3>
             <p className="mt-1 font-body text-xs leading-relaxed text-burgundy/55">
-              The client sees this in full on their project page and must scroll through it before signing. If they already
-              signed in the portal, the exact wording they agreed to stays stored as a snapshot — edits here only change what
-              new clients see before signing.
+              Shown on the client project page before they sign. After someone signs, their snapshot is kept; changes here
+              apply to new signers only.
             </p>
             <form action={saveProjectContractTerms.bind(null, project.id)} className="mt-4 space-y-3">
               <textarea
@@ -681,13 +717,11 @@ export async function AgencyProjectStudioView({
               <dd className="mt-1 font-medium text-burgundy">{portalUnlocked ? "Unlocked" : "Locked"}</dd>
             </div>
           </dl>
-          <div className="mt-5 flex flex-wrap gap-2">
-            <form action={markClientContractSigned}>
-              <input type="hidden" name="projectId" value={project.id} />
-              <button type="submit" className={ctaButtonClasses({ variant: "outline", size: "sm" })}>
-                {project.clientContractSignedAt ? "Clear contract signed" : "Mark contract signed"}
-              </button>
-            </form>
+          <div className="mt-5 flex flex-wrap items-start gap-2">
+            <AgencyMarkContractSignedForm
+              projectId={project.id}
+              contractSigned={Boolean(project.clientContractSignedAt)}
+            />
             {showDeposit ? (
               <form action={markStudioDepositReceived}>
                 <input type="hidden" name="projectId" value={project.id} />
@@ -696,22 +730,19 @@ export async function AgencyProjectStudioView({
                 </button>
               </form>
             ) : null}
-            {!portalUnlocked ? (
-              <form action={verifyClient.bind(null, project.id)}>
-                <button type="submit" className={ctaButtonClasses({ variant: "burgundy", size: "sm" })}>
-                  Open full client hub
-                </button>
-              </form>
-            ) : null}
+            <AgencyOpenFullClientHubButton
+              projectId={project.id}
+              depositRequired={showDeposit}
+              contractSigned={Boolean(project.clientContractSignedAt)}
+              depositPaid={Boolean(project.studioDepositMarkedPaidAt)}
+              hubLocked={!portalUnlocked}
+            />
           </div>
         </section>
       ) : null}
 
       <section id="agency-project-steps" className="scroll-mt-28 rounded-xl border border-zinc-200/90 bg-white p-5 shadow-sm sm:p-6">
         <h2 className="font-display text-xl tracking-[-0.02em] text-burgundy">Project steps</h2>
-        <p className="mt-1 font-body text-sm text-burgundy/60">
-          Same order as the client portal. Status reflects the client journey; use Open step to work in context.
-        </p>
         <div className="mt-8 space-y-12">
           {!isMay ? stepBlocks : null}
           {vis.social ? (
@@ -747,7 +778,7 @@ export async function AgencyProjectStudioView({
             <h2 className="font-display text-lg tracking-[-0.02em] text-burgundy">Subscription &amp; payment status</h2>
           </div>
           <p className="mt-2 font-body text-sm text-burgundy/60">
-            This is exactly what the client sees on their dashboard after their hub is open — keep it accurate.
+            The client sees this on their dashboard once their hub is open.
           </p>
           <form action={setProjectPaymentStatus} className="mt-6 flex max-w-xl flex-col gap-4">
             <input type="hidden" name="projectId" value={project.id} />
@@ -788,6 +819,7 @@ export async function AgencyProjectStudioView({
           conversationParticipants={conversationStrip}
           studioCanDeleteMessages
           messagesThreadRole="studio"
+          feedbackDescription="Client messages and feedback appear here. Reply to keep everything in one place."
         />
       </section>
 

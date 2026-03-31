@@ -37,8 +37,7 @@ export function AgencyProjectQuotePanel({
     <div id="agency-project-quote" className="scroll-mt-28 mt-8 border-t border-zinc-100 pt-8">
       <h3 className="font-display text-base tracking-[-0.02em] text-burgundy">Client quote</h3>
       <p className="mt-1 font-body text-xs leading-relaxed text-burgundy/55">
-        One-line summary of what you&apos;re delivering, then line items with amounts in pounds. The client sees this
-        above the contract once you send the quote; save drafts anytime.
+        Short summary plus line items in pounds. After you send, the client sees this above their contract.
       </p>
 
       <form action={saveProjectQuote.bind(null, projectId)} className="mt-4 space-y-4">
@@ -151,10 +150,7 @@ export function AgencyProjectQuotePanel({
             Add at least one line with a description and price, then save, before sending.
           </p>
         ) : (
-          <p className="mt-2 font-body text-xs text-burgundy/55">
-            Emails the client that their quote is ready and records the send time. Save changes first if you edited the
-            quote.
-          </p>
+          <p className="mt-2 font-body text-xs text-burgundy/55">Save first if you changed the quote, then send.</p>
         )}
       </form>
     </div>
