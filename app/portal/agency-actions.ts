@@ -7,6 +7,7 @@ import { authOptions } from "@/lib/auth-options";
 import { agencyTodoDueInCalendarDays } from "@/lib/agency-todo-deadlines";
 import { prisma } from "@/lib/prisma";
 import { isStudioUser } from "@/lib/portal-access";
+import { emailNotifyClientContractReadyToSign } from "@/lib/email-notifications";
 import { getPortalPublicOrigin, sendClientPortalInviteEmail } from "@/lib/portal-client-email";
 import { sessionStudioPersonaIsIssy } from "@/lib/studio-issy-guard";
 import {
@@ -497,11 +498,35 @@ export async function saveProjectContractTerms(projectId: string, formData: Form
   if (!project) return;
   const text = String(formData.get("contractTermsText") ?? "");
   if (text.length > 500_000) return;
+  const prevTrim = (project.contractTermsText ?? "").trim();
+  const nextTrim = text.trim();
   await prisma.project.update({
     where: { id: projectId },
     data: { contractTermsText: text },
   });
   revalidatePath(`/portal/project/${projectId}`);
+
+  if (nextTrim && prevTrim.length === 0) {
+    const full = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: {
+        user: { select: { email: true, name: true, businessName: true, passwordHash: true } },
+      },
+    });
+    const to = full?.user?.email?.trim().toLowerCase();
+    if (to && full?.user?.passwordHash) {
+      const plain =
+        full.user.name?.trim().split(/\s+/)[0] ||
+        full.user.businessName?.trim() ||
+        "there";
+      await emailNotifyClientContractReadyToSign({
+        to,
+        greeting: plain,
+        projectName: full.name,
+        projectId,
+      });
+    }
+  }
 }
 
 const REOPEN_STREAMS = new Set<string>(["website", "branding", "signage", "print"]);

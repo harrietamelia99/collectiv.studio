@@ -1,5 +1,11 @@
 "use server";
 
+/**
+ * Social batch/calendar actions trigger client and team emails via
+ * `notifyClientCalendarPostReadyForReview` and `notifyStudioTeamCalendarMonthFullyApproved`
+ * (implemented in `lib/portal-client-email.ts` and `lib/studio-inbox-notify.ts` → `lib/email-notifications.ts`).
+ */
+
 import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";

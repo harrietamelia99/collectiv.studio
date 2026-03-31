@@ -1,19 +1,19 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import {
+  emailNotifyAssigneesCalendarClientComment,
+  emailNotifyAssigneesClientMessage,
+  emailNotifyIssyClientSignedContract,
+  emailNotifyMayClientApprovedAllPostsForMonth,
+  emailNotifyMayClientApprovedSocialPost,
+  emailNotifyMayClientRequestedSocialChanges,
+  emailNotifyTeamMemberTaggedInChat,
+  emailsForUserIds,
+  resolveIssyContractNotificationEmails,
+} from "@/lib/email-notifications";
 import { normalizePortalKind } from "@/lib/portal-project-kind";
-import { getPortalPublicOrigin } from "@/lib/portal-client-email";
-import { studioEmailSet } from "@/lib/portal-studio-users";
-import { sendResendEmail } from "@/lib/resend-email";
 
 const PREVIEW = 240;
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
 
 type TeamRow = { userId: string; personaSlug: string };
 
@@ -105,6 +105,16 @@ export async function notifyStudioTeamClientMessage(
       }),
     ),
   );
+
+  const to = await emailsForUserIds(userIds);
+  if (to.length > 0) {
+    await emailNotifyAssigneesClientMessage({
+      recipientEmails: to,
+      projectName,
+      projectId,
+      messagePreview: preview,
+    });
+  }
 }
 
 /** Notify when a client leaves calendar feedback (social / multi projects). */
@@ -137,6 +147,14 @@ export async function notifyStudioTeamCalendarFeedback(
       }),
     ),
   );
+
+  await emailNotifyMayClientRequestedSocialChanges({
+    projectName,
+    projectId,
+    calendarItemId,
+    postLabel,
+    feedbackText: notesPreview,
+  });
 }
 
 /** Client left a comment on a post without changing status. */
@@ -168,6 +186,18 @@ export async function notifyStudioTeamCalendarClientComment(
       }),
     ),
   );
+
+  const to = await emailsForUserIds(userIds);
+  if (to.length > 0) {
+    await emailNotifyAssigneesCalendarClientComment({
+      recipientEmails: to,
+      projectName,
+      projectId,
+      calendarItemId,
+      postLabel,
+      commentText: commentPreview,
+    });
+  }
 }
 
 /** Client approved a single calendar post (in-app bell). */
@@ -198,6 +228,13 @@ export async function notifyStudioTeamCalendarPostApproved(
       }),
     ),
   );
+
+  await emailNotifyMayClientApprovedSocialPost({
+    projectName,
+    projectId,
+    calendarItemId,
+    postLabel,
+  });
 }
 
 /** Client used Approve all for a month. */
@@ -228,28 +265,16 @@ export async function notifyStudioTeamCalendarMonthFullyApproved(
       }),
     ),
   );
+
+  await emailNotifyMayClientApprovedAllPostsForMonth({
+    projectName,
+    projectId,
+    monthLabel,
+    count,
+  });
 }
 
 const TEAM_MENTION_IN_APP_BODY_MAX = 8000;
-
-function teamChatMentionEmailHtml(opts: {
-  authorDisplay: string;
-  sentAtLabel: string;
-  messageBody: string;
-  openChatUrl: string;
-}): string {
-  const msg = escapeHtml(opts.messageBody);
-  return `<!DOCTYPE html><html><body style="font-family:Georgia,serif;background:#f7f4f2;color:#250d18;padding:24px;">
-<p style="margin:0 0 12px;font-size:15px;line-height:1.55;">You were mentioned in <strong>internal team chat</strong> (not a client thread).</p>
-<p style="margin:0;font-size:15px;line-height:1.55;"><strong>${escapeHtml(opts.authorDisplay)}</strong> mentioned you.</p>
-<p style="margin:8px 0 0;font-size:14px;color:#5c4a4e;">Sent: ${escapeHtml(opts.sentAtLabel)}</p>
-<div style="margin:20px 0;padding:16px;background:#fff;border:1px solid #e8e0dc;border-radius:8px;">
-<p style="margin:0;font-size:14px;line-height:1.6;white-space:pre-wrap;color:#250d18;">${msg}</p>
-</div>
-<p style="margin:24px 0 0;"><a href="${escapeHtml(opts.openChatUrl)}" style="display:inline-block;padding:12px 20px;background:#250d18;color:#f7f4f2;text-decoration:none;font-size:14px;border-radius:4px;font-weight:600;">Open team chat</a></p>
-<p style="margin:20px 0 0;font-size:12px;color:#8a787c;">— Collectiv. Studio · Agency portal</p>
-</body></html>`;
-}
 
 /**
  * Internal team chat @mentions only — in-app notification + one email per tagged teammate (not the author).
@@ -266,9 +291,6 @@ export async function notifyStudioTeamMention(
   const title = `${authorDisplay} mentioned you in team chat`.slice(0, 200);
   const inAppBody = messageBody.slice(0, TEAM_MENTION_IN_APP_BODY_MAX);
   const href = "/portal#studio-team-chat";
-  const sentAt = new Date();
-  const sentAtLabel = sentAt.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
-  const openChatUrl = `${getPortalPublicOrigin()}/portal#studio-team-chat`;
 
   await prisma.$transaction(
     unique.map((userId) =>
@@ -284,18 +306,14 @@ export async function notifyStudioTeamMention(
     select: { id: true, email: true },
   });
 
-  const subject = `${authorDisplay} mentioned you in team chat`.slice(0, 200);
-  const html = teamChatMentionEmailHtml({
-    authorDisplay,
-    sentAtLabel,
-    messageBody,
-    openChatUrl,
-  });
-
   for (const r of recipients) {
     const to = r.email?.trim().toLowerCase();
     if (!to) continue;
-    await sendResendEmail({ to, subject, html });
+    await emailNotifyTeamMemberTaggedInChat({
+      to,
+      authorDisplay,
+      messageBody,
+    });
   }
 
   if (!process.env.RESEND_API_KEY?.trim() && process.env.NODE_ENV === "development") {
@@ -369,35 +387,16 @@ export async function notifyIssyClientSignedContractInPortal(opts: {
   );
   revalidatePath("/portal");
 
-  const issyUsers = await prisma.user.findMany({
-    where: { id: { in: issyMembers.map((m) => m.userId) } },
-    select: { email: true },
-  });
-  const explicitTo = process.env.STUDIO_NOTIFICATION_EMAIL?.trim();
-  const fallbackTo = Array.from(studioEmailSet())[0];
-  const extraTo = explicitTo || fallbackTo;
-  const toSet = new Set<string>();
-  for (const u of issyUsers) {
-    if (u.email?.trim()) toSet.add(u.email.trim().toLowerCase());
-  }
-  if (extraTo) toSet.add(extraTo.toLowerCase());
-  const recipients = Array.from(toSet);
+  const recipients = await resolveIssyContractNotificationEmails();
   if (recipients.length === 0) return;
 
-  const openUrl = `${getPortalPublicOrigin()}/portal/project/${projectId}#agency-onboarding`;
-  const html = `<!DOCTYPE html><html><body style="font-family:Georgia,serif;background:#f7f4f2;color:#250d18;padding:24px;">
-<p style="margin:0 0 12px;font-size:15px;">A client signed their contract in the portal.</p>
-<p style="margin:0;font-size:15px;line-height:1.55;"><strong>Project:</strong> ${escapeHtml(projectName)}</p>
-<p style="margin:8px 0 0;font-size:15px;line-height:1.55;"><strong>Signed as:</strong> ${escapeHtml(signedName)}</p>
-<p style="margin:8px 0 0;font-size:15px;line-height:1.55;"><strong>When:</strong> ${escapeHtml(when)}</p>
-<p style="margin:8px 0 0;font-size:15px;line-height:1.55;"><strong>IP:</strong> ${escapeHtml(signedIp)}</p>
-<p style="margin:24px 0 0;"><a href="${escapeHtml(openUrl)}" style="display:inline-block;padding:12px 20px;background:#250d18;color:#f7f4f2;text-decoration:none;font-size:14px;border-radius:4px;">Open project</a></p>
-</body></html>`;
-
-  await sendResendEmail({
-    to: recipients,
-    subject: `Contract signed: ${projectName}`,
-    html,
+  await emailNotifyIssyClientSignedContract({
+    projectName,
+    projectId,
+    signedName,
+    signedAtLabel: when,
+    signedIp,
+    recipientEmails: recipients,
   });
 }
 

@@ -4,15 +4,14 @@ import { labelForChannel, parseCalendarChannelsJson } from "@/lib/calendar-chann
 import { formatContentCalendarWhen } from "@/lib/format-content-calendar-when";
 import { normalizePortalKind, visiblePortalSections } from "@/lib/portal-project-kind";
 import { isStudioEmailAddress } from "@/lib/portal-studio-users";
-import { getResendConfig, sendResendEmail } from "@/lib/resend-email";
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
+import {
+  collectivEmailShell,
+  emailNotifyClientInvitedToPortal,
+  emailNotifyClientSocialPostSubmittedForApproval,
+  emailNotifyPortalPasswordReset,
+  escapeHtml,
+  sendBrandedTransactional,
+} from "@/lib/email-notifications";
 
 function clientEmailAlertsEnabled(): boolean {
   const v = process.env.PORTAL_CLIENT_EMAIL_ALERTS?.trim().toLowerCase();
@@ -27,7 +26,10 @@ export function getPortalPublicOrigin(): string {
 
 async function resolveRecipient(projectId: string): Promise<{
   email: string;
+  /** HTML-safe first name (or "there") for templates. */
   greeting: string;
+  /** Plain display name for APIs that escape internally. */
+  greetingPlain: string;
   projectName: string;
   hasRegistered: boolean;
   portalKind: string;
@@ -48,58 +50,39 @@ async function resolveRecipient(projectId: string): Promise<{
     project.user?.name?.trim().split(/\s+/)[0] ||
     project.user?.businessName?.trim() ||
     null;
-  const greeting = first ? escapeHtml(first) : "there";
+  const greetingPlain = first || "there";
+  const greeting = escapeHtml(greetingPlain);
 
   return {
     email,
     greeting,
+    greetingPlain,
     projectName: project.name,
     hasRegistered: Boolean(project.userId && project.user?.passwordHash),
     portalKind: project.portalKind,
   };
 }
 
-function emailShell(opts: {
-  greeting: string;
-  projectName: string;
-  lead: string;
-  detail?: string | null;
-  ctaUrl: string;
+function buildClientAlertHtml(opts: {
+  greetingSafe: string;
+  paragraphs: string[];
+  detailHtml?: string | null;
+  ctaPath: string;
   ctaLabel: string;
+  footerLine?: string | null;
 }): string {
-  const detailBlock = opts.detail
-    ? `<p style="margin:16px 0 0;font-size:15px;line-height:1.55;color:#3d2a2f;">${opts.detail}</p>`
-    : "";
-  return `<!DOCTYPE html><html><body style="font-family:Georgia,serif;background:#f7f4f2;color:#250d18;padding:24px;">
-<p style="margin:0 0 12px;font-size:15px;">Hi ${opts.greeting},</p>
-<p style="margin:0;font-size:15px;line-height:1.55;color:#3d2a2f;">${opts.lead}</p>
-${detailBlock}
-<p style="margin:28px 0 0;"><a href="${escapeHtml(opts.ctaUrl)}" style="display:inline-block;padding:12px 20px;background:#250d18;color:#f7f4f2;text-decoration:none;font-size:14px;border-radius:4px;">${escapeHtml(
-    opts.ctaLabel,
-  )}</a></p>
-<p style="margin:28px 0 0;font-size:13px;color:#6b5a5e;">— Collectiv. Studio</p>
-<p style="margin:8px 0 0;font-size:12px;color:#8a787c;">${escapeHtml(opts.projectName)}</p>
-</body></html>`;
+  return collectivEmailShell({
+    greetingHtml: `<p style="margin:0 0 16px;font-size:15px;">Hi ${opts.greetingSafe},</p>`,
+    bodyParagraphsHtml: opts.paragraphs,
+    detailHtml: opts.detailHtml ?? undefined,
+    cta: { href: `${getPortalPublicOrigin()}${opts.ctaPath}`, label: opts.ctaLabel },
+    footerLine: opts.footerLine ? escapeHtml(opts.footerLine) : undefined,
+  });
 }
 
 async function deliverClientEmail(to: string, subject: string, html: string): Promise<void> {
   if (!clientEmailAlertsEnabled()) return;
-
-  const hasResend = Boolean(getResendConfig());
-  if (!hasResend) {
-    if (process.env.NODE_ENV === "development") {
-      // eslint-disable-next-line no-console
-      console.log("[portal] Client email alert (set RESEND_API_KEY to send):", { to, subject });
-    }
-    return;
-  }
-
-  await sendResendEmail({ to, subject, html });
-}
-
-function buildMail(projectId: string, path: string, fields: Omit<Parameters<typeof emailShell>[0], "ctaUrl">) {
-  const ctaUrl = `${getPortalPublicOrigin()}${path}`;
-  return emailShell({ ...fields, ctaUrl });
+  await sendBrandedTransactional({ to, subject, html, logTag: "client-alert" });
 }
 
 function platformsLineFromChannelsJson(channelsJson: string): string {
@@ -134,24 +117,20 @@ export async function notifyClientCalendarPostReadyForReview(
     opts.variant === "batch_month"
       ? `${opts.postLabel} — open your calendar to review or approve all.`.slice(0, 500)
       : `${when} · ${plats}`.slice(0, 500);
-  const subject = `Collectiv. Studio — ${title.toLowerCase()} · ${r.projectName}`;
-  const detail =
+  const detailHtml =
     opts.variant === "batch_month"
-      ? `<strong>${escapeHtml(opts.postLabel.slice(0, 200))}</strong><br/><span style="font-size:14px;line-height:1.5;color:#5c4a4e;">Every post for this month is ready — review individually or use Approve all.</span>`
-      : `<strong>${escapeHtml(opts.postLabel.slice(0, 200))}</strong><br/><span style="font-size:14px;line-height:1.5;color:#5c4a4e;">${escapeHtml(when)} · ${escapeHtml(plats)}</span>`;
-  const html = buildMail(projectId, `/portal/project/${projectId}/social/calendar`, {
-    greeting: r.greeting,
-    projectName: r.projectName,
-    lead:
-      opts.variant === "revised"
-        ? "We’ve updated a post you sent feedback on — open your calendar to review the revised version."
-        : opts.variant === "batch_month"
-          ? "Your social posts for this month are ready to review in one go — open your calendar to approve individually or use Approve all."
-          : "A new post is ready for you to review on your social calendar.",
-    detail,
-    ctaLabel: "Open calendar",
-  });
-  await deliverClientEmail(r.email, subject, html);
+      ? `<p style="margin:0 0 8px;font-weight:600;">${escapeHtml(opts.postLabel.slice(0, 200))}</p><p style="margin:0;font-size:14px;line-height:1.5;color:#5c4a4e;">Every post for this month is ready — review individually or use Approve all.</p>`
+      : `<p style="margin:0 0 8px;font-weight:600;">${escapeHtml(opts.postLabel.slice(0, 200))}</p><p style="margin:0;font-size:14px;line-height:1.5;color:#5c4a4e;">${escapeHtml(when)} · ${escapeHtml(plats)}</p>`;
+  if (clientEmailAlertsEnabled()) {
+    await emailNotifyClientSocialPostSubmittedForApproval({
+      to: r.email,
+      greeting: r.greetingPlain,
+      projectName: r.projectName,
+      projectId,
+      detailHtml,
+      variant: opts.variant,
+    });
+  }
   await createClientInAppNotificationForProject(projectId, {
     kind: opts.variant === "batch_month" ? "SOCIAL_MONTH_BATCH_REVIEW" : "CALENDAR_POST",
     title,
@@ -185,13 +164,18 @@ export async function notifyClientCalendarPostRemoved(
   const when = formatContentCalendarWhen(scheduledIso, { withTime: true });
   const plats = platformsLineFromChannelsJson(channelsJson);
   const subject = `Collectiv. Studio — post removed from your calendar · ${r.projectName}`;
-  const detail = `<strong>${escapeHtml(postLabel.slice(0, 200))}</strong><br/><span style="font-size:14px;color:#5c4a4e;">Was scheduled: ${escapeHtml(when)} · ${escapeHtml(plats)}</span>`;
-  const html = buildMail(projectId, `/portal/project/${projectId}/social/calendar`, {
-    greeting: r.greeting,
-    projectName: r.projectName,
-    lead: "The studio removed a post from your content calendar. Open the calendar to see your current schedule.",
-    detail,
+  const detail = `<p style="margin:0 0 8px;font-weight:600;">${escapeHtml(postLabel.slice(0, 200))}</p><p style="margin:0;font-size:14px;color:#5c4a4e;">Was scheduled: ${escapeHtml(when)} · ${escapeHtml(plats)}</p>`;
+  const html = buildClientAlertHtml({
+    greetingSafe: r.greeting,
+    paragraphs: [
+      escapeHtml(
+        "The studio removed a post from your content calendar. Open the calendar to see your current schedule.",
+      ),
+    ],
+    detailHtml: detail,
+    ctaPath: `/portal/project/${projectId}/social/calendar`,
     ctaLabel: "View calendar",
+    footerLine: r.projectName,
   });
   await deliverClientEmail(r.email, subject, html);
   await createClientInAppNotificationForProject(projectId, {
@@ -229,12 +213,13 @@ export async function notifyClientReviewAssetAdded(
         ? `/portal/project/${projectId}/branding`
         : sharedDeliverableReviewPath(projectId, r.portalKind);
   const subject = `Collectiv. Studio — something new to review · ${r.projectName}`;
-  const html = buildMail(projectId, path, {
-    greeting: r.greeting,
-    projectName: r.projectName,
-    lead: "We’ve uploaded a new file for you to review in your portal.",
-    detail: escapeHtml(assetTitle.slice(0, 200)),
+  const html = buildClientAlertHtml({
+    greetingSafe: r.greeting,
+    paragraphs: [escapeHtml("We’ve uploaded a new file for you to review in your portal.")],
+    detailHtml: `<p style="margin:0;">${escapeHtml(assetTitle.slice(0, 200))}</p>`,
+    ctaPath: path,
     ctaLabel: "Open review",
+    footerLine: r.projectName,
   });
   await deliverClientEmail(r.email, subject, html);
   await createClientInAppNotificationForProject(projectId, {
@@ -250,11 +235,12 @@ export async function notifyClientStudioMessage(projectId: string): Promise<void
   const r = await resolveRecipient(projectId);
   if (!r) return;
   const subject = `Collectiv. Studio — new message · ${r.projectName}`;
-  const html = buildMail(projectId, `/portal/project/${projectId}`, {
-    greeting: r.greeting,
-    projectName: r.projectName,
-    lead: "You have a new message from the studio in your project portal.",
+  const html = buildClientAlertHtml({
+    greetingSafe: r.greeting,
+    paragraphs: [escapeHtml("You have a new message from the studio in your project portal.")],
+    ctaPath: `/portal/project/${projectId}`,
     ctaLabel: "Read message",
+    footerLine: r.projectName,
   });
   await deliverClientEmail(r.email, subject, html);
   await createClientInAppNotificationForProject(projectId, {
@@ -270,11 +256,12 @@ export async function notifyClientQuoteSent(projectId: string): Promise<void> {
   const r = await resolveRecipient(projectId);
   if (!r) return;
   const subject = `Collectiv. Studio — your quote is ready · ${r.projectName}`;
-  const html = buildMail(projectId, `/portal/project/${projectId}`, {
-    greeting: r.greeting,
-    projectName: r.projectName,
-    lead: "Your project quote is ready to view in the portal.",
+  const html = buildClientAlertHtml({
+    greetingSafe: r.greeting,
+    paragraphs: [escapeHtml("Your project quote is ready to view in the portal.")],
+    ctaPath: `/portal/project/${projectId}`,
     ctaLabel: "View quote",
+    footerLine: r.projectName,
   });
   await deliverClientEmail(r.email, subject, html);
   await createClientInAppNotificationForProject(projectId, {
@@ -290,11 +277,16 @@ export async function notifyClientAccountVerified(projectId: string): Promise<vo
   const r = await resolveRecipient(projectId);
   if (!r || !r.hasRegistered) return;
   const subject = `Collectiv. Studio — your portal is unlocked · ${r.projectName}`;
-  const html = buildMail(projectId, `/portal/project/${projectId}`, {
-    greeting: r.greeting,
-    projectName: r.projectName,
-    lead: "Your account is verified. You can now use the full client portal for this project — briefs, files, calendar, and messages.",
+  const html = buildClientAlertHtml({
+    greetingSafe: r.greeting,
+    paragraphs: [
+      escapeHtml(
+        "Your account is verified. You can now use the full client portal for this project — briefs, files, calendar, and messages.",
+      ),
+    ],
+    ctaPath: `/portal/project/${projectId}`,
     ctaLabel: "Open project",
+    footerLine: r.projectName,
   });
   await deliverClientEmail(r.email, subject, html);
   await createClientInAppNotificationForProject(projectId, {
@@ -310,11 +302,16 @@ export async function notifyClientDiscoveryApproved(projectId: string): Promise<
   const r = await resolveRecipient(projectId);
   if (!r) return;
   const subject = `Collectiv. Studio — you’re cleared for the next step · ${r.projectName}`;
-  const html = buildMail(projectId, `/portal/project/${projectId}/website`, {
-    greeting: r.greeting,
-    projectName: r.projectName,
-    lead: "Discovery is approved. You can continue with your website kit and next steps in the portal.",
+  const html = buildClientAlertHtml({
+    greetingSafe: r.greeting,
+    paragraphs: [
+      escapeHtml(
+        "Discovery is approved. You can continue with your website kit and next steps in the portal.",
+      ),
+    ],
+    ctaPath: `/portal/project/${projectId}/website`,
     ctaLabel: "Continue website kit",
+    footerLine: r.projectName,
   });
   await deliverClientEmail(r.email, subject, html);
   await createClientInAppNotificationForProject(projectId, {
@@ -330,12 +327,13 @@ export async function notifyClientWebsiteLive(projectId: string, liveUrl: string
   const r = await resolveRecipient(projectId);
   if (!r) return;
   const subject = `Collectiv. Studio — your site is live · ${r.projectName}`;
-  const html = buildMail(projectId, `/portal/project/${projectId}/website`, {
-    greeting: r.greeting,
-    projectName: r.projectName,
-    lead: "Your live website link has been added to the portal.",
-    detail: `<a href="${escapeHtml(liveUrl)}" style="color:#250d18;">${escapeHtml(liveUrl)}</a>`,
+  const html = buildClientAlertHtml({
+    greetingSafe: r.greeting,
+    paragraphs: [escapeHtml("Your live website link has been added to the portal.")],
+    detailHtml: `<p style="margin:0;"><a href="${escapeHtml(liveUrl)}" style="color:#250d18;">${escapeHtml(liveUrl)}</a></p>`,
+    ctaPath: `/portal/project/${projectId}/website`,
     ctaLabel: "Open portal",
+    footerLine: r.projectName,
   });
   await deliverClientEmail(r.email, subject, html);
   await createClientInAppNotificationForProject(projectId, {
@@ -351,11 +349,16 @@ export async function notifyClientProjectWrappedUp(projectId: string): Promise<v
   const r = await resolveRecipient(projectId);
   if (!r || !r.hasRegistered) return;
   const subject = `Collectiv. Studio — project complete · ${r.projectName}`;
-  const html = buildMail(projectId, `/portal/project/${projectId}`, {
-    greeting: r.greeting,
-    projectName: r.projectName,
-    lead: "We’ve marked this project as complete in the portal. You’ll find any final wrap-up steps there — including the option to leave a review when you’re ready.",
+  const html = buildClientAlertHtml({
+    greetingSafe: r.greeting,
+    paragraphs: [
+      escapeHtml(
+        "We’ve marked this project as complete in the portal. You’ll find any final wrap-up steps there — including the option to leave a review when you’re ready.",
+      ),
+    ],
+    ctaPath: `/portal/project/${projectId}`,
     ctaLabel: "Open portal",
+    footerLine: r.projectName,
   });
   await deliverClientEmail(r.email, subject, html);
   await createClientInAppNotificationForProject(projectId, {
@@ -374,11 +377,12 @@ export async function notifyClientNewProject(projectId: string): Promise<void> {
   const lead = r.hasRegistered
     ? "A new project has been added to your Collectiv portal. Open it any time to see briefs, content, and updates."
     : "You’ve been invited to a Collectiv. Studio project. Create your portal account with this email address to view everything in one place.";
-  const html = buildMail(projectId, `/portal`, {
-    greeting: r.greeting,
-    projectName: r.projectName,
-    lead,
+  const html = buildClientAlertHtml({
+    greetingSafe: r.greeting,
+    paragraphs: [escapeHtml(lead)],
+    ctaPath: `/portal`,
     ctaLabel: r.hasRegistered ? "Open portal" : "Sign in or register",
+    footerLine: r.projectName,
   });
   await deliverClientEmail(r.email, subject, html);
   if (r.hasRegistered) {
@@ -395,28 +399,7 @@ export async function notifyClientNewProject(projectId: string): Promise<void> {
  * Password reset — always attempts send when Resend is configured (not gated by PORTAL_CLIENT_EMAIL_ALERTS).
  */
 export async function sendPortalPasswordResetEmail(to: string, resetUrl: string): Promise<void> {
-  const safeUrl = escapeHtml(resetUrl);
-  const html = `<!DOCTYPE html><html><body style="font-family:Georgia,serif;background:#f7f4f2;color:#250d18;padding:24px;">
-<p style="margin:0 0 12px;font-size:15px;">Hi,</p>
-<p style="margin:0;font-size:15px;line-height:1.55;color:#3d2a2f;">We received a request to reset the password for your Collectiv. Studio client portal. Use the button below — it expires in one hour.</p>
-<p style="margin:28px 0 0;"><a href="${safeUrl}" style="display:inline-block;padding:12px 20px;background:#250d18;color:#f7f4f2;text-decoration:none;font-size:14px;border-radius:4px;">Reset password</a></p>
-<p style="margin:20px 0 0;font-size:13px;color:#6b5a5e;">If you didn’t ask for this, you can ignore this email.</p>
-<p style="margin:28px 0 0;font-size:13px;color:#6b5a5e;">— Collectiv. Studio</p>
-</body></html>`;
-
-  const cfg = getResendConfig();
-  if (cfg) {
-    await sendResendEmail({
-      to,
-      subject: "Reset your Collectiv. portal password",
-      html,
-    });
-    return;
-  }
-  if (process.env.NODE_ENV === "development") {
-    // eslint-disable-next-line no-console
-    console.log("[portal] Password reset (set RESEND_API_KEY to send email):", { to, resetUrl });
-  }
+  await emailNotifyPortalPasswordReset({ to: to.trim().toLowerCase(), resetUrl });
 }
 
 /**
@@ -428,28 +411,9 @@ export async function sendClientPortalInviteEmail(opts: {
   firstName: string;
   registerUrl: string;
 }): Promise<void> {
-  const first = opts.firstName.trim() || "there";
-  const safeName = escapeHtml(first);
-  const safeUrl = escapeHtml(opts.registerUrl);
-  const html = `<!DOCTYPE html><html><body style="font-family:Georgia,serif;background:#f7f4f2;color:#250d18;padding:24px;line-height:1.55;">
-<p style="margin:0 0 12px;font-size:15px;">Hi ${safeName},</p>
-<p style="margin:0;font-size:15px;color:#3d2a2f;">You’ve been invited to the <strong>Collectiv. Studio client portal</strong> — a calm place to follow your project, review files, and message our team in one thread.</p>
-<p style="margin:16px 0 0;font-size:15px;color:#3d2a2f;">Tap below to set your password and open your hub. This link is personal to you.</p>
-<p style="margin:28px 0 0;"><a href="${safeUrl}" style="display:inline-block;padding:12px 20px;background:#250d18;color:#f7f4f2;text-decoration:none;font-size:14px;border-radius:4px;font-weight:600;">Set up your account</a></p>
-<p style="margin:28px 0 0;font-size:13px;color:#6b5a5e;">Warmly,<br/>Collectiv. Studio</p>
-</body></html>`;
-
-  const cfg = getResendConfig();
-  if (cfg) {
-    await sendResendEmail({
-      to: opts.to.trim().toLowerCase(),
-      subject: "You have been invited to the Collectiv. Studio client portal",
-      html,
-    });
-    return;
-  }
-  if (process.env.NODE_ENV === "development") {
-    // eslint-disable-next-line no-console
-    console.log("[portal] Client invite (set RESEND_API_KEY to send):", { to: opts.to, registerUrl: opts.registerUrl });
-  }
+  await emailNotifyClientInvitedToPortal({
+    to: opts.to.trim().toLowerCase(),
+    firstName: opts.firstName,
+    registerUrl: opts.registerUrl,
+  });
 }

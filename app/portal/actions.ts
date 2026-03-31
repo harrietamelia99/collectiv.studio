@@ -78,6 +78,11 @@ import {
   parseOffboardingAnswersFromFormData,
 } from "@/lib/portal-offboarding";
 import { clientIsBlockedByPendingOffboarding } from "@/lib/portal-offboarding-gate";
+import {
+  emailNotifyAssigneesReviewAssetApproved,
+  emailNotifyClientDepositPaidHubUnlocked,
+  resolveRecipientEmailsForReviewAssetSignoff,
+} from "@/lib/email-notifications";
 import { clientHasFullPortalAccess } from "@/lib/portal-client-full-access";
 import { removeOldAvatarFile, saveClientAvatarFile } from "@/lib/portal-client-avatar";
 import { copyUserBrandKitToNewProject, upsertUserBrandKitFromBrandingProject } from "@/lib/user-brand-kit-sync";
@@ -1175,6 +1180,13 @@ export async function signOffReviewAsset(formData: FormData): Promise<void> {
     data: { clientSignedOff: true, signedOffAt: new Date() },
   });
   await notifyReviewAssetSignedOff(projectId, project.name, asset.kind);
+  const assigneeEmails = await resolveRecipientEmailsForReviewAssetSignoff(projectId, asset.kind);
+  await emailNotifyAssigneesReviewAssetApproved({
+    recipientEmails: assigneeEmails,
+    projectName: project.name,
+    projectId,
+    assetKind: asset.kind,
+  });
   await revalidateProject(projectId);
 }
 
@@ -1588,12 +1600,33 @@ export async function markStudioDepositReceived(formData: FormData): Promise<voi
   if (!(await sessionStudioPersonaIsIssy())) return;
   const projectId = String(formData.get("projectId") ?? "").trim();
   if (!projectId) return;
-  const project = await prisma.project.findUnique({ where: { id: projectId } });
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    include: {
+      user: { select: { email: true, name: true, businessName: true } },
+    },
+  });
   if (!project) return;
+  const markingPaid = !project.studioDepositMarkedPaidAt;
   await prisma.project.update({
     where: { id: projectId },
     data: { studioDepositMarkedPaidAt: project.studioDepositMarkedPaidAt ? null : new Date() },
   });
+  if (markingPaid) {
+    const to = project.user?.email?.trim().toLowerCase();
+    if (to) {
+      const plain =
+        project.user?.name?.trim().split(/\s+/)[0] ||
+        project.user?.businessName?.trim() ||
+        "there";
+      await emailNotifyClientDepositPaidHubUnlocked({
+        to,
+        greeting: plain,
+        projectName: project.name,
+        projectId,
+      });
+    }
+  }
   await revalidateProject(projectId);
 }
 
