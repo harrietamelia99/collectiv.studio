@@ -41,10 +41,16 @@ export default function Error({
           </>
         ) : (
           <>
-            On Vercel, add your Supabase{" "}
-            <code className="rounded bg-burgundy/10 px-1 py-0.5">DATABASE_URL</code> (with{" "}
-            <code className="rounded bg-burgundy/10 px-1 py-0.5">?sslmode=require</code> if needed),{" "}
-            <code className="rounded bg-burgundy/10 px-1 py-0.5">NEXTAUTH_URL</code> (your live site URL), and{" "}
+            Check{" "}
+            <strong className="font-medium text-burgundy/80">Vercel → your deployment → Logs</strong> for the
+            real error. Common fixes: set Supabase{" "}
+            <code className="rounded bg-burgundy/10 px-1 py-0.5">DATABASE_URL</code> (transaction pooler{" "}
+            <code className="rounded bg-burgundy/10 px-1 py-0.5">:6543</code> with{" "}
+            <code className="rounded bg-burgundy/10 px-1 py-0.5">pgbouncer=true</code> &amp;{" "}
+            <code className="rounded bg-burgundy/10 px-1 py-0.5">sslmode=require</code>) and matching{" "}
+            <code className="rounded bg-burgundy/10 px-1 py-0.5">DIRECT_URL</code>, plus{" "}
+            <code className="rounded bg-burgundy/10 px-1 py-0.5">NEXTAUTH_URL</code> (exact live{" "}
+            <code className="rounded bg-burgundy/10 px-1 py-0.5">https://…</code> URL) and{" "}
             <code className="rounded bg-burgundy/10 px-1 py-0.5">NEXTAUTH_SECRET</code>, then redeploy.
           </>
         )}
