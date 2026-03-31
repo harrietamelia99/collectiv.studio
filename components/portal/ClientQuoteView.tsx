@@ -1,6 +1,10 @@
 import type { ReactNode } from "react";
 import type { QuoteLine } from "@/lib/portal-quote-lines";
-import { formatPoundsTotal, sumQuoteLinePounds } from "@/lib/portal-quote-lines";
+import {
+  formatPoundsTotal,
+  formatQuoteLineAmountForDisplay,
+  sumQuoteLinePounds,
+} from "@/lib/portal-quote-lines";
 
 type Props = {
   intro: string;
@@ -40,7 +44,7 @@ export function ClientQuoteView({ intro, lines, sentAt, responseSlot }: Props) {
               ) : null}
             </div>
             <span className="shrink-0 font-body text-sm font-medium tabular-nums text-burgundy sm:pt-0.5">
-              {line.amount}
+              {formatQuoteLineAmountForDisplay(line.amount)}
             </span>
           </li>
         ))}

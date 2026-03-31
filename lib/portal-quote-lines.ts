@@ -44,3 +44,10 @@ export function sumQuoteLinePounds(lines: QuoteLineRow[]): number {
 export function formatPoundsTotal(n: number): string {
   return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(n);
 }
+
+/** Format a stored line amount (e.g. "1300", "£1,200") like the quote total: £1,300.00 */
+export function formatQuoteLineAmountForDisplay(raw: string): string {
+  const n = parsePoundAmountString(raw);
+  if (n === null) return raw.trim() || "—";
+  return formatPoundsTotal(n);
+}
