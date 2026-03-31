@@ -1,5 +1,5 @@
 import { normalizePortalKind } from "@/lib/portal-project-kind";
-import { projectIdFromStudioNotificationHref } from "@/lib/studio-inbox-notify";
+import { projectIdFromStudioNotificationHref } from "@/lib/studio-notification-href";
 
 export const AGENCY_INBOX_DISMISS_THREAD = "THREAD_REPLY" as const;
 export const AGENCY_INBOX_DISMISS_CALENDAR = "CALENDAR_FEEDBACK" as const;

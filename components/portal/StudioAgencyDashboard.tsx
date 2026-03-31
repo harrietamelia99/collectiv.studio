@@ -22,7 +22,7 @@ import {
   projectWhereVisibleToStudioMemberOnDashboard,
   studioMemberMayAccessProject,
 } from "@/lib/portal-access";
-import { projectIdFromStudioNotificationHref } from "@/lib/studio-inbox-notify";
+import { projectIdFromStudioNotificationHref } from "@/lib/studio-notification-href";
 import { PORTAL_KINDS_WITH_SOCIAL } from "@/lib/portal-project-kind";
 import { studioEmailSet } from "@/lib/portal-studio-users";
 import { buildStudioProjectCard } from "@/lib/studio-dashboard-project";
