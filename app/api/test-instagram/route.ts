@@ -4,6 +4,8 @@ import { diagnoseInstagramFeed } from "@/lib/instagram-feed";
 
 export const dynamic = "force-dynamic";
 
+// Bump commit when Vercel must pick up fresh serverless output for this route (build cache / routing fixes).
+
 /**
  * Temporary Instagram / env probe (no token or hash in response).
  * Set AUTH_DIAGNOSTIC_SECRET on Vercel, redeploy, then:
