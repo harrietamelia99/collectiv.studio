@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ContentCalendarItem, Project, ReviewAsset, WebsitePageBrief } from "@prisma/client";
+import type { ContentCalendarItem, Project, ProjectQuote, ReviewAsset, WebsitePageBrief } from "@prisma/client";
 import {
   markClientContractSigned,
   markProjectComplete,
@@ -16,12 +16,13 @@ import {
   toggleStudioWorkflowStepReviewed,
   updateProjectAssignedStudioAdmin,
 } from "@/app/portal/agency-actions";
+import { AgencyProjectQuotePanel } from "@/components/portal/AgencyProjectQuotePanel";
 import { PhaseProgressBar } from "@/components/portal/PhaseProgressBar";
 import { ResendClientInviteButton } from "@/components/portal/ResendClientInviteButton";
 import { ProjectFeedbackSection } from "@/components/portal/ProjectFeedbackSection";
 import { PORTAL_CLIENT_INPUT_CLASS } from "@/components/portal/PortalSectionCard";
 import { ctaButtonClasses } from "@/components/ui/Button";
-import { agencyCombinedProgressPercent } from "@/lib/agency-combined-progress";
+import { clientJourneyCombinedProgressPercent } from "@/lib/agency-combined-progress";
 import { buildClientConversationStripData } from "@/lib/portal-conversation-strip";
 import { clientHasFullPortalAccess } from "@/lib/portal-client-full-access";
 import { PAYMENT_STATUSES, paymentStatusStudioLabel } from "@/lib/portal-payment-status";
@@ -92,14 +93,18 @@ function clientJourneyLabel(
   stream: string,
   slug: string,
   project: Project,
+  portalUnlocked: boolean,
 ): string {
   if (row.complete) return "Complete";
+  if (!portalUnlocked) return "Not started";
   if (row.locked) return "Not started";
   if (stream === "website" && slug === "preview" && project.websitePreviewClientFeedback?.trim()) {
-    return "Revision needed";
+    return "Awaiting agency";
   }
   if (row.status === "awaiting_agency") return "Awaiting agency";
-  if (row.status === "awaiting_client") return "Awaiting client approval";
+  if (row.status === "awaiting_client") return "In progress";
+  if (row.status === "in_progress") return "In progress";
+  if (row.status === "locked") return "Not started";
   return "In progress";
 }
 
@@ -148,6 +153,7 @@ function AgencyStepCard({
   stepNo,
   project,
   reviewedMap,
+  portalUnlocked,
 }: {
   projectId: string;
   stream: "website" | "branding" | "signage" | "print";
@@ -155,12 +161,13 @@ function AgencyStepCard({
   stepNo: number;
   project: Project;
   reviewedMap: Record<string, string>;
+  portalUnlocked: boolean;
 }) {
   const slug = row.slug;
   const key = `${stream}:${slug}`;
   const reviewed = studioHasReviewedStep(reviewedMap, key);
   const help = AGENCY_STEP_HELP[key] ?? "Open this step in the portal to work with the client.";
-  const status = clientJourneyLabel(row, stream, slug, project);
+  const status = clientJourneyLabel(row, stream, slug, project, portalUnlocked);
   const previewFeedback =
     stream === "website" && slug === "preview" ? project.websitePreviewClientFeedback?.trim() : null;
 
@@ -232,6 +239,7 @@ function WorkflowBlock({
   project,
   reviewedMap,
   startStepNo,
+  portalUnlocked,
 }: {
   title: string;
   projectId: string;
@@ -240,6 +248,7 @@ function WorkflowBlock({
   project: Project;
   reviewedMap: Record<string, string>;
   startStepNo: number;
+  portalUnlocked: boolean;
 }) {
   return (
     <div className="space-y-4">
@@ -254,6 +263,7 @@ function WorkflowBlock({
             stepNo={startStepNo + i}
             project={project}
             reviewedMap={reviewedMap}
+            portalUnlocked={portalUnlocked}
           />
         ))}
       </ul>
@@ -274,6 +284,7 @@ export async function AgencyProjectStudioView({
   canAssignProjectLead,
   internalNotes,
   viewerPersonaSlug,
+  projectQuote,
 }: {
   project: Project & {
     user: {
@@ -299,8 +310,10 @@ export async function AgencyProjectStudioView({
   canAssignProjectLead: boolean;
   internalNotes: InternalNoteRow[];
   viewerPersonaSlug: PersonaSlug;
+  projectQuote: Pick<ProjectQuote, "intro" | "lineItemsJson" | "sentAt" | "updatedAt"> | null;
 }) {
-  const studio = true;
+  /** Client-side locking and step status so agency cards match the client journey (not “everything in progress”). */
+  const statusRowsAsClient = false;
   const isIssy = viewerPersonaSlug === "isabella";
   const isMay = viewerPersonaSlug === "may";
   const vis = visiblePortalSections(project.portalKind);
@@ -308,7 +321,7 @@ export async function AgencyProjectStudioView({
   const portalUnlocked = clientHasFullPortalAccess(project);
   const reviewedMap = parseStudioReviewedStepsJson(project.studioReviewedStepsJson);
   const now = new Date();
-  const combinedPct = agencyCombinedProgressPercent({
+  const combinedPct = clientJourneyCombinedProgressPercent({
     project,
     pageBriefs: websitePageBriefs,
     assets,
@@ -327,15 +340,29 @@ export async function AgencyProjectStudioView({
   const clientLabel = [project.user?.name, project.user?.businessName].filter(Boolean).join(" · ") || "Client";
   const clientEmail = project.user?.email ?? project.invitedClientEmail ?? "—";
 
-  const brandingRows = vis.branding ? buildBrandingStepRows(project.id, project, assets, studio).steps : [];
+  const brandingRows = vis.branding
+    ? buildBrandingStepRows(project.id, project, assets, statusRowsAsClient).steps
+    : [];
   const websiteRows = vis.website
-    ? buildWebsiteStepRows(project.id, project, websitePageBriefs, studio, accountBrandKit, clientWorkflowAccessOpts).steps
+    ? buildWebsiteStepRows(
+        project.id,
+        project,
+        websitePageBriefs,
+        statusRowsAsClient,
+        accountBrandKit,
+        clientWorkflowAccessOpts,
+      ).steps
     : [];
   const signageRows =
     vis.signage && nk !== "PRINT"
-      ? buildSignageStepRows(project.id, project, assets, accountBrandKit, studio, clientWorkflowAccessOpts).steps
+      ? buildSignageStepRows(project.id, project, assets, accountBrandKit, statusRowsAsClient, clientWorkflowAccessOpts)
+          .steps
       : [];
-  const printRows = nk === "PRINT" ? buildPrintStepRows(project.id, project, assets, accountBrandKit, studio, clientWorkflowAccessOpts).steps : [];
+  const printRows =
+    nk === "PRINT"
+      ? buildPrintStepRows(project.id, project, assets, accountBrandKit, statusRowsAsClient, clientWorkflowAccessOpts)
+          .steps
+      : [];
 
   const stepBlocks: ReactNode[] = [];
   let stepNo = 1;
@@ -350,6 +377,7 @@ export async function AgencyProjectStudioView({
         project={project}
         reviewedMap={reviewedMap}
         startStepNo={stepNo}
+        portalUnlocked={portalUnlocked}
       />,
     );
     stepNo += brandingRows.length;
@@ -365,6 +393,7 @@ export async function AgencyProjectStudioView({
         project={project}
         reviewedMap={reviewedMap}
         startStepNo={stepNo}
+        portalUnlocked={portalUnlocked}
       />,
     );
     stepNo += websiteRows.length;
@@ -380,6 +409,7 @@ export async function AgencyProjectStudioView({
         project={project}
         reviewedMap={reviewedMap}
         startStepNo={stepNo}
+        portalUnlocked={portalUnlocked}
       />,
     );
     stepNo += signageRows.length;
@@ -395,6 +425,7 @@ export async function AgencyProjectStudioView({
         project={project}
         reviewedMap={reviewedMap}
         startStepNo={stepNo}
+        portalUnlocked={portalUnlocked}
       />,
     );
     stepNo += printRows.length;
@@ -582,6 +613,13 @@ export async function AgencyProjectStudioView({
             Contract and deposit gates match what the client needs before the workspace opens. Hub unlocks automatically
             when those conditions are met.
           </p>
+          <AgencyProjectQuotePanel
+            key={projectQuote?.updatedAt?.getTime() ?? `new-${project.id}`}
+            projectId={project.id}
+            initialIntro={projectQuote?.intro ?? ""}
+            initialLineItemsJson={projectQuote?.lineItemsJson ?? "[]"}
+            sentAt={projectQuote?.sentAt ?? null}
+          />
           <div id="agency-contract-terms" className="scroll-mt-28 mt-8 border-t border-zinc-100 pt-8">
             <h3 className="font-display text-base tracking-[-0.02em] text-burgundy">Client contract text</h3>
             <p className="mt-1 font-body text-xs leading-relaxed text-burgundy/55">

@@ -2,12 +2,11 @@ export type QuoteLineRow = { label: string; detail: string; amount: string };
 /** Alias for UI components */
 export type QuoteLine = QuoteLineRow;
 
-import { clientHasFullPortalAccess, type ClientPortalAccessFields } from "@/lib/portal-client-full-access";
+import type { ClientPortalAccessFields } from "@/lib/portal-client-full-access";
 
+/** Studio may create and send quotes before the client hub unlocks (onboarding). */
 export function quoteAllowedForProject(project: ClientPortalAccessFields & { portalKind: string }): boolean {
-  if (project.portalKind === "WEBSITE" || project.portalKind === "MULTI") {
-    return clientHasFullPortalAccess(project);
-  }
+  void project;
   return true;
 }
 
@@ -28,4 +27,20 @@ export function parseQuoteLineItemsJson(raw: string): QuoteLineRow[] {
   } catch {
     return [];
   }
+}
+
+/** Parse a user-entered amount like "£1,200", "1200", "1200.50" into a number, or null if not parseable. */
+export function parsePoundAmountString(raw: string): number | null {
+  const s = raw.replace(/£/g, "").replace(/,/g, "").trim();
+  if (!s) return null;
+  const n = Number.parseFloat(s);
+  return Number.isFinite(n) ? n : null;
+}
+
+export function sumQuoteLinePounds(lines: QuoteLineRow[]): number {
+  return lines.reduce((acc, line) => acc + (parsePoundAmountString(line.amount) ?? 0), 0);
+}
+
+export function formatPoundsTotal(n: number): string {
+  return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(n);
 }

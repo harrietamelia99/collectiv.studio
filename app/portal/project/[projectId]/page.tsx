@@ -366,6 +366,7 @@ export default async function ProjectOverviewPage({ params }: Props) {
       ...(slug === "isabella"
         ? ([
             { href: "#agency-onboarding", label: "Onboarding", Icon: HubIconChecklist },
+            { href: "#agency-project-quote", label: "Quote", Icon: HubIconFolder },
           ] as HubNavItem[])
         : []),
       { href: "#agency-project-steps", label: slug === "may" ? "Social & steps" : "Project steps", Icon: HubIconWebsite },
@@ -406,6 +407,7 @@ export default async function ProjectOverviewPage({ params }: Props) {
             canAssignProjectLead={canAssignProjectLead}
             internalNotes={internalNotes}
             viewerPersonaSlug={viewerStudioMember!.personaSlug as PersonaSlug}
+            projectQuote={projectQuote}
           />
         </div>
       </div>
