@@ -8,17 +8,16 @@
 --   await bcrypt.hash(plainPassword, 10);
 --
 -- After this UPDATE, log in at /portal/login with:
---   Email:    harriet@collectiv.local
---   Password: Collectiv-Harriet-SQL-2026
+--   Email:    harriet@collectivstudio.uk
+--   Password: CsTmp-Harriet-9kL!
 --
--- Hash below was generated with: bcryptjs.hash("Collectiv-Harriet-SQL-2026", 10)
--- (Node, same dependency as the Next.js app — package "bcryptjs").
+-- Hash: bcryptjs.hash("CsTmp-Harriet-9kL!", 10)
 -- =============================================================================
 
 UPDATE "User"
 SET
-  "passwordHash" = '$2b$10$xzLHRKNompNtX5akfAFMu.CzHA8wPSm6XrzoX7irqlGbj4bK0npO.',
+  "passwordHash" = '$2b$10$NjAfsoJN3H7r8uzY/zLO/O5VksnZ2p.rgvHqb66YOrNUiXMKIz4qW',
   "updatedAt" = now()
-WHERE email = 'harriet@collectiv.local';
+WHERE email = 'harriet@collectivstudio.uk';
 
 -- Expect: UPDATE 1

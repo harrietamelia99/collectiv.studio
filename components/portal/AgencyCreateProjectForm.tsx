@@ -226,7 +226,7 @@ export function AgencyCreateProjectForm({
           placeholder={
             mayOnlySocial
               ? "e.g. Client Name — Social"
-              : "e.g. Riverside Studio (pair adds “— Website” and “— Social”)"
+              : "e.g. Acme & Co (pair adds “— Website” and “— Social”)"
           }
           className={`${PORTAL_CLIENT_INPUT_CLASS} min-h-[48px] md:text-sm`}
         />

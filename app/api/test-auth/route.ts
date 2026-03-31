@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-const HARRIET_EMAIL = "harriet@collectiv.local";
+const HARRIET_EMAIL = "harriet@collectivstudio.uk";
 
 /**
  * Temporary DB + Harriet user check for production debugging.

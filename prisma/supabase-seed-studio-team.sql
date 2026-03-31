@@ -2,23 +2,22 @@
 -- Collectiv Studio — agency accounts (Issy, Harriet, May)
 -- Paste into Supabase SQL Editor and run once (safe to re-run: upserts by email / userId).
 --
--- TEMPORARY PASSWORDS (bcrypt cost 10, matches app bcryptjs):
---   isabella@collectiv.local   →  Collectiv-Temp-Issy-2026!
---   harriet@collectiv.local    →  Collectiv-Temp-Harriet-2026!
---   may@collectiv.local        →  Collectiv-Temp-May-2026!
+-- PASSWORDS (bcrypt cost 10, bcryptjs — matches prisma/seed.cjs):
+--   isabella@collectivstudio.uk   →  CsTmp-Issy-7mN!
+--   harriet@collectivstudio.uk    →  CsTmp-Harriet-9kL!
+--   zbyszka@collectivstudio.uk    →  CsTmp-May-4pQ!
 --
--- After run: add these exact emails to STUDIO_EMAIL in Vercel/.env (comma-separated)
--- so NextAuth treats them as agency (see lib/portal-studio-users.ts).
--- Replace @collectiv.local addresses below with real work emails if you prefer, then
--- use the same addresses in STUDIO_EMAIL and share the matching temp password.
+-- Hashes generated with: require("bcryptjs").hash(plainPassword, 10)
+--
+-- After run: set STUDIO_EMAIL and STUDIO_PERSONA_*_EMAIL in Vercel/.env (see .env.example).
 -- =============================================================================
 
 -- Issy (Isabella) — personaSlug must stay "isabella" for dashboard routing
 INSERT INTO "User" (id, email, "passwordHash", name, "createdAt", "updatedAt")
 VALUES (
   gen_random_uuid()::text,
-  'isabella@collectiv.local',
-  '$2b$10$Z0fGFFQm0e9iyGw3HNVmjeaeJN2YOgaNfeWZ/hzbmn5LwjuGjEAju',
+  'isabella@collectivstudio.uk',
+  '$2b$10$h.9gPYCY4R5V0U2kVOsejuA/ojtC8p1gPa0G7MD6FS3J0AhOS4nkG',
   'Isabella',
   now(),
   now()
@@ -40,7 +39,7 @@ SELECT
   now(),
   now()
 FROM "User" u
-WHERE u.email = 'isabella@collectiv.local'
+WHERE u.email = 'isabella@collectivstudio.uk'
 ON CONFLICT ("userId") DO UPDATE SET
   "personaSlug" = EXCLUDED."personaSlug",
   "jobTitle" = EXCLUDED."jobTitle",
@@ -53,8 +52,8 @@ ON CONFLICT ("userId") DO UPDATE SET
 INSERT INTO "User" (id, email, "passwordHash", name, "createdAt", "updatedAt")
 VALUES (
   gen_random_uuid()::text,
-  'harriet@collectiv.local',
-  '$2b$10$gylwJy0P2qPFb0PMiRkAaO6J752DUG5I5DK/d4OYFXrD4ZDelO6Se',
+  'harriet@collectivstudio.uk',
+  '$2b$10$NjAfsoJN3H7r8uzY/zLO/O5VksnZ2p.rgvHqb66YOrNUiXMKIz4qW',
   'Harriet',
   now(),
   now()
@@ -76,7 +75,7 @@ SELECT
   now(),
   now()
 FROM "User" u
-WHERE u.email = 'harriet@collectiv.local'
+WHERE u.email = 'harriet@collectivstudio.uk'
 ON CONFLICT ("userId") DO UPDATE SET
   "personaSlug" = EXCLUDED."personaSlug",
   "jobTitle" = EXCLUDED."jobTitle",
@@ -89,8 +88,8 @@ ON CONFLICT ("userId") DO UPDATE SET
 INSERT INTO "User" (id, email, "passwordHash", name, "createdAt", "updatedAt")
 VALUES (
   gen_random_uuid()::text,
-  'may@collectiv.local',
-  '$2b$10$Lm0eiGpSd.YVpc.YvwQ8cOA4.H9Qa5B9VjWcOHDHFXRducfw86qDq',
+  'zbyszka@collectivstudio.uk',
+  '$2b$10$peXKW1I4c7MRdTnnGbyEOOR7BREw5K6ocMv8ze0Jbgt31INEw5avm',
   'May',
   now(),
   now()
@@ -112,7 +111,7 @@ SELECT
   now(),
   now()
 FROM "User" u
-WHERE u.email = 'may@collectiv.local'
+WHERE u.email = 'zbyszka@collectivstudio.uk'
 ON CONFLICT ("userId") DO UPDATE SET
   "personaSlug" = EXCLUDED."personaSlug",
   "jobTitle" = EXCLUDED."jobTitle",

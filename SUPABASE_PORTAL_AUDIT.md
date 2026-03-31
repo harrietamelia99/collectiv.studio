@@ -78,7 +78,7 @@ Plus `_prisma_migrations` (Prisma metadata).
 
 ### Seed (Harriet, Issy, May)
 
-- `prisma/seed.cjs` upserts `isabella@collectiv.local`, `harriet@collectiv.local`, `may@collectiv.local` and matching **`StudioTeamMember`** rows.
+- `prisma/seed.cjs` upserts `isabella@collectivstudio.uk`, `harriet@collectivstudio.uk`, `zbyszka@collectivstudio.uk` (May) and matching **`StudioTeamMember`** rows (no bundled demo client).
 - **Verify:** run `npm run seed`, then query `"User"` + `"StudioTeamMember"` (or use Table Editor).
 
 ### Registration / login / session persistence

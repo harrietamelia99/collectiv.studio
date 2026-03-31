@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
-  <rect width="1080" height="1350" fill="#e8dfd6"/>
-  <rect x="200" y="320" width="320" height="320" rx="6" transform="rotate(-8 360 480)" fill="#c4a89a" opacity="0.6"/>
-  <rect x="480" y="380" width="380" height="280" rx="6" transform="rotate(6 670 520)" fill="#5c1f38" opacity="0.35"/>
-  <rect x="340" y="620" width="420" height="300" rx="6" fill="#f5f0ea" stroke="#5c1f38" stroke-opacity="0.15" stroke-width="2"/>
-  <circle cx="720" cy="720" r="90" fill="#5c1f38" opacity="0.2"/>
-  <text x="540" y="1080" text-anchor="middle" fill="#3d1620" font-family="Georgia,serif" font-size="36" opacity="0.85">Flatlay � demo</text>
-</svg>
