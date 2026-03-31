@@ -24,9 +24,7 @@ export function AgencyProjectQuotePanel({
 }: Props) {
   const parsed = useMemo(() => parseQuoteLineItemsJson(initialLineItemsJson), [initialLineItemsJson]);
   const [intro, setIntro] = useState(initialIntro);
-  const [lines, setLines] = useState<QuoteLineRow[]>(() =>
-    parsed.length ? parsed : [emptyLine(), emptyLine()],
-  );
+  const [lines, setLines] = useState<QuoteLineRow[]>(() => (parsed.length ? parsed : [emptyLine()]));
 
   const total = sumQuoteLinePounds(lines);
   const validLines = lines.filter((l) => l.label.trim() && l.amount.trim());
