@@ -81,6 +81,7 @@ import { clientIsBlockedByPendingOffboarding } from "@/lib/portal-offboarding-ga
 import {
   emailNotifyAssigneesReviewAssetApproved,
   emailNotifyClientDepositPaidHubUnlocked,
+  emailNotifyClientWelcomeAfterSelfRegistration,
   resolveRecipientEmailsForReviewAssetSignoff,
 } from "@/lib/email-notifications";
 import { clientHasFullPortalAccess } from "@/lib/portal-client-full-access";
@@ -264,7 +265,8 @@ export async function registerUser(
       data: { userId: existing.id, invitedClientEmail: null },
     });
     await notifyStudioClientRegistered({ email, name: fullName || null, phone });
-    redirect("/portal/login?registered=1");
+    await emailNotifyClientWelcomeAfterSelfRegistration({ to: email, firstName });
+    redirect("/portal/register/success");
   }
 
   const newUser = await prisma.user.create({
@@ -284,7 +286,8 @@ export async function registerUser(
     data: { userId: newUser.id, invitedClientEmail: null },
   });
   await notifyStudioClientRegistered({ email, name: fullName || null, phone });
-  redirect("/portal/login?registered=1");
+  await emailNotifyClientWelcomeAfterSelfRegistration({ to: email, firstName });
+  redirect("/portal/register/success");
 }
 
 export async function completeClientInviteRegistration(

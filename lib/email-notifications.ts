@@ -142,6 +142,29 @@ export async function emailNotifyClientInvitedToPortal(opts: {
   });
 }
 
+/** Self-service registration at /portal/register — not gated by PORTAL_CLIENT_EMAIL_ALERTS (same as invite). */
+export async function emailNotifyClientWelcomeAfterSelfRegistration(opts: {
+  to: string;
+  firstName: string;
+}): Promise<void> {
+  const name = opts.firstName.trim() || "there";
+  const loginUrl = `${portalOrigin()}/portal/login`;
+  const html = collectivEmailShell({
+    greetingHtml: `<p style="margin:0 0 16px;font-size:15px;">Hi ${escapeHtml(name)},</p>`,
+    bodyParagraphsHtml: [
+      "Thanks for creating your Collectiv. Studio client account. We’ve received your details and the studio will be in touch with next steps — keep an eye on your inbox.",
+      "When you’re ready, sign in to your portal with the email and password you chose.",
+    ],
+    cta: { href: loginUrl, label: "Sign in to your portal" },
+  });
+  await sendBrandedTransactional({
+    to: opts.to,
+    subject: "Welcome to the Collectiv. Studio client portal",
+    html,
+    logTag: "client-register-welcome",
+  });
+}
+
 // --- Client: contract ready to sign ---
 
 export async function emailNotifyClientContractReadyToSign(opts: {

@@ -8,6 +8,7 @@ function isPortalPublicAuthPath(pathname: string) {
   return (
     pathname === "/portal/login" ||
     pathname === "/portal/register" ||
+    pathname === "/portal/register/success" ||
     pathname === "/portal/forgot-password" ||
     pathname === "/portal/reset-password"
   );
