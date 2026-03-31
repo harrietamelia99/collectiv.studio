@@ -324,7 +324,7 @@ export function buildSocialClientHubCards(
       ? `${signedOff} of ${inMonth} posts scheduled for ${monthLabel} are signed off.`
       : items.length > 0
         ? `Nothing dated in ${monthLabel} yet. ${signed} of ${items.length} posts signed off overall.`
-        : "Posts appear here when the studio adds them to your calendar.";
+    : "Posts appear here when the studio adds them to your calendar.";
 
   if (project.portalKind !== "SOCIAL") {
     return [

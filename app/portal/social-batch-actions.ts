@@ -23,7 +23,7 @@ import {
 import {
   notifyStudioTeamCalendarMonthFullyApproved,
 } from "@/lib/studio-inbox-notify";
-import { saveProjectUpload, validateUploadExtension } from "@/lib/portal-uploads";
+import { rethrowPortalUploadAction, saveProjectUpload, validateUploadExtension } from "@/lib/portal-uploads";
 import { normalizeCalendarChannelsFromForm } from "@/lib/calendar-channels";
 
 function revProject(projectId: string) {
@@ -112,7 +112,11 @@ export async function saveStudioCalendarPost(projectId: string, itemId: string, 
     if (bad) return;
     const buf = Buffer.from(await file.arrayBuffer());
     if (buf.length > 8 * 1024 * 1024) return;
-    imagePath = await saveProjectUpload(projectId, file.name, buf, "socialCalendarCreative");
+    try {
+      imagePath = await saveProjectUpload(projectId, file.name, buf, "socialCalendarCreative");
+    } catch (e) {
+      rethrowPortalUploadAction("saveStudioCalendarPost", e);
+    }
   }
 
   const clearImage = String(formData.get("clearImage") ?? "") === "1";

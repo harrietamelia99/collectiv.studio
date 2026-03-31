@@ -43,9 +43,11 @@ export default async function PortalLayout({ children }: { children: React.React
     );
   }
 
-  const session = await getServerSession(authOptions);
+  const [session, dbAvailable] = await Promise.all([
+    getServerSession(authOptions),
+    getPortalDatabaseAvailable(),
+  ]);
   const studio = isStudioUser(session?.user?.email);
-  const dbAvailable = await getPortalDatabaseAvailable();
 
   let studioPersonaSlug: string | null = null;
   let clientNotificationUnread = 0;

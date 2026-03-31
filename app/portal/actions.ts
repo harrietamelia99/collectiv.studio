@@ -19,6 +19,8 @@ import {
 import { normalizePhoneForStorage, portalClientPasswordOk, registrationPhoneOk } from "@/lib/portal-registration";
 import { notifyStudioClientRegistered } from "@/lib/portal-notify";
 import {
+  formatPortalUploadFailureForUser,
+  rethrowPortalUploadAction,
   saveFontUpload,
   saveProjectUpload,
   socialCalendarUploadMediaKind,
@@ -745,7 +747,11 @@ async function tryCreateContentCalendarPostFromStudioForm(
     const buf = Buffer.from(await file.arrayBuffer());
     const maxBytes = mediaKind === "video" ? 80 * 1024 * 1024 : 15 * 1024 * 1024;
     if (buf.length > maxBytes) return { ok: false };
-    imagePath = await saveProjectUpload(projectId, file.name, buf, "socialCalendarCreative");
+    try {
+      imagePath = await saveProjectUpload(projectId, file.name, buf, "socialCalendarCreative");
+    } catch (e) {
+      rethrowPortalUploadAction("addCalendarPost creative", e);
+    }
     postFormat = mediaKind === "video" ? "VIDEO" : "GRAPHIC";
   } else if (!isDraft) {
     return { ok: false };
@@ -877,14 +883,18 @@ export async function uploadWebsiteFont(projectId: string, formData: FormData): 
   if (buf.length > 12 * 1024 * 1024) return;
   const lower = file.name.toLowerCase();
   if (!/\.(woff2?|ttf|otf)$/.test(lower)) return;
-  const rel = await saveFontUpload(projectId, file.name, buf);
-  const paths = parseFontPaths(project.websiteFontPaths);
-  paths.push(rel);
-  await prisma.project.update({
-    where: { id: projectId },
-    data: { websiteFontPaths: JSON.stringify(paths) },
-  });
-  await revalidateProject(projectId);
+  try {
+    const rel = await saveFontUpload(projectId, file.name, buf);
+    const paths = parseFontPaths(project.websiteFontPaths);
+    paths.push(rel);
+    await prisma.project.update({
+      where: { id: projectId },
+      data: { websiteFontPaths: JSON.stringify(paths) },
+    });
+    await revalidateProject(projectId);
+  } catch (e) {
+    rethrowPortalUploadAction("uploadWebsiteFont", e);
+  }
 }
 
 export async function uploadWebsiteLogo(projectId: string, formData: FormData): Promise<void> {
@@ -901,12 +911,16 @@ export async function uploadWebsiteLogo(projectId: string, formData: FormData): 
   const buf = Buffer.from(await file.arrayBuffer());
   if (buf.length > 8 * 1024 * 1024) return;
   const kind = okVec ? "vector" : "raster";
-  const rel = await saveProjectUpload(projectId, file.name, buf, kind);
-  await prisma.project.update({
-    where: { id: projectId },
-    data: { websiteLogoPath: rel },
-  });
-  await revalidateProject(projectId);
+  try {
+    const rel = await saveProjectUpload(projectId, file.name, buf, kind);
+    await prisma.project.update({
+      where: { id: projectId },
+      data: { websiteLogoPath: rel },
+    });
+    await revalidateProject(projectId);
+  } catch (e) {
+    rethrowPortalUploadAction("uploadWebsiteLogo", e);
+  }
 }
 
 export async function clearWebsiteLogo(projectId: string, formData?: FormData): Promise<void> {
@@ -948,13 +962,17 @@ export async function uploadWebsiteLogoVariation(projectId: string, formData: Fo
   const customLabel = kind === "other" && customRaw ? customRaw : undefined;
 
   const uploadKind = okVec ? "vector" : "raster";
-  const rel = await saveProjectUpload(projectId, file.name, buf, uploadKind);
-  variations.push({ path: rel, kind, customLabel });
-  await prisma.project.update({
-    where: { id: projectId },
-    data: { websiteLogoVariationsJson: JSON.stringify(variations) },
-  });
-  await revalidateProject(projectId);
+  try {
+    const rel = await saveProjectUpload(projectId, file.name, buf, uploadKind);
+    variations.push({ path: rel, kind, customLabel });
+    await prisma.project.update({
+      where: { id: projectId },
+      data: { websiteLogoVariationsJson: JSON.stringify(variations) },
+    });
+    await revalidateProject(projectId);
+  } catch (e) {
+    rethrowPortalUploadAction("uploadWebsiteLogoVariation", e);
+  }
 }
 
 export async function removeWebsiteLogoVariation(
@@ -1284,7 +1302,11 @@ export async function addReviewAsset(formData: FormData): Promise<void> {
     if (bad) return;
     const buf = Buffer.from(await file.arrayBuffer());
     if (buf.length > 20 * 1024 * 1024) return;
-    filePath = await saveProjectUpload(projectId, file.name, buf, "reviewAsset");
+    try {
+      filePath = await saveProjectUpload(projectId, file.name, buf, "reviewAsset");
+    } catch (e) {
+      rethrowPortalUploadAction("addReviewAsset", e);
+    }
   }
 
   await prisma.reviewAsset.create({
@@ -1393,22 +1415,26 @@ export async function saveWebsitePageBrief(projectId: string, pageIndex: number,
   const paths = parsePageImagePaths(existing?.imagePaths ?? "[]");
 
   const uploads = formData.getAll("images");
-  for (const file of uploads) {
-    if (!(file instanceof File) || file.size === 0) continue;
-    if (paths.length >= 12) break;
-    if (validateUploadExtension(file.name, "raster")) continue;
-    const buf = Buffer.from(await file.arrayBuffer());
-    if (buf.length > 8 * 1024 * 1024) continue;
-    const rel = await saveProjectUpload(projectId, file.name, buf, "raster");
-    paths.push(rel);
-  }
+  try {
+    for (const file of uploads) {
+      if (!(file instanceof File) || file.size === 0) continue;
+      if (paths.length >= 12) break;
+      if (validateUploadExtension(file.name, "raster") !== null) continue;
+      const buf = Buffer.from(await file.arrayBuffer());
+      if (buf.length > 8 * 1024 * 1024) continue;
+      const rel = await saveProjectUpload(projectId, file.name, buf, "raster");
+      paths.push(rel);
+    }
 
-  await prisma.websitePageBrief.upsert({
-    where: { projectId_pageIndex: { projectId, pageIndex } },
-    create: { projectId, pageIndex, headline, bodyCopy, imagePaths: JSON.stringify(paths) },
-    update: { headline, bodyCopy, imagePaths: JSON.stringify(paths) },
-  });
-  await revalidateProject(projectId);
+    await prisma.websitePageBrief.upsert({
+      where: { projectId_pageIndex: { projectId, pageIndex } },
+      create: { projectId, pageIndex, headline, bodyCopy, imagePaths: JSON.stringify(paths) },
+      update: { headline, bodyCopy, imagePaths: JSON.stringify(paths) },
+    });
+    await revalidateProject(projectId);
+  } catch (e) {
+    rethrowPortalUploadAction("saveWebsitePageBrief", e);
+  }
 }
 
 export async function removeWebsitePageImage(
@@ -2331,15 +2357,21 @@ export async function uploadBrandQuestionnaireFile(
     return { ok: false, error: "Too many files — remove one or contact the studio" };
   }
 
-  const rel = await saveProjectUpload(projectId, file.name, buf, uploadKind);
-  if (slot === "inspiration") data.visualInspirationImagePaths.push(rel);
-  else data.existingAssetsFilePaths.push(rel);
+  let rel: string;
+  try {
+    rel = await saveProjectUpload(projectId, file.name, buf, uploadKind);
+    if (slot === "inspiration") data.visualInspirationImagePaths.push(rel);
+    else data.existingAssetsFilePaths.push(rel);
 
-  await prisma.project.update({
-    where: { id: projectId },
-    data: { brandingQuestionnaireJson: stringifyBrandQuestionnaire(data) },
-  });
-  await revalidateProject(projectId);
+    await prisma.project.update({
+      where: { id: projectId },
+      data: { brandingQuestionnaireJson: stringifyBrandQuestionnaire(data) },
+    });
+    await revalidateProject(projectId);
+  } catch (e) {
+    console.error("[portal upload] uploadBrandQuestionnaireFile", e);
+    return { ok: false, error: formatPortalUploadFailureForUser(e) };
+  }
   return { ok: true, path: rel };
 }
 

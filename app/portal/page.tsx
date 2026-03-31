@@ -12,14 +12,13 @@ import { normalizePortalKind, portalKindLabel } from "@/lib/portal-project-kind"
 import { normalizePaymentStatus } from "@/lib/portal-payment-status";
 import { StudioAgencyDashboard } from "@/components/portal/StudioAgencyDashboard";
 import { StudioAgencyDashboardOffline } from "@/components/portal/StudioAgencyDashboardOffline";
-import { backfillOpenAgencyTodosMissingDueDate } from "@/lib/agency-todos";
 import { clientJourneyCombinedProgressPercent } from "@/lib/agency-combined-progress";
 import { loadAccountBrandKitSlice } from "@/lib/portal-account-brand-kit";
 import { loadClientWorkflowAccessOpts } from "@/lib/portal-brand-kit-gate";
 import { parseInspirationLinksJson } from "@/lib/portal-inspiration-links";
 import { parseSocialOnboardingJson } from "@/lib/social-onboarding";
-import { syncAutoPhaseTodosForAllProjects } from "@/lib/studio-auto-phase-todos";
 import { syncStudioTeamFromEnv } from "@/lib/studio-team-sync";
+import { StudioHomeHeavySyncTrigger } from "@/components/portal/StudioHomeHeavySyncTrigger";
 import { studioAdminDisplayLabel, studioAdminRoleHint } from "@/lib/studio-admin-options";
 import {
   HubIconBranding,
@@ -231,21 +230,21 @@ async function ClientProjectList({ userId }: { userId: string }) {
 }
 
 export default async function PortalHomePage({ searchParams }: { searchParams?: Search }) {
-  const session = await getServerSession(authOptions);
+  const [session, dbAvailable] = await Promise.all([
+    getServerSession(authOptions),
+    getPortalDatabaseAvailable(),
+  ]);
   if (!session?.user?.id) redirect("/portal/login");
 
   const studio = isStudioUser(session.user.email);
   const created = searchParams?.created === "1";
   const createdPair = searchParams?.created === "pair";
-  const dbAvailable = await getPortalDatabaseAvailable();
 
   /** Studio logins use the dashboard with every project; everyone else is treated as a client only. */
   if (studio) {
     let studioTeamProfile: { personaSlug: string | null } | null = null;
     if (dbAvailable && session.user.id) {
       await syncStudioTeamFromEnv();
-      await syncAutoPhaseTodosForAllProjects();
-      await backfillOpenAgencyTodosMissingDueDate();
       studioTeamProfile = await prisma.studioTeamMember.findUnique({
         where: { userId: session.user.id },
         select: { personaSlug: true },
@@ -267,10 +266,13 @@ export default async function PortalHomePage({ searchParams }: { searchParams?: 
 
         {session.user.id ? (
           dbAvailable ? (
-            <StudioAgencyDashboard
-              userId={session.user.id}
-              createdBanner={createdPair ? "pair" : created ? "single" : null}
-            />
+            <>
+              <StudioHomeHeavySyncTrigger />
+              <StudioAgencyDashboard
+                userId={session.user.id}
+                createdBanner={createdPair ? "pair" : created ? "single" : null}
+              />
+            </>
           ) : (
             <StudioAgencyDashboardOffline createdBanner={createdPair ? "pair" : created ? "single" : null} />
           )

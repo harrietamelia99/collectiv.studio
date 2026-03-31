@@ -114,7 +114,7 @@ async function fetchMediaOnce(
    * after you renew INSTAGRAM_ACCESS_TOKEN on Vercel (otherwise the grid looks “gone” until cache expires).
    */
   const res = await fetch(url, { cache: "no-store" });
-  const json = (await res.json()) as GraphMediaResponse;
+    const json = (await res.json()) as GraphMediaResponse;
   if (!res.ok || json.error?.message) {
     return {
       items: null,
@@ -126,19 +126,19 @@ async function fetchMediaOnce(
     return { items: null, status: res.status };
   }
 
-  const out: InstagramFeedItem[] = [];
-  for (const node of json.data) {
-    const imageSrc = displayUrl(node);
-    const permalink = node.permalink;
-    if (!imageSrc || !permalink) continue;
-    out.push({
-      id: node.id,
-      permalink,
-      imageSrc,
-      mediaType: node.media_type || "UNKNOWN",
-    });
-    if (out.length >= capped) break;
-  }
+    const out: InstagramFeedItem[] = [];
+    for (const node of json.data) {
+      const imageSrc = displayUrl(node);
+      const permalink = node.permalink;
+      if (!imageSrc || !permalink) continue;
+      out.push({
+        id: node.id,
+        permalink,
+        imageSrc,
+        mediaType: node.media_type || "UNKNOWN",
+      });
+      if (out.length >= capped) break;
+    }
   return { items: out.length > 0 ? out : null, status: res.status };
 }
 

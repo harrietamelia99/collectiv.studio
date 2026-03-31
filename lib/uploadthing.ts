@@ -25,19 +25,38 @@ export function getUtapi(): UTApi {
   return utapiSingleton;
 }
 
+function uploadThingFailureMessage(err: unknown): string {
+  if (err && typeof err === "object" && "message" in err && typeof (err as { message: unknown }).message === "string") {
+    return (err as { message: string }).message;
+  }
+  return String(err);
+}
+
 /**
- * Upload a buffer from server actions (portal). Returns the public `ufsUrl` stored in Prisma.
+ * Upload a buffer from server actions (portal). Returns the public URL stored in Prisma (`ufsUrl` preferred).
  */
 export async function uploadBufferToUploadThing(originalName: string, data: Buffer): Promise<string> {
   const utapi = getUtapi();
   const file = new UTFile([new Uint8Array(data)], originalName);
   const res = await utapi.uploadFiles(file);
   const row = Array.isArray(res) ? res[0] : res;
-  if (row.error) {
-    throw new Error(row.error.message || "UploadThing upload failed");
+  if (!row || typeof row !== "object") {
+    throw new Error("UploadThing returned an unexpected response");
   }
-  if (!row.data) throw new Error("UploadThing returned no file data");
-  return row.data.ufsUrl || row.data.url;
+  if ("error" in row && row.error != null) {
+    throw new Error(uploadThingFailureMessage(row.error) || "UploadThing upload failed");
+  }
+  const payload = "data" in row ? row.data : null;
+  if (!payload || typeof payload !== "object") {
+    throw new Error("UploadThing returned no file data");
+  }
+  const d = payload as Record<string, unknown>;
+  const candidates = [d.ufsUrl, d.url, d.appUrl];
+  const url = candidates.find((x) => typeof x === "string" && x.trim().length > 0) as string | undefined;
+  if (!url) {
+    throw new Error("UploadThing succeeded but returned no public URL (missing ufsUrl / url)");
+  }
+  return url.trim();
 }
 
 /** Extract file key from a stored ufs/app URL for `deleteFiles`. */

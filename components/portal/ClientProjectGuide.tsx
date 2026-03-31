@@ -245,7 +245,7 @@ export function ClientProjectGuide({
           <>
             <Link href={`${sk}inspiration`} className="font-semibold text-burgundy underline-offset-2 hover:underline">
               Inspiration
-            </Link>{" "}
+              </Link>{" "}
             — mood links and written notes.
           </>
         </StepRow>

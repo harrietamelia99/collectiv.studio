@@ -126,9 +126,15 @@ function clamp(s: string, max: number): string {
   return s.trim().slice(0, max);
 }
 
-function asStringArray(x: unknown): string[] {
+const MAX_TAG_ITEM_LEN = 80;
+/** UploadThing / legacy paths — must not be truncated to tag length. */
+const MAX_STORED_ASSET_PATH_LEN = 4096;
+
+function asStringArray(x: unknown, maxElementLength: number): string[] {
   if (!Array.isArray(x)) return [];
-  return x.filter((i): i is string => typeof i === "string").map((s) => s.slice(0, 80));
+  return x
+    .filter((i): i is string => typeof i === "string")
+    .map((s) => s.trim().slice(0, maxElementLength));
 }
 
 /** Normalise parsed JSON into v2 shape (migrates legacy four-field questionnaire). */
@@ -146,21 +152,24 @@ export function parseBrandQuestionnaireJson(raw: string | null | undefined): Bra
         businessJourney: clamp(String(v.businessJourney ?? ""), 80),
         businessJourneyOther: clamp(String(v.businessJourneyOther ?? ""), 2000),
         idealCustomer: clamp(String(v.idealCustomer ?? ""), 8000),
-        audienceOnline: asStringArray(v.audienceOnline),
+        audienceOnline: asStringArray(v.audienceOnline, MAX_TAG_ITEM_LEN),
         audienceOnlineOther: clamp(String(v.audienceOnlineOther ?? ""), 2000),
         customerFeelings: clamp(String(v.customerFeelings ?? ""), 8000),
-        personalityTags: asStringArray(v.personalityTags),
-        toneTags: asStringArray(v.toneTags),
+        personalityTags: asStringArray(v.personalityTags, MAX_TAG_ITEM_LEN),
+        toneTags: asStringArray(v.toneTags, MAX_TAG_ITEM_LEN),
         brandNeverFeels: clamp(String(v.brandNeverFeels ?? ""), 8000),
         colourPreferences: clamp(String(v.colourPreferences ?? ""), 8000),
-        visualStyleTags: asStringArray(v.visualStyleTags),
+        visualStyleTags: asStringArray(v.visualStyleTags, MAX_TAG_ITEM_LEN),
         visualInspirationNotes: clamp(String(v.visualInspirationNotes ?? ""), 8000),
-        visualInspirationImagePaths: asStringArray(v.visualInspirationImagePaths).slice(0, 5),
+        visualInspirationImagePaths: asStringArray(v.visualInspirationImagePaths, MAX_STORED_ASSET_PATH_LEN).slice(
+          0,
+          5,
+        ),
         competitorsAdmire: clamp(String(v.competitorsAdmire ?? ""), 8000),
         whatMakesDifferent: clamp(String(v.whatMakesDifferent ?? ""), 8000),
         hasExistingAssets: clamp(String(v.hasExistingAssets ?? ""), 20),
         existingAssetsNotes: clamp(String(v.existingAssetsNotes ?? ""), 8000),
-        existingAssetsFilePaths: asStringArray(v.existingAssetsFilePaths).slice(0, 10),
+        existingAssetsFilePaths: asStringArray(v.existingAssetsFilePaths, MAX_STORED_ASSET_PATH_LEN).slice(0, 10),
       };
     }
     const mission = clamp(String(v.brandMission ?? ""), 8000);

@@ -129,6 +129,7 @@ export function BrandQuestionnaireForm({
   const [savedFlash, setSavedFlash] = useState(false);
   const [submitIssues, setSubmitIssues] = useState<{ section: number; label: string }[] | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [fileUploadError, setFileUploadError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const skipSave = useRef(true);
   const saveFlashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -184,6 +185,7 @@ export function BrandQuestionnaireForm({
 
   const upload = useCallback(
     async (slot: "inspiration" | "existing", file: File) => {
+      setFileUploadError(null);
       const fd = new FormData();
       fd.set("slot", slot);
       fd.set("file", file);
@@ -195,6 +197,8 @@ export function BrandQuestionnaireForm({
             : { ...prev, existingAssetsFilePaths: [...prev.existingAssetsFilePaths, r.path!] },
         );
         router.refresh();
+      } else if (!r.ok && r.error) {
+        setFileUploadError(r.error);
       }
       return r;
     },
@@ -242,6 +246,23 @@ export function BrandQuestionnaireForm({
           submit.
         </p>
       </div>
+
+      {fileUploadError ? (
+        <div
+          className="rounded-2xl border border-rose-200/90 bg-rose-50/90 px-5 py-4 font-body text-sm leading-relaxed text-rose-950/90 sm:px-6"
+          role="alert"
+        >
+          <p className="font-medium">Upload didn&apos;t complete</p>
+          <p className="mt-2 text-rose-900/85">{fileUploadError}</p>
+          <button
+            type="button"
+            className="mt-3 font-body text-xs font-semibold uppercase tracking-[0.08em] text-rose-900 underline-offset-4 hover:underline"
+            onClick={() => setFileUploadError(null)}
+          >
+            Dismiss
+          </button>
+        </div>
+      ) : null}
 
       <div
         className={`flex min-h-[1.5rem] items-center gap-2 font-body text-xs text-burgundy/55 transition-opacity duration-300 ${

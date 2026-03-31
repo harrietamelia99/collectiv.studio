@@ -75,7 +75,12 @@ export async function saveProjectUpload(
   void projectId;
   const bad = validateUploadExtension(originalName, kind);
   if (bad) throw new Error(bad);
-  return uploadBufferToUploadThing(originalName, data);
+  const stored = (await uploadBufferToUploadThing(originalName, data)).trim();
+  if (!stored) throw new Error("Upload succeeded but no file URL was returned.");
+  if (!/^https?:\/\//i.test(stored) && !stored.includes("/")) {
+    throw new Error("Upload returned an unexpected path format.");
+  }
+  return stored;
 }
 
 /** Web font files (woff/woff2/ttf/otf) — not restricted to image/video routes. */
@@ -85,7 +90,30 @@ export async function saveFontUpload(projectId: string, originalName: string, da
   if (!/\.(woff2?|ttf|otf)$/.test(lower)) {
     throw new Error("Fonts must be WOFF, WOFF2, TTF, or OTF.");
   }
-  return uploadBufferToUploadThing(originalName, data);
+  const stored = (await uploadBufferToUploadThing(originalName, data)).trim();
+  if (!stored) throw new Error("Upload succeeded but no file URL was returned.");
+  return stored;
+}
+
+/** Map upload / Prisma failures to a short, user-safe message for UI or server-action errors. */
+export function formatPortalUploadFailureForUser(err: unknown): string {
+  const raw = err instanceof Error ? err.message : String(err);
+  if (/UPLOADTHING_TOKEN|not set/i.test(raw)) {
+    return "File uploads are not configured on the server (missing storage credentials). Please contact the studio.";
+  }
+  if (/UploadThing|uploadthing|ufsUrl|presigned/i.test(raw)) {
+    return raw.length > 220 ? `${raw.slice(0, 220)}…` : raw;
+  }
+  if (/P20\d{2}/.test(raw) || /prisma/i.test(raw)) {
+    return "Could not save the file to the project. Please try again.";
+  }
+  if (raw.length <= 220) return raw;
+  return `${raw.slice(0, 220)}…`;
+}
+
+export function rethrowPortalUploadAction(ctx: string, err: unknown): never {
+  console.error(`[portal upload] ${ctx}`, err);
+  throw new Error(formatPortalUploadFailureForUser(err));
 }
 
 /** @deprecated Prefer storing UploadThing URLs; used only for legacy disk paths. */
