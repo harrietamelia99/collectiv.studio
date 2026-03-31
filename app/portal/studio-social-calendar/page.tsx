@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
-import { isStudioUser, projectWhereStudioMayViewSocialCalendar } from "@/lib/portal-access";
+import { isAgencyPortalSession, projectWhereStudioMayViewSocialCalendar } from "@/lib/portal-access";
 import { PORTAL_KINDS_WITH_SOCIAL } from "@/lib/portal-project-kind";
 import { portalFilePublicUrl } from "@/lib/portal-file-url";
 import { parseCalendarChannelsJson } from "@/lib/calendar-channels";
@@ -21,21 +21,18 @@ export const metadata: Metadata = {
 export default async function StudioSocialMasterCalendarPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/portal/login");
-  if (!isStudioUser(session.user.email)) redirect("/portal");
+  if (!isAgencyPortalSession(session)) redirect("/portal");
 
-  const studioMember = await prisma.studioTeamMember.findUnique({
-    where: { userId: session.user.id },
-    select: { personaSlug: true },
-  });
-  const viewerPersonaSlug = studioMember?.personaSlug ?? null;
-  if (viewerPersonaSlug === "isabella") redirect("/portal");
+  const viewerAgencyRole = session.user.agencyRole;
+  if (viewerAgencyRole === "ISSY") redirect("/portal");
+  if (!viewerAgencyRole) redirect("/portal");
 
   const [rows, studioMasterPostTargets] = await Promise.all([
     prisma.contentCalendarItem.findMany({
       where: {
         project: {
           portalKind: { in: [...PORTAL_KINDS_WITH_SOCIAL] },
-          ...projectWhereStudioMayViewSocialCalendar(session.user.id, viewerPersonaSlug),
+          ...projectWhereStudioMayViewSocialCalendar(session.user.id, viewerAgencyRole),
         },
       },
       orderBy: [{ scheduledFor: "asc" }, { createdAt: "asc" }],
@@ -48,7 +45,7 @@ export default async function StudioSocialMasterCalendarPage() {
     prisma.project.findMany({
       where: {
         portalKind: { in: [...PORTAL_KINDS_WITH_SOCIAL] },
-        ...projectWhereStudioMayViewSocialCalendar(session.user.id, viewerPersonaSlug),
+        ...projectWhereStudioMayViewSocialCalendar(session.user.id, viewerAgencyRole),
       },
       select: { id: true, name: true },
       orderBy: { name: "asc" },
@@ -88,7 +85,7 @@ export default async function StudioSocialMasterCalendarPage() {
       <header className="mt-6 max-w-3xl">
         <h1 className="font-display text-cc-h2 tracking-[-0.03em] text-burgundy">Social content calendar</h1>
         <p className="mt-3 font-body text-sm leading-relaxed text-burgundy/70 md:text-[15px]">
-          {viewerPersonaSlug === "may" ? (
+          {viewerAgencyRole === "SOCIAL_MANAGER" ? (
             <>
               Scheduled posts for <strong className="font-semibold text-burgundy">your</strong> assigned social and
               multi-area clients only. Open a row to jump to that client&apos;s social workspace.

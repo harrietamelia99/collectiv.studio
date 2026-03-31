@@ -7,7 +7,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { agencyTodoDueInCalendarDays } from "@/lib/agency-todo-deadlines";
 import { prisma } from "@/lib/prisma";
-import { isStudioUser } from "@/lib/portal-access";
+import { emailBelongsToAgencyStaff, isAgencyPortalSession } from "@/lib/portal-access";
 import { emailNotifyClientContractReadyToSign } from "@/lib/email-notifications";
 import { getPortalPublicOrigin, sendClientPortalInviteEmail } from "@/lib/portal-client-email";
 import { sessionStudioPersonaIsIssy } from "@/lib/studio-issy-guard";
@@ -47,7 +47,7 @@ export async function completeAgencyTodo(formData: FormData): Promise<void> {
   if (!todoId) return;
 
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.id || !isAgencyPortalSession(session)) return;
 
   const todo = await prisma.agencyTodo.findUnique({ where: { id: todoId } });
   if (!todo || todo.assigneeUserId !== session.user.id) return;
@@ -68,7 +68,7 @@ export async function reopenAgencyTodo(formData: FormData): Promise<void> {
   if (!todoId) return;
 
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.id || !isAgencyPortalSession(session)) return;
 
   const todo = await prisma.agencyTodo.findUnique({ where: { id: todoId } });
   if (!todo || todo.assigneeUserId !== session.user.id) return;
@@ -85,7 +85,7 @@ export async function deleteAgencyTodo(formData: FormData): Promise<void> {
   if (!todoId) return;
 
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.id || !isAgencyPortalSession(session)) return;
 
   const todo = await prisma.agencyTodo.findUnique({ where: { id: todoId } });
   if (!todo || todo.assigneeUserId !== session.user.id) return;
@@ -107,7 +107,7 @@ export async function permanentlyDeleteCompletedAgencyTodo(formData: FormData): 
   if (!todoId) return;
 
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.id || !isAgencyPortalSession(session)) return;
 
   const todo = await prisma.agencyTodo.findUnique({ where: { id: todoId } });
   if (!todo || todo.assigneeUserId !== session.user.id) return;
@@ -119,7 +119,7 @@ export async function permanentlyDeleteCompletedAgencyTodo(formData: FormData): 
 
 export async function addManualAgencyTodo(formData: FormData): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.id || !isAgencyPortalSession(session)) return;
 
   const title = String(formData.get("title") ?? "").trim();
   if (!title || title.length > 200) return;
@@ -142,7 +142,7 @@ export async function addManualAgencyTodo(formData: FormData): Promise<void> {
 
 export async function saveStudioTeamProfile(formData: FormData): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.id || !isAgencyPortalSession(session)) return;
 
   const member = await prisma.studioTeamMember.findUnique({ where: { userId: session.user.id } });
   if (!member) return;
@@ -181,7 +181,7 @@ export async function saveStudioTeamProfile(formData: FormData): Promise<void> {
 
 export async function addStudioTimeOff(formData: FormData): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.id || !isAgencyPortalSession(session)) return;
 
   const start = parseYmd(String(formData.get("startDate") ?? ""));
   const end = parseYmd(String(formData.get("endDate") ?? ""));
@@ -202,7 +202,7 @@ export async function addStudioTimeOff(formData: FormData): Promise<void> {
 
 export async function deleteStudioTimeOff(timeOffId: string): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.id || !isAgencyPortalSession(session)) return;
 
   const row = await prisma.studioTimeOff.findUnique({ where: { id: timeOffId } });
   if (!row || row.userId !== session.user.id) return;
@@ -213,7 +213,7 @@ export async function deleteStudioTimeOff(timeOffId: string): Promise<void> {
 
 export async function postStudioTeamChatMessage(formData: FormData): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !isStudioUser(session.user.email)) {
+  if (!session?.user?.id || !isAgencyPortalSession(session)) {
     return portalFlashErr("Couldn’t send message. Try again.");
   }
 
@@ -236,6 +236,7 @@ export async function postStudioTeamChatMessage(formData: FormData): Promise<Por
   const members: MentionMember[] = membersRaw.map((m) => ({
     userId: m.userId,
     personaSlug: m.personaSlug,
+    studioRole: m.studioRole,
     welcomeName: m.welcomeName,
     user: m.user,
   }));
@@ -267,7 +268,7 @@ export async function postStudioTeamChatMessage(formData: FormData): Promise<Por
 
 export async function markStudioNotificationRead(notificationId: string): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.id || !isAgencyPortalSession(session)) return;
 
   const row = await prisma.studioNotification.findUnique({ where: { id: notificationId } });
   if (!row || row.userId !== session.user.id) return;
@@ -281,7 +282,7 @@ export async function markStudioNotificationRead(notificationId: string): Promis
 
 export async function markAllStudioNotificationsRead(): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.id || !isAgencyPortalSession(session)) return;
 
   await prisma.studioNotification.updateMany({
     where: { userId: session.user.id, readAt: null },
@@ -292,7 +293,7 @@ export async function markAllStudioNotificationsRead(): Promise<void> {
 
 export async function deleteStudioNotification(notificationId: string): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.id || !isAgencyPortalSession(session)) return;
 
   const row = await prisma.studioNotification.findUnique({ where: { id: notificationId } });
   if (!row || row.userId !== session.user.id) return;
@@ -363,13 +364,10 @@ export async function dismissStudioAgencyInboxItem(formData: FormData): Promise<
   const anchorCalendarUpdatedAtIso = String(formData.get("anchorCalendarUpdatedAt") ?? "").trim();
 
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !isStudioUser(session.user.email)) return { ok: false };
+  if (!session?.user?.id || !isAgencyPortalSession(session)) return { ok: false };
 
-  const member = await prisma.studioTeamMember.findUnique({
-    where: { userId: session.user.id },
-    select: { personaSlug: true },
-  });
-  const personaSlug = member?.personaSlug ?? "isabella";
+  const agencyRole = session.user.agencyRole;
+  if (!agencyRole) return { ok: false };
 
   const notifications = await prisma.studioNotification.findMany({
     where: { userId: session.user.id },
@@ -386,7 +384,7 @@ export async function dismissStudioAgencyInboxItem(formData: FormData): Promise<
       select: { assignedStudioUserId: true, portalKind: true },
     });
     if (!project) return { ok: false };
-    if (!canDismissAgencyInboxThreadItem(personaSlug, session.user.id, project)) return { ok: false };
+    if (!canDismissAgencyInboxThreadItem(agencyRole, session.user.id, project)) return { ok: false };
     if (!studioInboxThreadDismissReadOk(projectId, notifications)) return { ok: false };
 
     const lastClient = await prisma.projectMessage.findFirst({
@@ -437,7 +435,7 @@ export async function dismissStudioAgencyInboxItem(formData: FormData): Promise<
 
     const anchorMs = new Date(anchorCalendarUpdatedAtIso).getTime();
     if (Number.isNaN(anchorMs) || item.updatedAt.getTime() !== anchorMs) return { ok: false };
-    if (!canDismissAgencyInboxCalendarItem(personaSlug, session.user.id, item.project)) return { ok: false };
+    if (!canDismissAgencyInboxCalendarItem(agencyRole, session.user.id, item.project)) return { ok: false };
     if (!studioInboxCalendarDismissReadOk(calendarItemId, notifications)) return { ok: false };
 
     await prisma.studioAgencyInboxDismissal.upsert({
@@ -470,18 +468,12 @@ export async function dismissStudioAgencyInboxItem(formData: FormData): Promise<
 
 export async function updateProjectAssignedStudioAdmin(projectId: string, formData: FormData): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || !isStudioUser(session.user.email)) {
+  if (!session?.user?.email || !isAgencyPortalSession(session)) {
     return portalFlashErr("Couldn’t save assignee. Try again.");
   }
 
-  const viewerMember = session.user.id
-    ? await prisma.studioTeamMember.findUnique({
-        where: { userId: session.user.id },
-        select: { personaSlug: true },
-      })
-    : null;
-  /** Ops lead (Issy) assigns Harriet / May; other studio personas cannot change assignee. */
-  if (viewerMember?.personaSlug !== "isabella") {
+  /** Ops lead (Issy) assigns project leads; social managers and Harriet cannot change assignee. */
+  if (session.user.agencyRole !== "ISSY") {
     return portalFlashErr("Couldn’t save assignee. Try again.");
   }
 
@@ -494,7 +486,7 @@ export async function updateProjectAssignedStudioAdmin(projectId: string, formDa
   let assignedStudioUserId: string | null = null;
   if (raw) {
     const u = await prisma.user.findUnique({ where: { id: raw }, select: { id: true, email: true } });
-    if (!u || !isStudioUser(u.email)) {
+    if (!u || !(await emailBelongsToAgencyStaff(u.email))) {
       return portalFlashErr("Couldn’t save assignee. Try again.");
     }
     assignedStudioUserId = u.id;
@@ -564,7 +556,7 @@ export async function reopenClientWorkflowStep(formData: FormData): Promise<void
   if (!projectId || !stream || !slug || !REOPEN_STREAMS.has(stream)) return;
 
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.id || !isAgencyPortalSession(session)) return;
 
   const project = await prisma.project.findUnique({ where: { id: projectId } });
   if (!project) return;
@@ -589,7 +581,7 @@ export async function addProjectInternalNote(projectId: string, formData: FormDa
     return portalFlashErr("Add note text before saving.");
   }
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !isStudioUser(session.user.email)) {
+  if (!session?.user?.id || !isAgencyPortalSession(session)) {
     return portalFlashErr("Couldn’t save note. Try again.");
   }
   const project = await prisma.project.findUnique({ where: { id: projectId } });
@@ -610,7 +602,7 @@ export async function toggleStudioWorkflowStepReviewed(formData: FormData): Prom
     return portalFlashErr("Couldn’t update review flag. Try again.");
   }
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !isStudioUser(session.user.email)) {
+  if (!session?.user?.id || !isAgencyPortalSession(session)) {
     return portalFlashErr("Couldn’t update review flag. Try again.");
   }
   const project = await prisma.project.findUnique({ where: { id: projectId } });
@@ -641,7 +633,7 @@ export async function toggleStudioWebsiteLiveConfirmed(formData: FormData): Prom
     return portalFlashErr("Couldn’t update site status. Try again.");
   }
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !isStudioUser(session.user.email)) {
+  if (!session?.user?.id || !isAgencyPortalSession(session)) {
     return portalFlashErr("Couldn’t update site status. Try again.");
   }
   const project = await prisma.project.findUnique({ where: { id: projectId } });
@@ -687,7 +679,7 @@ export async function deleteStudioClientTestAccountByIssy(formData: FormData): P
     select: { id: true, email: true },
   });
   if (!user || user.email.toLowerCase() !== confirmEmail) return;
-  if (isStudioUser(user.email)) return;
+  if (await emailBelongsToAgencyStaff(user.email)) return;
   const team = await prisma.studioTeamMember.findUnique({ where: { userId: user.id }, select: { id: true } });
   if (team) return;
   await prisma.user.delete({ where: { id: user.id } });

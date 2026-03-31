@@ -10,7 +10,12 @@ import bcrypt from "bcryptjs";
 import { MAX_STORED_ASSET_URL_OR_PATH_LEN } from "@/lib/portal-asset-constants";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
-import { getProjectForSession, isStudioUser, studioMayAccessProjectSocialCalendar } from "@/lib/portal-access";
+import {
+  emailBelongsToAgencyStaff,
+  getProjectForSession,
+  isAgencyPortalSession,
+  studioMayAccessProjectSocialCalendar,
+} from "@/lib/portal-access";
 import { sessionStudioPersonaIsIssy } from "@/lib/studio-issy-guard";
 import {
   sendPortalPasswordResetEmail,
@@ -196,7 +201,7 @@ async function ensureWebsitePageBriefRecords(projectId: string, count: number) {
 
 function canManageWebsiteSitemap(session: Session | null, project: { userId: string | null }): boolean {
   if (!session?.user?.id) return false;
-  if (isStudioUser(session.user.email)) return true;
+  if (isAgencyPortalSession(session)) return true;
   return project.userId === session.user.id;
 }
 
@@ -449,7 +454,7 @@ async function resolveAssignedStudioUserIdForCreate(
   const raw = String(formData.get("assignedStudioUserId") ?? "").trim();
   if (!raw) return { id: null };
   const u = await prisma.user.findUnique({ where: { id: raw }, select: { email: true } });
-  if (!u || !isStudioUser(u.email)) {
+  if (!u || !(await emailBelongsToAgencyStaff(u.email))) {
     return { error: "Pick a valid studio admin from the assignee list, or leave it unassigned." };
   }
   return { id: raw };
@@ -460,8 +465,11 @@ export async function createStudioProject(
   formData: FormData,
 ): Promise<{ error?: string } | null> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || !isStudioUser(session.user.email)) {
+  if (!session?.user?.email || !isAgencyPortalSession(session)) {
     return { error: "You don’t have permission to create projects." };
+  }
+  if (session.user.agencyRole === "SOCIAL_MANAGER") {
+    return { error: "You don’t have permission to create projects or invite clients." };
   }
 
   const name = String(formData.get("name") ?? "").trim();
@@ -475,19 +483,6 @@ export async function createStudioProject(
     };
   }
 
-  const creatorMember = session.user.id
-    ? await prisma.studioTeamMember.findUnique({
-        where: { userId: session.user.id },
-        select: { personaSlug: true },
-      })
-    : null;
-  if (creatorMember?.personaSlug === "may") {
-    if (isWebsiteSocialPair || portalKind !== "SOCIAL") {
-      return {
-        error: "You can only create social media management subscriptions (single “Social media management” project).",
-      };
-    }
-  }
   const mode = String(formData.get("assignmentMode") ?? "existing");
 
   if (!name || name.length > 200) {
@@ -539,12 +534,12 @@ export async function createStudioProject(
     if (inviteFirstName.length > 80) {
       return { error: "First name is too long." };
     }
-    if (isStudioUser(inviteEmail)) {
+    if (await emailBelongsToAgencyStaff(inviteEmail)) {
       return { error: "Use a client email, not a studio login." };
     }
     const existingUser = await prisma.user.findUnique({ where: { email: inviteEmail } });
     if (existingUser?.passwordHash) {
-      if (isStudioUser(existingUser.email)) {
+      if (await emailBelongsToAgencyStaff(existingUser.email)) {
         return { error: "Use a client email, not a studio login." };
       }
       if (isWebsiteSocialPair && pairNames) {
@@ -642,7 +637,7 @@ export async function createStudioProject(
       return { error: "Choose the client this project belongs to." };
     }
     const client = await prisma.user.findUnique({ where: { id: clientUserId } });
-    if (!client || isStudioUser(client.email)) {
+    if (!client || (await emailBelongsToAgencyStaff(client.email))) {
       return { error: "Invalid client selected." };
     }
     if (isWebsiteSocialPair && pairNames) {
@@ -680,7 +675,7 @@ export async function signOffCalendarItem(
   void formData;
   const session = await getServerSession(authOptions);
   const project = await getProjectForSession(projectId, session);
-  if (!project || isStudioUser(session?.user?.email) || !clientHasFullPortalAccess(project)) {
+  if (!project || isAgencyPortalSession(session) || !clientHasFullPortalAccess(project)) {
     return portalFlashErr("Couldn’t approve this post. Try again.");
   }
   if (!clientMayUseSocialPortal(project.portalKind)) {
@@ -726,7 +721,7 @@ export async function signOffCalendarItem(
 export async function approveDiscovery(projectId: string, formData?: FormData): Promise<void> {
   void formData;
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.email || !isAgencyPortalSession(session)) return;
   const project = await prisma.project.findUnique({ where: { id: projectId } });
   if (!project) return;
   await prisma.project.update({
@@ -752,16 +747,12 @@ async function tryCreateContentCalendarPostFromStudioForm(
   projectId: string,
   formData: FormData,
   studioUserId: string,
-  studioEmail: string,
+  viewerAgencyRole: import("@/lib/studio-team-roles").AgencyPortalRole | null | undefined,
 ): Promise<StudioCalendarPostCreateResult> {
-  if (!isStudioUser(studioEmail)) return { ok: false };
+  if (!viewerAgencyRole) return { ok: false };
   const project = await prisma.project.findUnique({ where: { id: projectId } });
   if (!project) return { ok: false };
-  const studioMember = await prisma.studioTeamMember.findUnique({
-    where: { userId: studioUserId },
-    select: { personaSlug: true },
-  });
-  if (!studioMayAccessProjectSocialCalendar(project, studioUserId, studioMember?.personaSlug ?? null)) {
+  if (!studioMayAccessProjectSocialCalendar(project, studioUserId, viewerAgencyRole)) {
     return { ok: false };
   }
   const portalKind = normalizePortalKind(project.portalKind);
@@ -825,12 +816,12 @@ async function tryCreateContentCalendarPostFromStudioForm(
 
 export async function addCalendarPost(projectId: string, formData: FormData): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !session.user.email) return;
+  if (!session?.user?.id || !session.user.email || !isAgencyPortalSession(session)) return;
   const result = await tryCreateContentCalendarPostFromStudioForm(
     projectId,
     formData,
     session.user.id,
-    session.user.email,
+    session.user.agencyRole,
   );
   if (!result.ok) return;
   if (!result.isDraft) {
@@ -846,14 +837,14 @@ export async function addCalendarPost(projectId: string, formData: FormData): Pr
 /** Studio aggregate calendar: same as `addCalendarPost` but reads `projectId` from the form and stays on the master view. */
 export async function addCalendarPostFromStudioMasterCalendar(formData: FormData): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || !session.user.email) return;
+  if (!session?.user?.id || !session.user.email || !isAgencyPortalSession(session)) return;
   const projectId = String(formData.get("projectId") ?? "").trim();
   if (!projectId) return;
   const result = await tryCreateContentCalendarPostFromStudioForm(
     projectId,
     formData,
     session.user.id,
-    session.user.email,
+    session.user.agencyRole,
   );
   if (!result.ok) return;
   if (!result.isDraft) {
@@ -869,7 +860,7 @@ export async function addCalendarPostFromStudioMasterCalendar(formData: FormData
 export async function saveWebsiteColours(projectId: string, formData: FormData): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
   const project = await getProjectForSession(projectId, session);
-  if (!project || isStudioUser(session?.user?.email)) {
+  if (!project || isAgencyPortalSession(session)) {
     return portalFlashErr("You don’t have permission to update colours.");
   }
   if (!canClientUseBrandKitUploads(project)) {
@@ -916,7 +907,7 @@ export async function saveWebsiteColours(projectId: string, formData: FormData):
 export async function uploadWebsiteFont(projectId: string, formData: FormData): Promise<void> {
   const session = await getServerSession(authOptions);
   const project = await getProjectForSession(projectId, session);
-  if (!project || isStudioUser(session?.user?.email)) return;
+  if (!project || isAgencyPortalSession(session)) return;
   if (!canClientUseBrandKitUploads(project)) return;
   if (!clientMayEditWebsiteBrandKitFields(project.portalKind)) return;
   const file = formData.get("font");
@@ -942,7 +933,7 @@ export async function uploadWebsiteFont(projectId: string, formData: FormData): 
 export async function uploadWebsiteLogo(projectId: string, formData: FormData): Promise<void> {
   const session = await getServerSession(authOptions);
   const project = await getProjectForSession(projectId, session);
-  if (!project || isStudioUser(session?.user?.email)) return;
+  if (!project || isAgencyPortalSession(session)) return;
   if (!canClientUseBrandKitUploads(project)) return;
   if (!clientMayEditWebsiteBrandKitFields(project.portalKind)) return;
   const file = formData.get("logo");
@@ -969,7 +960,7 @@ export async function clearWebsiteLogo(projectId: string, formData?: FormData): 
   void formData;
   const session = await getServerSession(authOptions);
   const project = await getProjectForSession(projectId, session);
-  if (!project || isStudioUser(session?.user?.email)) return;
+  if (!project || isAgencyPortalSession(session)) return;
   if (!canClientUseBrandKitUploads(project)) return;
   if (!clientMayEditWebsiteBrandKitFields(project.portalKind)) return;
   await deleteUploadThingFileByStoredValue(project.websiteLogoPath);
@@ -985,7 +976,7 @@ const MAX_WEBSITE_LOGO_VARIATIONS = 10;
 export async function uploadWebsiteLogoVariation(projectId: string, formData: FormData): Promise<void> {
   const session = await getServerSession(authOptions);
   const project = await getProjectForSession(projectId, session);
-  if (!project || isStudioUser(session?.user?.email)) return;
+  if (!project || isAgencyPortalSession(session)) return;
   if (!canClientUseBrandKitUploads(project)) return;
   if (!clientMayEditWebsiteBrandKitFields(project.portalKind)) return;
   const file = formData.get("logo");
@@ -1025,7 +1016,7 @@ export async function removeWebsiteLogoVariation(
   void formData;
   const session = await getServerSession(authOptions);
   const project = await getProjectForSession(projectId, session);
-  if (!project || isStudioUser(session?.user?.email)) return;
+  if (!project || isAgencyPortalSession(session)) return;
   if (!canClientUseBrandKitUploads(project)) return;
   if (!clientMayEditWebsiteBrandKitFields(project.portalKind)) return;
   const variations = parseWebsiteLogoVariations(project.websiteLogoVariationsJson);
@@ -1048,7 +1039,7 @@ export async function removeWebsiteFont(
   void formData;
   const session = await getServerSession(authOptions);
   const project = await getProjectForSession(projectId, session);
-  if (!project || isStudioUser(session?.user?.email)) return;
+  if (!project || isAgencyPortalSession(session)) return;
   if (!canClientUseBrandKitUploads(project)) return;
   if (!clientMayEditWebsiteBrandKitFields(project.portalKind)) return;
   const paths = parseFontPaths(project.websiteFontPaths);
@@ -1071,7 +1062,7 @@ export async function toggleWebsiteKitSignedOff(
   void formData;
   const session = await getServerSession(authOptions);
   const project = await getProjectForSession(projectId, session);
-  if (!project || isStudioUser(session?.user?.email)) {
+  if (!project || isAgencyPortalSession(session)) {
     return portalFlashErr("You don’t have permission to update sign-off.");
   }
   if (!clientHasFullPortalAccess(project)) {
@@ -1104,7 +1095,7 @@ export async function toggleWebsiteContentSignedOff(
   void formData;
   const session = await getServerSession(authOptions);
   const project = await getProjectForSession(projectId, session);
-  if (!project || isStudioUser(session?.user?.email)) {
+  if (!project || isAgencyPortalSession(session)) {
     return portalFlashErr("You don’t have permission to update sign-off.");
   }
   if (!clientHasFullPortalAccess(project)) {
@@ -1140,7 +1131,7 @@ export async function toggleWebsitePreviewSignedOff(
   void formData;
   const session = await getServerSession(authOptions);
   const project = await getProjectForSession(projectId, session);
-  if (!project || isStudioUser(session?.user?.email)) {
+  if (!project || isAgencyPortalSession(session)) {
     return portalFlashErr("You don’t have permission to update sign-off.");
   }
   if (!clientHasFullPortalAccess(project)) {
@@ -1168,7 +1159,7 @@ export async function toggleWebsiteLaunchSignedOff(
   void formData;
   const session = await getServerSession(authOptions);
   const project = await getProjectForSession(projectId, session);
-  if (!project || isStudioUser(session?.user?.email)) {
+  if (!project || isAgencyPortalSession(session)) {
     return portalFlashErr("You don’t have permission to update sign-off.");
   }
   if (!clientHasFullPortalAccess(project)) {
@@ -1197,7 +1188,7 @@ export async function signOffReviewAsset(formData: FormData): Promise<PortalForm
 
   const session = await getServerSession(authOptions);
   const project = await getProjectForSession(projectId, session);
-  if (!project || isStudioUser(session?.user?.email) || !clientHasFullPortalAccess(project)) {
+  if (!project || isAgencyPortalSession(session) || !clientHasFullPortalAccess(project)) {
     return portalFlashErr("Couldn’t approve this proof. Try again.");
   }
   const uid = session?.user?.id;
@@ -1245,7 +1236,7 @@ export async function postProjectMessage(projectId: string, formData: FormData):
     return portalFlashErr("Message is empty or too long.");
   }
 
-  const studio = isStudioUser(session.user.email);
+  const studio = isAgencyPortalSession(session);
   if (!studio && !clientHasFullPortalAccess(project)) {
     return portalFlashErr("Couldn’t send your message. Try again.");
   }
@@ -1284,7 +1275,7 @@ export async function postProjectMessage(projectId: string, formData: FormData):
 export async function saveClientProfilePhoto(formData: FormData): Promise<void> {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id || !session.user.email) return;
-  if (isStudioUser(session.user.email)) return;
+  if (isAgencyPortalSession(session)) return;
 
   const file = formData.get("photo");
   if (!file || typeof file === "string" || file.size === 0) return;
@@ -1329,7 +1320,7 @@ export async function deleteProjectMessage(
 ): Promise<void> {
   void formData;
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.email || !isAgencyPortalSession(session)) return;
 
   const project = await prisma.project.findUnique({ where: { id: projectId }, select: { id: true } });
   if (!project) return;
@@ -1357,7 +1348,7 @@ export async function addReviewAsset(formData: FormData): Promise<PortalFormFlas
   }
 
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || !isStudioUser(session.user.email)) {
+  if (!session?.user?.email || !isAgencyPortalSession(session)) {
     return portalFlashErr("Upload failed - try again");
   }
   const project = await prisma.project.findUnique({ where: { id: projectId } });
@@ -1412,8 +1403,8 @@ export async function ensureWebsiteKitPreviewToken(projectId: string, formData?:
   const project = await getProjectForSession(projectId, session);
   if (!project) return;
   if (!canManageWebsiteSitemap(session, project)) return;
-  if (!isStudioUser(session?.user?.email) && !clientMayUseWebsiteWorkstream(project.portalKind)) return;
-  if (!isStudioUser(session?.user?.email) && !clientHasFullPortalAccess(project)) return;
+  if (!isAgencyPortalSession(session) && !clientMayUseWebsiteWorkstream(project.portalKind)) return;
+  if (!isAgencyPortalSession(session) && !clientHasFullPortalAccess(project)) return;
   if (project.websiteKitPreviewToken) return;
   const token = newWebsiteKitPreviewToken();
   await prisma.project.update({
@@ -1430,8 +1421,8 @@ export async function rotateWebsiteKitPreviewToken(projectId: string, formData?:
   const project = await getProjectForSession(projectId, session);
   if (!project) return;
   if (!canManageWebsiteSitemap(session, project)) return;
-  if (!isStudioUser(session?.user?.email) && !clientMayUseWebsiteWorkstream(project.portalKind)) return;
-  if (!isStudioUser(session?.user?.email) && !clientHasFullPortalAccess(project)) return;
+  if (!isAgencyPortalSession(session) && !clientMayUseWebsiteWorkstream(project.portalKind)) return;
+  if (!isAgencyPortalSession(session) && !clientHasFullPortalAccess(project)) return;
   const prev = project.websiteKitPreviewToken;
   const token = newWebsiteKitPreviewToken();
   await prisma.project.update({
@@ -1452,14 +1443,14 @@ export async function setWebsiteSitemap(projectId: string, formData: FormData): 
   if (!canManageWebsiteSitemap(session, project)) {
     return portalFlashErr("Couldn’t save sitemap. Try again.");
   }
-  if (!isStudioUser(session?.user?.email) && !clientMayUseWebsiteWorkstream(project.portalKind)) {
+  if (!isAgencyPortalSession(session) && !clientMayUseWebsiteWorkstream(project.portalKind)) {
     return portalFlashErr("Couldn’t save sitemap. Try again.");
   }
-  if (!isStudioUser(session?.user?.email) && !clientHasFullPortalAccess(project)) {
+  if (!isAgencyPortalSession(session) && !clientHasFullPortalAccess(project)) {
     return portalFlashErr("Couldn’t save sitemap. Try again.");
   }
 
-  const studioUser = isStudioUser(session?.user?.email);
+  const studioUser = isAgencyPortalSession(session);
   let count: number;
   if (studioUser) {
     const countRaw = Number(formData.get("pageCount"));
@@ -1501,7 +1492,7 @@ export async function saveWebsitePageBrief(
 ): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
   const project = await getProjectForSession(projectId, session);
-  if (!project || !clientHasFullPortalAccess(project) || isStudioUser(session?.user?.email)) {
+  if (!project || !clientHasFullPortalAccess(project) || isAgencyPortalSession(session)) {
     return portalFlashErr("Couldn’t save this page. Try again.");
   }
   if (!clientMayUseWebsiteWorkstream(project.portalKind)) {
@@ -1552,7 +1543,7 @@ export async function removeWebsitePageImage(
   void formData;
   const session = await getServerSession(authOptions);
   const project = await getProjectForSession(projectId, session);
-  if (!project || !clientHasFullPortalAccess(project) || isStudioUser(session?.user?.email)) return;
+  if (!project || !clientHasFullPortalAccess(project) || isAgencyPortalSession(session)) return;
   if (!clientMayUseWebsiteWorkstream(project.portalKind)) return;
   if (pageIndex < 0 || pageIndex >= project.websitePageCount) return;
 
@@ -1575,7 +1566,7 @@ export async function removeWebsitePageImage(
 export async function verifyClient(projectId: string, formData?: FormData): Promise<void> {
   void formData;
   const session = await getServerSession(authOptions);
-  if (!isStudioUser(session?.user?.email)) return;
+  if (!isAgencyPortalSession(session)) return;
   if (!(await sessionStudioPersonaIsIssy())) return;
   const project = await prisma.project.findUnique({ where: { id: projectId } });
   if (!project) return;
@@ -1643,7 +1634,7 @@ export async function unlockClientWorkspaceAndNotify(
 /** Studio: mark client contract signed (granular gate). Full hub still requires Issy workspace unlock or legacy verify. */
 export async function markClientContractSigned(formData: FormData): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
-  if (!isStudioUser(session?.user?.email)) {
+  if (!isAgencyPortalSession(session)) {
     return portalFlashErr("Couldn’t update contract status. Try again.");
   }
   if (!(await sessionStudioPersonaIsIssy())) {
@@ -1682,7 +1673,7 @@ export async function signProjectContractInPortal(
   agreed: boolean,
 ): Promise<SignProjectContractResult> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || isStudioUser(session.user.email)) {
+  if (!session?.user?.id || isAgencyPortalSession(session)) {
     return { ok: false, error: "You must be signed in as the client." };
   }
   const project = await getProjectForSession(projectId, session);
@@ -1740,7 +1731,7 @@ export async function signProjectContractInPortal(
 /** Studio: mark deposit received (required with contract for non–social full access). */
 export async function markStudioDepositReceived(formData: FormData): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
-  if (!isStudioUser(session?.user?.email)) {
+  if (!isAgencyPortalSession(session)) {
     return portalFlashErr("Couldn’t update deposit status. Try again.");
   }
   if (!(await sessionStudioPersonaIsIssy())) {
@@ -1796,7 +1787,7 @@ export async function saveUserBrandKitFromProject(formData: FormData): Promise<P
     return portalFlashErr("Couldn’t save brand kit. Try again.");
   }
   const project = await getProjectForSession(projectId, session);
-  if (!project || isStudioUser(session.user.email) || !clientHasFullPortalAccess(project)) {
+  if (!project || isAgencyPortalSession(session) || !clientHasFullPortalAccess(project)) {
     return portalFlashErr("Couldn’t save brand kit. Try again.");
   }
   if (session.user.id !== project.userId) {
@@ -1841,7 +1832,7 @@ export async function applyUserBrandKitToProject(formData: FormData): Promise<Po
     return portalFlashErr("Couldn’t apply brand kit. Try again.");
   }
   const project = await getProjectForSession(projectId, session);
-  if (!project || isStudioUser(session.user.email) || !clientHasFullPortalAccess(project)) {
+  if (!project || isAgencyPortalSession(session) || !clientHasFullPortalAccess(project)) {
     return portalFlashErr("Couldn’t apply brand kit. Try again.");
   }
   if (session.user.id !== project.userId) {
@@ -1888,7 +1879,7 @@ export async function applyUserBrandKitToProject(formData: FormData): Promise<Po
 
 export async function setPortalKind(projectId: string, formData: FormData): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (!isStudioUser(session?.user?.email)) return;
+  if (!isAgencyPortalSession(session)) return;
   if (!(await sessionStudioPersonaIsIssy())) return;
   const raw = String(formData.get("portalKind") ?? "WEBSITE");
   const nextKind = normalizePortalKind(raw);
@@ -1908,7 +1899,7 @@ export async function setPortalKind(projectId: string, formData: FormData): Prom
 
 export async function setProjectPaymentStatus(formData: FormData): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.email || !isAgencyPortalSession(session)) return;
   if (!(await sessionStudioPersonaIsIssy())) return;
   const projectId = String(formData.get("projectId") ?? "").trim();
   if (!projectId) return;
@@ -1943,7 +1934,7 @@ export async function acknowledgeFinalDesignPayment(formData: FormData): Promise
     return portalFlashErr("Couldn’t confirm payment. Try again.");
   }
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || isStudioUser(session.user.email)) {
+  if (!session?.user?.id || isAgencyPortalSession(session)) {
     return portalFlashErr("Couldn’t confirm payment. Try again.");
   }
   if (formData.get("confirm") !== "on") {
@@ -1970,7 +1961,7 @@ export async function resetClientFinalPaymentAcknowledgment(formData: FormData):
     return portalFlashErr("Couldn’t reset confirmation. Try again.");
   }
   const session = await getServerSession(authOptions);
-  if (!isStudioUser(session?.user?.email)) {
+  if (!isAgencyPortalSession(session)) {
     return portalFlashErr("Couldn’t reset confirmation. Try again.");
   }
   if (!(await sessionStudioPersonaIsIssy())) {
@@ -2004,7 +1995,7 @@ function normalizeClientWebsiteDomain(raw: string): string | null {
 /** Client: domain, DNS host, optional encrypted registrar login/password. Studio cannot submit (view-only vault on domain page). */
 export async function saveWebsiteDomainLaunchDetails(projectId: string, formData: FormData): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || isStudioUser(session.user.email)) {
+  if (!session?.user?.id || isAgencyPortalSession(session)) {
     return portalFlashErr("Couldn’t save launch details. Try again.");
   }
 
@@ -2069,7 +2060,7 @@ export async function saveWebsiteDomainLaunchDetails(projectId: string, formData
 
 export async function setWebsiteLiveUrl(projectId: string, formData: FormData): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
-  if (!isStudioUser(session?.user?.email)) {
+  if (!isAgencyPortalSession(session)) {
     return portalFlashErr("Couldn’t save URL. Try again.");
   }
   const project = await prisma.project.findUnique({ where: { id: projectId } });
@@ -2102,7 +2093,7 @@ export async function setWebsiteLiveUrl(projectId: string, formData: FormData): 
 export async function saveSocialOnboarding(projectId: string, formData: FormData): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
   const project = await getProjectForSession(projectId, session);
-  if (!project || isStudioUser(session?.user?.email) || !clientHasFullPortalAccess(project)) {
+  if (!project || isAgencyPortalSession(session) || !clientHasFullPortalAccess(project)) {
     return portalFlashErr("You don’t have permission to save this brief.");
   }
   if (!clientMayUseSocialPortal(project.portalKind)) {
@@ -2153,7 +2144,7 @@ export async function saveSocialOnboarding(projectId: string, formData: FormData
 export async function saveSocialContentPlanning(projectId: string, formData: FormData): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
   const project = await getProjectForSession(projectId, session);
-  if (!project || isStudioUser(session?.user?.email) || !clientHasFullPortalAccess(project)) {
+  if (!project || isAgencyPortalSession(session) || !clientHasFullPortalAccess(project)) {
     return portalFlashErr("You don’t have permission to save planning.");
   }
   if (!clientMayUseSocialPortal(project.portalKind)) {
@@ -2230,7 +2221,7 @@ export async function saveCalendarItemFeedback(
 ): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
   const project = await getProjectForSession(projectId, session);
-  if (!project || isStudioUser(session?.user?.email) || !clientHasFullPortalAccess(project)) {
+  if (!project || isAgencyPortalSession(session) || !clientHasFullPortalAccess(project)) {
     return portalFlashErr("Couldn’t send feedback. Try again.");
   }
   if (!clientMayUseSocialPortal(project.portalKind)) {
@@ -2308,14 +2299,10 @@ export async function saveCalendarItemFeedback(
 /** Studio: allow client to review an approved post again (e.g. after scheduling issue). */
 export async function reopenCalendarPostForClientReview(projectId: string, itemId: string): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.email || !isAgencyPortalSession(session)) return;
   const project = await prisma.project.findUnique({ where: { id: projectId } });
   if (!project) return;
-  const sm = await prisma.studioTeamMember.findUnique({
-    where: { userId: session.user.id },
-    select: { personaSlug: true },
-  });
-  if (!studioMayAccessProjectSocialCalendar(project, session.user.id, sm?.personaSlug ?? null)) return;
+  if (!studioMayAccessProjectSocialCalendar(project, session.user.id, session.user.agencyRole)) return;
 
   const item = await prisma.contentCalendarItem.findFirst({
     where: { id: itemId, projectId },
@@ -2342,14 +2329,10 @@ export async function reopenCalendarPostForClientReview(projectId: string, itemI
 /** Studio: delete a calendar post (notifies client if they could see it). */
 export async function deleteContentCalendarItem(projectId: string, itemId: string): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || !isStudioUser(session.user.email)) return;
+  if (!session?.user?.email || !isAgencyPortalSession(session)) return;
   const project = await prisma.project.findUnique({ where: { id: projectId } });
   if (!project) return;
-  const sm = await prisma.studioTeamMember.findUnique({
-    where: { userId: session.user.id },
-    select: { personaSlug: true },
-  });
-  if (!studioMayAccessProjectSocialCalendar(project, session.user.id, sm?.personaSlug ?? null)) return;
+  if (!studioMayAccessProjectSocialCalendar(project, session.user.id, session.user.agencyRole)) return;
 
   const item = await prisma.contentCalendarItem.findFirst({
     where: { id: itemId, projectId },
@@ -2371,7 +2354,7 @@ export async function deleteContentCalendarItem(projectId: string, itemId: strin
 
 export async function saveProjectQuote(projectId: string, formData: FormData): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
-  if (!isStudioUser(session?.user?.email)) {
+  if (!isAgencyPortalSession(session)) {
     return portalFlashErr("Save failed - try again");
   }
   const project = await prisma.project.findUnique({ where: { id: projectId } });
@@ -2415,7 +2398,7 @@ export async function saveProjectQuote(projectId: string, formData: FormData): P
 export async function sendProjectQuote(projectId: string, _formData?: FormData): Promise<PortalFormFlash> {
   void _formData;
   const session = await getServerSession(authOptions);
-  if (!isStudioUser(session?.user?.email)) {
+  if (!isAgencyPortalSession(session)) {
     return portalFlashErr("Failed to send - try again");
   }
   const project = await prisma.project.findUnique({ where: { id: projectId } });
@@ -2457,7 +2440,7 @@ export type ClientQuoteResponseResult =
 /** Client: accept sent quote (cannot undo). */
 export async function acceptProjectQuote(projectId: string): Promise<ClientQuoteResponseResult> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || isStudioUser(session.user.email)) {
+  if (!session?.user?.id || isAgencyPortalSession(session)) {
     return { ok: false, error: "Something went wrong - try again" };
   }
   const project = await getProjectForSession(projectId, session);
@@ -2505,7 +2488,7 @@ export async function acceptProjectQuote(projectId: string): Promise<ClientQuote
 /** Client: decline sent quote with optional note for the studio. */
 export async function declineProjectQuote(projectId: string, reasonRaw: string): Promise<ClientQuoteResponseResult> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || isStudioUser(session.user.email)) {
+  if (!session?.user?.id || isAgencyPortalSession(session)) {
     return { ok: false, error: "Something went wrong - try again" };
   }
   const project = await getProjectForSession(projectId, session);
@@ -2552,7 +2535,7 @@ export async function declineProjectQuote(projectId: string, reasonRaw: string):
 
 export async function saveProjectInspirationLinks(projectId: string, formData: FormData): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
-  if (isStudioUser(session?.user?.email)) {
+  if (isAgencyPortalSession(session)) {
     return portalFlashErr("Studio users manage links from the project tools.");
   }
   const project = await getProjectForSession(projectId, session);
@@ -2603,7 +2586,7 @@ export async function saveBrandingMoodDescription(
   formData: FormData,
 ): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
-  if (isStudioUser(session?.user?.email)) {
+  if (isAgencyPortalSession(session)) {
     return portalFlashErr("Studio users update this from the project tools.");
   }
   const project = await getProjectForSession(projectId, session);
@@ -2662,7 +2645,7 @@ export async function saveBrandingQuestionnaireDraft(
   jsonPayload: string,
 ): Promise<{ ok: boolean }> {
   const session = await getServerSession(authOptions);
-  if (isStudioUser(session?.user?.email)) return { ok: false };
+  if (isAgencyPortalSession(session)) return { ok: false };
   const project = await getProjectForSession(projectId, session);
   if (!project || !clientHasFullPortalAccess(project)) return { ok: false };
   if (!visiblePortalSections(project.portalKind).branding) return { ok: false };
@@ -2690,7 +2673,7 @@ export async function submitBrandingQuestionnaire(
     issues: [{ section: 0, label: msg }],
   });
   const session = await getServerSession(authOptions);
-  if (isStudioUser(session?.user?.email)) return fail("Only clients can submit this form.");
+  if (isAgencyPortalSession(session)) return fail("Only clients can submit this form.");
   const project = await getProjectForSession(projectId, session);
   if (!project || !clientHasFullPortalAccess(project)) return fail("Check you’re signed in with full portal access.");
   if (!visiblePortalSections(project.portalKind).branding) return fail("This project doesn’t include branding.");
@@ -2731,7 +2714,7 @@ export async function uploadBrandQuestionnaireFile(
   formData: FormData,
 ): Promise<{ ok: boolean; path?: string; error?: string }> {
   const session = await getServerSession(authOptions);
-  if (isStudioUser(session?.user?.email)) return { ok: false, error: "Not allowed" };
+  if (isAgencyPortalSession(session)) return { ok: false, error: "Not allowed" };
   const project = await getProjectForSession(projectId, session);
   if (!project || !clientHasFullPortalAccess(project)) return { ok: false, error: "Not allowed" };
   if (!visiblePortalSections(project.portalKind).branding) return { ok: false, error: "Not allowed" };
@@ -2790,7 +2773,7 @@ export async function removeBrandQuestionnaireFile(
   slot: "inspiration" | "existing",
 ): Promise<{ ok: boolean }> {
   const session = await getServerSession(authOptions);
-  if (isStudioUser(session?.user?.email)) return { ok: false };
+  if (isAgencyPortalSession(session)) return { ok: false };
   const project = await getProjectForSession(projectId, session);
   if (!project || !clientHasFullPortalAccess(project)) return { ok: false };
   if (!visiblePortalSections(project.portalKind).branding) return { ok: false };
@@ -2817,7 +2800,7 @@ export async function removeBrandQuestionnaireFile(
 
 export async function acknowledgeBrandingFinalDeliverables(projectId: string): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (isStudioUser(session?.user?.email)) return;
+  if (isAgencyPortalSession(session)) return;
   const project = await getProjectForSession(projectId, session);
   if (!project || !clientHasFullPortalAccess(project)) return;
   if (!visiblePortalSections(project.portalKind).branding) return;
@@ -2841,7 +2824,7 @@ export async function acknowledgeBrandingFinalDeliverables(projectId: string): P
 
 export async function saveSignageSpecification(projectId: string, formData: FormData): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
-  if (isStudioUser(session?.user?.email)) {
+  if (isAgencyPortalSession(session)) {
     return portalFlashErr("Couldn’t save specification. Try again.");
   }
   const project = await getProjectForSession(projectId, session);
@@ -2885,7 +2868,7 @@ export async function saveSignageSpecification(projectId: string, formData: Form
 
 export async function savePrintSpecification(projectId: string, formData: FormData): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
-  if (isStudioUser(session?.user?.email)) {
+  if (isAgencyPortalSession(session)) {
     return portalFlashErr("Couldn’t save specification. Try again.");
   }
   const project = await getProjectForSession(projectId, session);
@@ -2929,7 +2912,7 @@ export async function savePrintSpecification(projectId: string, formData: FormDa
 
 export async function skipPrintInspirationStep(projectId: string): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (isStudioUser(session?.user?.email)) return;
+  if (isAgencyPortalSession(session)) return;
   const project = await getProjectForSession(projectId, session);
   if (!project || !clientHasFullPortalAccess(project)) return;
   if (normalizePortalKind(project.portalKind) !== "PRINT") return;
@@ -2942,7 +2925,7 @@ export async function skipPrintInspirationStep(projectId: string): Promise<void>
 
 export async function acknowledgeSignageFinalDeliverables(projectId: string): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (isStudioUser(session?.user?.email)) return;
+  if (isAgencyPortalSession(session)) return;
   const project = await getProjectForSession(projectId, session);
   if (!project || !clientHasFullPortalAccess(project)) return;
   if (!visiblePortalSections(project.portalKind).signage) return;
@@ -2966,7 +2949,7 @@ export async function acknowledgeSignageFinalDeliverables(projectId: string): Pr
 
 export async function acknowledgePrintFinalDeliverables(projectId: string): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (isStudioUser(session?.user?.email)) return;
+  if (isAgencyPortalSession(session)) return;
   const project = await getProjectForSession(projectId, session);
   if (!project || !clientHasFullPortalAccess(project)) return;
   if (normalizePortalKind(project.portalKind) !== "PRINT") return;
@@ -2991,7 +2974,7 @@ export async function acknowledgePrintFinalDeliverables(projectId: string): Prom
 export async function markProjectComplete(projectId: string, _formData: FormData): Promise<PortalFormFlash> {
   void _formData;
   const session = await getServerSession(authOptions);
-  if (!isStudioUser(session?.user?.email)) {
+  if (!isAgencyPortalSession(session)) {
     return portalFlashErr("Couldn’t mark project complete. Try again.");
   }
   if (!(await sessionStudioPersonaIsIssy())) {
@@ -3014,7 +2997,7 @@ export async function markProjectComplete(projectId: string, _formData: FormData
 
 export async function submitOffboardingReview(projectId: string, formData: FormData): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || isStudioUser(session.user.email)) {
+  if (!session?.user?.id || isAgencyPortalSession(session)) {
     return portalFlashErr("Couldn’t submit feedback. Try again.");
   }
 
@@ -3072,7 +3055,7 @@ export async function submitOffboardingReview(projectId: string, formData: FormD
 
 export async function approveFaqSuggestion(suggestionId: string, formData: FormData): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (!isStudioUser(session?.user?.email)) return;
+  if (!isAgencyPortalSession(session)) return;
 
   const s = await prisma.faqSuggestion.findUnique({ where: { id: suggestionId } });
   if (!s || s.status !== "PENDING") return;
@@ -3095,7 +3078,7 @@ export async function approveFaqSuggestion(suggestionId: string, formData: FormD
 
 export async function rejectFaqSuggestion(suggestionId: string): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (!isStudioUser(session?.user?.email)) return;
+  if (!isAgencyPortalSession(session)) return;
 
   const s = await prisma.faqSuggestion.findUnique({ where: { id: suggestionId } });
   if (!s || s.status !== "PENDING") return;
@@ -3111,7 +3094,7 @@ export async function markClientNotificationRead(formData: FormData): Promise<vo
   const id = String(formData.get("id") ?? "").trim();
   if (!id) return;
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || isStudioUser(session.user.email)) return;
+  if (!session?.user?.id || isAgencyPortalSession(session)) return;
   const row = await prisma.clientNotification.findFirst({
     where: { id, userId: session.user.id },
   });
@@ -3126,7 +3109,7 @@ export async function markClientNotificationRead(formData: FormData): Promise<vo
 
 export async function markAllClientNotificationsRead(): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || isStudioUser(session.user.email)) return;
+  if (!session?.user?.id || isAgencyPortalSession(session)) return;
   await prisma.clientNotification.updateMany({
     where: { userId: session.user.id, readAt: null },
     data: { readAt: new Date() },

@@ -6,7 +6,7 @@ import { readFile } from "fs/promises";
 import path from "path";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
-import { getProjectForSession, isStudioUser } from "@/lib/portal-access";
+import { getProjectForSession, isAgencyPortalSession } from "@/lib/portal-access";
 import { clientIsBlockedByPendingOffboarding } from "@/lib/portal-offboarding-gate";
 import { prisma } from "@/lib/prisma";
 import { uploadRoot } from "@/lib/portal-uploads";
@@ -25,7 +25,7 @@ export async function GET(
   const project = await getProjectForSession(projectId, session);
   if (!project) return new Response("Not found", { status: 404 });
 
-  const studio = isStudioUser(session?.user?.email);
+  const studio = isAgencyPortalSession(session);
   if (
     !studio &&
     session?.user?.id &&

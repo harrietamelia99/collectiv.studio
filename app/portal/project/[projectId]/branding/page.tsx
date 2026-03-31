@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
-import { getProjectForSession, isStudioUser } from "@/lib/portal-access";
+import { getProjectForSession, isAgencyPortalSession } from "@/lib/portal-access";
 import { redirectClientIfOffboardingRequired } from "@/lib/portal-offboarding-gate";
 import { visiblePortalSections } from "@/lib/portal-project-kind";
 
@@ -15,7 +15,7 @@ export default async function ProjectBrandingHubRedirect({ params }: Props) {
 
   await redirectClientIfOffboardingRequired(params.projectId, session);
 
-  const studio = isStudioUser(session?.user?.email);
+  const studio = isAgencyPortalSession(session);
   if (!visiblePortalSections(project.portalKind).branding && !studio) {
     redirect(`/portal/project/${project.id}`);
   }

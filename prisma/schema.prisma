@@ -240,8 +240,10 @@ model StudioTeamMember {
   id               String   @id @default(cuid())
   userId           String   @unique
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  /// isabella | harriet | may
-  personaSlug      String   @unique
+  /// ISSY | HARRIET | SOCIAL_MANAGER — source of truth for portal permissions.
+  studioRole       String   @default("ISSY")
+  /// Display / legacy slug (e.g. isabella, harriet, may, or social_jane) — not unique; use `studioRole` for gates.
+  personaSlug      String
   jobTitle         String
   availabilityNote String   @default("")
   /// Shown in “Welcome …” — e.g. Issy, Harriet. Falls back to account name or persona.
@@ -250,6 +252,8 @@ model StudioTeamMember {
   photoUrl         String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+
+  @@index([studioRole])
 }
 
 /// Shared internal thread for Collectiv studio logins (Harriet, Issy, May, etc.).

@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
-import { getProjectForSession, isStudioUser, studioMayAccessProjectSocialCalendar } from "@/lib/portal-access";
+import { getProjectForSession, isAgencyPortalSession, studioMayAccessProjectSocialCalendar } from "@/lib/portal-access";
 import { clientHasFullPortalAccess } from "@/lib/portal-client-full-access";
 import { redirectClientIfProjectWorkspaceLocked } from "@/lib/portal-client-workspace-gate";
 import { redirectClientIfOffboardingRequired } from "@/lib/portal-offboarding-gate";
@@ -39,15 +39,8 @@ export default async function ProjectSocialCalendarPage({ params, searchParams }
 
   await redirectClientIfOffboardingRequired(params.projectId, session);
 
-  const studio = isStudioUser(session?.user?.email);
-  const studioMember =
-    studio && session?.user?.id
-      ? await prisma.studioTeamMember.findUnique({
-          where: { userId: session.user.id },
-          select: { personaSlug: true },
-        })
-      : null;
-  const studioPersonaSlug = studioMember?.personaSlug ?? null;
+  const studio = isAgencyPortalSession(session);
+  const studioAgencyRole = session?.user?.agencyRole ?? null;
 
   const vis = visiblePortalSections(project.portalKind);
   if (!vis.social && !studio) {
@@ -126,7 +119,9 @@ export default async function ProjectSocialCalendarPage({ params, searchParams }
   const studioStillPreparingBatch = batchMode && clientWaitingOnVisiblePosts;
 
   const studioSeesSocialCalendar =
-    !studio || studioMayAccessProjectSocialCalendar(project, session?.user?.id, studioPersonaSlug);
+    !studio ||
+    (studioAgencyRole != null &&
+      studioMayAccessProjectSocialCalendar(project, session?.user?.id, studioAgencyRole));
   const assigneeShortName =
     project.assignedStudioUser?.studioTeamProfile?.welcomeName?.trim() ||
     (project.assignedStudioUser?.name ?? "").trim().split(/\s+/)[0] ||

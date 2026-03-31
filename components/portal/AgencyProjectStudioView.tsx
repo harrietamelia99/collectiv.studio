@@ -44,6 +44,7 @@ import { weeklyDeliverablesSummaryLine } from "@/lib/social-batch-calendar";
 import type { ClientWorkflowAccessOptions } from "@/lib/portal-brand-kit-gate";
 import type { AccountBrandKitSlice } from "@/lib/portal-workflow";
 import type { PersonaSlug } from "@/lib/studio-team-config";
+import type { AgencyPortalRole } from "@/lib/studio-team-roles";
 import { HubIconDownload, HubIconGrid, HubIconPayment } from "@/components/portal/ProjectHubIcons";
 import type { ReactNode } from "react";
 
@@ -283,6 +284,7 @@ export async function AgencyProjectStudioView({
   canAssignProjectLead,
   internalNotes,
   viewerPersonaSlug,
+  viewerAgencyRole,
   projectQuote,
 }: {
   project: Project & {
@@ -309,6 +311,7 @@ export async function AgencyProjectStudioView({
   canAssignProjectLead: boolean;
   internalNotes: InternalNoteRow[];
   viewerPersonaSlug: PersonaSlug;
+  viewerAgencyRole: AgencyPortalRole;
   projectQuote: Pick<
     ProjectQuote,
     | "intro"
@@ -324,8 +327,8 @@ export async function AgencyProjectStudioView({
 }) {
   /** Client-side locking and step status so agency cards match the client journey (not “everything in progress”). */
   const statusRowsAsClient = false;
-  const isIssy = viewerPersonaSlug === "isabella";
-  const isMay = viewerPersonaSlug === "may";
+  const isIssy = viewerAgencyRole === "ISSY";
+  const isMay = viewerAgencyRole === "SOCIAL_MANAGER";
   const vis = visiblePortalSections(project.portalKind);
   const nk = normalizePortalKind(project.portalKind);
   const portalUnlocked = clientHasFullPortalAccess(project);
@@ -561,8 +564,14 @@ export async function AgencyProjectStudioView({
                           {studioAdminOptions.map((a) => (
                             <option key={a.id} value={a.id}>
                               {studioAdminDisplayLabel(a)}
-                              {studioAdminRoleHint(a.studioTeamProfile?.personaSlug)
-                                ? ` — ${studioAdminRoleHint(a.studioTeamProfile?.personaSlug)}`
+                              {studioAdminRoleHint(
+                                a.studioTeamProfile?.personaSlug,
+                                a.studioTeamProfile?.studioRole,
+                              )
+                                ? ` — ${studioAdminRoleHint(
+                                    a.studioTeamProfile?.personaSlug,
+                                    a.studioTeamProfile?.studioRole,
+                                  )}`
                                 : ""}
                             </option>
                           ))}
@@ -579,8 +588,7 @@ export async function AgencyProjectStudioView({
                   )
                 ) : (
                   <p className="font-body text-xs text-amber-900/85">
-                    No studio admins in the assignee list yet — add <span className="font-mono">STUDIO_EMAIL</span> users
-                    and have each sign in once.
+                    No studio team profiles yet — add team members (SQL template + sign-in) or sync env persona emails.
                   </p>
                 )}
                 <AgencyPortalKindForm projectId={project.id} project={project} />

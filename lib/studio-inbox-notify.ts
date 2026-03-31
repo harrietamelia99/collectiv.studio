@@ -17,11 +17,11 @@ import { normalizePortalKind } from "@/lib/portal-project-kind";
 
 const PREVIEW = 240;
 
-type TeamRow = { userId: string; personaSlug: string };
+type TeamRow = { userId: string; personaSlug: string; studioRole: string };
 
 async function loadStudioTeamForNotify(): Promise<TeamRow[]> {
   return prisma.studioTeamMember.findMany({
-    select: { userId: true, personaSlug: true },
+    select: { userId: true, personaSlug: true, studioRole: true },
   });
 }
 
@@ -40,13 +40,13 @@ export function recipientUserIdsForClientMessage(
 
   if (kind === "SOCIAL") {
     for (const m of team) {
-      if (m.personaSlug === "may" || m.personaSlug === "harriet") ids.add(m.userId);
+      if (m.studioRole === "SOCIAL_MANAGER" || m.studioRole === "HARRIET") ids.add(m.userId);
     }
     return Array.from(ids);
   }
 
   for (const m of team) {
-    if (m.personaSlug === "isabella" || m.personaSlug === "harriet") ids.add(m.userId);
+    if (m.studioRole === "ISSY" || m.studioRole === "HARRIET") ids.add(m.userId);
   }
   return Array.from(ids);
 }
@@ -59,7 +59,7 @@ export function recipientUserIdsForBrandingQuestionnaireSubmitted(
   if (project.assignedStudioUserId) {
     return [project.assignedStudioUserId];
   }
-  const harriet = team.find((m) => m.personaSlug === "harriet");
+  const harriet = team.find((m) => m.studioRole === "HARRIET");
   if (harriet) return [harriet.userId];
   return recipientUserIdsForClientMessage({ portalKind: "BRANDING", assignedStudioUserId: null }, team);
 }
@@ -75,7 +75,7 @@ export function recipientUserIdsForCalendarFeedback(
   }
   const ids = new Set<string>();
   for (const m of team) {
-    if (m.personaSlug === "may" || m.personaSlug === "harriet") ids.add(m.userId);
+    if (m.studioRole === "SOCIAL_MANAGER" || m.studioRole === "HARRIET") ids.add(m.userId);
   }
   return Array.from(ids);
 }
@@ -370,7 +370,7 @@ export async function notifyIssyClientSignedContractInPortal(opts: {
 }): Promise<void> {
   const { projectId, projectName, signedName, signedAt, signedIp } = opts;
   const issyMembers = await prisma.studioTeamMember.findMany({
-    where: { personaSlug: "isabella" },
+    where: { studioRole: "ISSY" },
     select: { userId: true },
   });
   if (issyMembers.length === 0) return;
@@ -411,7 +411,7 @@ export async function notifyIssyQuoteAcceptedInPortal(opts: {
 }): Promise<void> {
   const { projectId, projectName, clientName, respondedAt } = opts;
   const issyMembers = await prisma.studioTeamMember.findMany({
-    where: { personaSlug: "isabella" },
+    where: { studioRole: "ISSY" },
     select: { userId: true },
   });
 
@@ -452,7 +452,7 @@ export async function notifyIssyQuoteDeclinedInPortal(opts: {
 }): Promise<void> {
   const { projectId, projectName, clientName, reason } = opts;
   const issyMembers = await prisma.studioTeamMember.findMany({
-    where: { personaSlug: "isabella" },
+    where: { studioRole: "ISSY" },
     select: { userId: true },
   });
 

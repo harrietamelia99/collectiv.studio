@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 import { getPortalDatabaseAvailable } from "@/lib/portal-db-status";
-import { isStudioUser } from "@/lib/portal-access";
+import { isAgencyPortalSession } from "@/lib/portal-access";
 import { markAllClientNotificationsRead, markClientNotificationRead } from "@/app/portal/actions";
 import { ClientNotificationsDemoList } from "@/components/portal/ClientNotificationsDemoList";
 import { PortalDatabaseOfflineBanner } from "@/components/portal/PortalDatabaseOfflineBanner";
@@ -38,7 +38,7 @@ const DEMO_NOTIFICATIONS: {
 export default async function ClientNotificationsPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/portal/login");
-  if (isStudioUser(session.user.email)) redirect("/portal");
+  if (isAgencyPortalSession(session)) redirect("/portal");
 
   const dbAvailable = await getPortalDatabaseAvailable();
   let rows: Awaited<ReturnType<typeof prisma.clientNotification.findMany>> = [];

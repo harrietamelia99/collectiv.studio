@@ -37,7 +37,17 @@ async function resolveRecipient(projectId: string): Promise<{
 } | null> {
   const project = await prisma.project.findUnique({
     where: { id: projectId },
-    include: { user: { select: { email: true, name: true, businessName: true, passwordHash: true } } },
+    include: {
+      user: {
+        select: {
+          email: true,
+          name: true,
+          businessName: true,
+          passwordHash: true,
+          studioTeamProfile: { select: { id: true } },
+        },
+      },
+    },
   });
   if (!project) return null;
 
@@ -45,7 +55,7 @@ async function resolveRecipient(projectId: string): Promise<{
     project.user?.email?.trim().toLowerCase() ||
     project.invitedClientEmail?.trim().toLowerCase() ||
     null;
-  if (!email || isStudioEmailAddress(email)) return null;
+  if (!email || isStudioEmailAddress(email) || project.user?.studioTeamProfile) return null;
 
   const first =
     project.user?.name?.trim().split(/\s+/)[0] ||

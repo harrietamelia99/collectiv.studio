@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
-import { getProjectForSession, isStudioUser } from "@/lib/portal-access";
+import { getProjectForSession, isAgencyPortalSession } from "@/lib/portal-access";
 import { clientHasFullPortalAccess } from "@/lib/portal-client-full-access";
 import { redirectClientIfProjectWorkspaceLocked } from "@/lib/portal-client-workspace-gate";
 import { redirectClientIfOffboardingRequired } from "@/lib/portal-offboarding-gate";
@@ -36,7 +36,7 @@ export default async function WebsiteDomainGoLivePage({ params }: Props) {
 
   await redirectClientIfOffboardingRequired(params.projectId, session);
 
-  const studio = isStudioUser(session?.user?.email);
+  const studio = isAgencyPortalSession(session);
   const vis = visiblePortalSections(project.portalKind);
   if (!vis.website && !studio) {
     redirect(`/portal/project/${project.id}`);

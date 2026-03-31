@@ -1,6 +1,8 @@
 import type { PersonaSlug } from "@/lib/studio-team-config";
 import { isPersonaSlug } from "@/lib/studio-team-config";
 import { studioMemberMayAccessProject } from "@/lib/portal-access";
+import type { AgencyPortalRole } from "@/lib/studio-team-roles";
+import { STUDIO_TEAM_ROLE } from "@/lib/studio-team-roles";
 
 /** Normalise @handle from message body (lowercase). */
 export function parseMentionHandles(body: string): string[] {
@@ -24,9 +26,21 @@ const PERSONA_ALIASES: Record<string, PersonaSlug> = {
 export type MentionMember = {
   userId: string;
   personaSlug: string;
+  studioRole: string;
   welcomeName: string | null;
   user: { name: string | null; email: string };
 };
+
+function addAllSocialManagers(
+  members: MentionMember[],
+  ids: Set<string>,
+  excludeUserId?: string,
+): void {
+  for (const m of members) {
+    if (m.studioRole !== STUDIO_TEAM_ROLE.SOCIAL_MANAGER) continue;
+    if (m.userId !== excludeUserId) ids.add(m.userId);
+  }
+}
 
 /** Map @handles to studio user ids (excludes author if passed). */
 export function resolveMentionHandlesToUserIds(
@@ -37,14 +51,27 @@ export function resolveMentionHandlesToUserIds(
   const ids = new Set<string>();
 
   for (const raw of handles) {
+    if (raw === "may") {
+      addAllSocialManagers(members, ids, excludeUserId);
+      continue;
+    }
+
     const slugFromAlias = PERSONA_ALIASES[raw];
     if (slugFromAlias) {
+      if (slugFromAlias === "may") {
+        addAllSocialManagers(members, ids, excludeUserId);
+        continue;
+      }
       const m = members.find((x) => x.personaSlug === slugFromAlias);
       if (m && m.userId !== excludeUserId) ids.add(m.userId);
       continue;
     }
 
     if (isPersonaSlug(raw)) {
+      if (raw === "may") {
+        addAllSocialManagers(members, ids, excludeUserId);
+        continue;
+      }
       const m = members.find((x) => x.personaSlug === raw);
       if (m && m.userId !== excludeUserId) ids.add(m.userId);
       continue;
@@ -78,14 +105,13 @@ function greetingAddresseeUserIds(body: string, members: MentionMember[]): strin
   const m = line.match(/\b(?:hi|hello|hey)\s*,?\s*(harriet|issy|isabella|may)\b/i);
   if (!m) return [];
   const name = m[1].toLowerCase();
+  if (name === "may") {
+    const ids = new Set<string>();
+    addAllSocialManagers(members, ids);
+    return Array.from(ids);
+  }
   const slug: PersonaSlug | null =
-    name === "issy" || name === "isabella"
-      ? "isabella"
-      : name === "harriet"
-        ? "harriet"
-        : name === "may"
-          ? "may"
-          : null;
+    name === "issy" || name === "isabella" ? "isabella" : name === "harriet" ? "harriet" : null;
   if (!slug) return [];
   const row = members.find((x) => x.personaSlug === slug);
   return row?.userId ? [row.userId] : [];
@@ -101,7 +127,7 @@ export function studioInboxAwaitingReplyVisibleToViewer(
   lastClientMessageBody: string,
   viewerUserId: string,
   project: { portalKind: string; assignedStudioUserId: string | null },
-  viewerPersonaSlug: string,
+  viewerAgencyRole: AgencyPortalRole,
   members: MentionMember[],
 ): boolean {
   const handleIds = resolveMentionHandlesToUserIds(parseMentionHandles(lastClientMessageBody), members);
@@ -110,10 +136,10 @@ export function studioInboxAwaitingReplyVisibleToViewer(
   if (targetIds.length > 0) {
     return targetIds.includes(viewerUserId);
   }
-  return studioMemberMayAccessProject(project, viewerUserId, viewerPersonaSlug);
+  return studioMemberMayAccessProject(project, viewerUserId, viewerAgencyRole);
 }
 
-/** May’s team chat: own messages + threads where she was @-mentioned (persisted ids). */
+/** Social manager’s team chat: own messages + threads where they were @-mentioned (persisted ids). */
 export function studioTeamChatVisibleToMayUser(
   msg: { authorUserId: string; mentionedUserIds: string },
   mayUserId: string,

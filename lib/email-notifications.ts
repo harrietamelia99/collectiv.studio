@@ -132,13 +132,13 @@ async function emailsForUserIds(userIds: string[]): Promise<string[]> {
   return users.map((u) => u.email.trim().toLowerCase()).filter(Boolean);
 }
 
-async function emailForPersona(personaSlug: string): Promise<string | null> {
-  const row = await prisma.studioTeamMember.findFirst({
-    where: { personaSlug: personaSlug },
+async function emailsForAllStudioRole(role: string): Promise<string[]> {
+  const rows = await prisma.studioTeamMember.findMany({
+    where: { studioRole: role },
+    orderBy: { createdAt: "asc" },
     include: { user: { select: { email: true } } },
   });
-  const e = row?.user?.email?.trim().toLowerCase();
-  return e || null;
+  return rows.map((r) => r.user.email.trim().toLowerCase()).filter(Boolean);
 }
 
 // --- Client: invited (welcome + registration link) ---
@@ -199,7 +199,7 @@ export async function emailNotifyStudioNewClientRegistered(opts: {
   clientPhone?: string | null;
 }): Promise<void> {
   const issyRows = await prisma.studioTeamMember.findMany({
-    where: { personaSlug: "isabella" },
+    where: { studioRole: "ISSY" },
     select: { userId: true },
   });
   let to = await emailsForUserIds(issyRows.map((r) => r.userId));
@@ -522,11 +522,11 @@ export async function emailNotifyMayClientApprovedSocialPost(opts: {
   calendarItemId: string;
   postLabel: string;
 }): Promise<void> {
-  const to = await emailForPersona("may");
-  if (!to) return;
+  const recipients = await emailsForAllStudioRole("SOCIAL_MANAGER");
+  if (recipients.length === 0) return;
   const href = `${portalOrigin()}/portal/project/${opts.projectId}/social/calendar?post=${encodeURIComponent(opts.calendarItemId)}`;
   const html = collectivEmailShell({
-    greetingHtml: `<p style="margin:0 0 16px;font-size:15px;">Hi May,</p>`,
+    greetingHtml: `<p style="margin:0 0 16px;font-size:15px;">Hi,</p>`,
     bodyParagraphsHtml: [
       `The client approved a post for <strong>${escapeHtml(opts.projectName)}</strong>. It’s cleared for scheduling.`,
     ],
@@ -534,7 +534,7 @@ export async function emailNotifyMayClientApprovedSocialPost(opts: {
     cta: { href, label: "View post" },
   });
   await sendBrandedTransactional({
-    to,
+    to: recipients,
     subject: `Post approved by client · ${opts.projectName}`,
     html,
     logTag: "may-post-approved",
@@ -550,11 +550,11 @@ export async function emailNotifyMayClientRequestedSocialChanges(opts: {
   postLabel: string;
   feedbackText: string;
 }): Promise<void> {
-  const to = await emailForPersona("may");
-  if (!to) return;
+  const recipients = await emailsForAllStudioRole("SOCIAL_MANAGER");
+  if (recipients.length === 0) return;
   const href = `${portalOrigin()}/portal/project/${opts.projectId}/social/calendar?post=${encodeURIComponent(opts.calendarItemId)}`;
   const html = collectivEmailShell({
-    greetingHtml: `<p style="margin:0 0 16px;font-size:15px;">Hi May,</p>`,
+    greetingHtml: `<p style="margin:0 0 16px;font-size:15px;">Hi,</p>`,
     bodyParagraphsHtml: [
       `The client has requested changes on a post in <strong>${escapeHtml(opts.projectName)}</strong>.`,
     ],
@@ -562,7 +562,7 @@ export async function emailNotifyMayClientRequestedSocialChanges(opts: {
     cta: { href, label: "Open in calendar" },
   });
   await sendBrandedTransactional({
-    to,
+    to: recipients,
     subject: `Changes requested on a post · ${opts.projectName}`,
     html,
     logTag: "may-post-revision",
@@ -577,11 +577,11 @@ export async function emailNotifyMayClientApprovedAllPostsForMonth(opts: {
   monthLabel: string;
   count: number;
 }): Promise<void> {
-  const to = await emailForPersona("may");
-  if (!to) return;
+  const recipients = await emailsForAllStudioRole("SOCIAL_MANAGER");
+  if (recipients.length === 0) return;
   const href = `${portalOrigin()}/portal/project/${opts.projectId}/social/calendar`;
   const html = collectivEmailShell({
-    greetingHtml: `<p style="margin:0 0 16px;font-size:15px;">Hi May,</p>`,
+    greetingHtml: `<p style="margin:0 0 16px;font-size:15px;">Hi,</p>`,
     bodyParagraphsHtml: [
       `The client approved <strong>${opts.count}</strong> post${opts.count === 1 ? "" : "s"} for <strong>${escapeHtml(opts.monthLabel)}</strong> on <strong>${escapeHtml(opts.projectName)}</strong> in one go.`,
       "Everything in that batch is cleared for scheduling from the client’s side.",
@@ -589,7 +589,7 @@ export async function emailNotifyMayClientApprovedAllPostsForMonth(opts: {
     cta: { href, label: "View calendar" },
   });
   await sendBrandedTransactional({
-    to,
+    to: recipients,
     subject: `Month approved by client · ${opts.projectName}`,
     html,
     logTag: "may-month-approved",
@@ -644,7 +644,7 @@ export async function emailNotifyPortalPasswordReset(opts: { to: string; resetUr
 
 export async function resolveIssyContractNotificationEmails(): Promise<string[]> {
   const issyMembers = await prisma.studioTeamMember.findMany({
-    where: { personaSlug: "isabella" },
+    where: { studioRole: "ISSY" },
     select: { userId: true },
   });
   const ids = issyMembers.map((m) => m.userId);
@@ -668,7 +668,7 @@ export async function resolveRecipientEmailsForReviewAssetSignoff(
     select: { assignedStudioUserId: true },
   });
   const team = await prisma.studioTeamMember.findMany({
-    select: { userId: true, personaSlug: true },
+    select: { userId: true, studioRole: true },
   });
   const ids: string[] = [];
   if (project?.assignedStudioUserId) {
@@ -676,10 +676,10 @@ export async function resolveRecipientEmailsForReviewAssetSignoff(
   } else {
     const k = assetKind.toUpperCase();
     if (k === "BRANDING" || k === "SIGNAGE") {
-      const h = team.find((t) => t.personaSlug === "harriet");
+      const h = team.find((t) => t.studioRole === "HARRIET");
       if (h) ids.push(h.userId);
     }
-    const i = team.find((t) => t.personaSlug === "isabella");
+    const i = team.find((t) => t.studioRole === "ISSY");
     if (i) ids.push(i.userId);
   }
   return emailsForUserIds(ids);

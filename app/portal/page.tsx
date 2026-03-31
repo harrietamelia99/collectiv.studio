@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth-options";
 import type { ContentCalendarItem, ReviewAsset } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getPortalDatabaseAvailable } from "@/lib/portal-db-status";
-import { isStudioUser } from "@/lib/portal-access";
+import { isAgencyPortalSession } from "@/lib/portal-access";
 import { clientHasFullPortalAccess } from "@/lib/portal-client-full-access";
 import { normalizePortalKind, portalKindLabel } from "@/lib/portal-project-kind";
 import { normalizePaymentStatus } from "@/lib/portal-payment-status";
@@ -75,7 +75,7 @@ const clientHomeProjectInclude = {
       id: true,
       email: true,
       name: true,
-      studioTeamProfile: { select: { welcomeName: true, personaSlug: true, jobTitle: true } },
+      studioTeamProfile: { select: { welcomeName: true, personaSlug: true, studioRole: true, jobTitle: true } },
     },
   },
   calendarItems: {
@@ -142,13 +142,13 @@ async function ClientProjectList({ userId }: { userId: string }) {
           });
 
           const assignee = p.assignedStudioUser;
+          const roleHint = studioAdminRoleHint(
+            assignee?.studioTeamProfile?.personaSlug,
+            assignee?.studioTeamProfile?.studioRole,
+          );
           const assigneeLine = assignee
             ? `${studioAdminDisplayLabel(assignee)}${
-                studioAdminRoleHint(assignee.studioTeamProfile?.personaSlug)
-                  ? ` · ${studioAdminRoleHint(assignee.studioTeamProfile?.personaSlug)}`
-                  : assignee.studioTeamProfile?.jobTitle
-                    ? ` · ${assignee.studioTeamProfile.jobTitle}`
-                    : ""
+                roleHint ? ` · ${roleHint}` : assignee.studioTeamProfile?.jobTitle ? ` · ${assignee.studioTeamProfile.jobTitle}` : ""
               }`
             : null;
 
@@ -235,7 +235,7 @@ export default async function PortalHomePage({ searchParams }: { searchParams?: 
   ]);
   if (!session?.user?.id) redirect("/portal/login");
 
-  const studio = isStudioUser(session.user.email);
+  const studio = isAgencyPortalSession(session);
   const created = searchParams?.created === "1";
   const createdPair = searchParams?.created === "pair";
   const deletedBanner =
@@ -289,11 +289,10 @@ export default async function PortalHomePage({ searchParams }: { searchParams?: 
               Studio profile
             </h2>
             <p className="cc-portal-client-description mt-3 max-w-xl font-medium">
-              Your login is on the studio allowlist, but no team persona is linked yet. Add your email to{" "}
-              <span className="font-mono text-[11px]">STUDIO_PERSONA_ISABELLA_EMAIL</span>,{" "}
-              <span className="font-mono text-[11px]">STUDIO_PERSONA_HARRIET_EMAIL</span>, or{" "}
-              <span className="font-mono text-[11px]">STUDIO_PERSONA_MAY_EMAIL</span> in the environment (matching this
-              account), then refresh — Issy, Harriet, and May each get the correct dashboard and permissions.
+              Your login is on the studio allowlist, but there is no <code className="font-mono text-[11px]">StudioTeamMember</code> row yet. Either add your email to{" "}
+              <span className="font-mono text-[11px]">STUDIO_PERSONA_*_EMAIL</span> (then refresh), or insert your user with the correct{" "}
+              <span className="font-mono text-[11px]">studioRole</span> using the SQL template under{" "}
+              <span className="font-mono text-[11px]">prisma/sql-templates/</span>.
             </p>
           </section>
         ) : null}

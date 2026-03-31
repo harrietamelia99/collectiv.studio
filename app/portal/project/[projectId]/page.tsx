@@ -5,7 +5,7 @@ import type { ComponentType, SVGProps } from "react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
-import { getProjectForSession, isStudioUser } from "@/lib/portal-access";
+import { getProjectForSession, isAgencyPortalSession } from "@/lib/portal-access";
 import {
   buildBrandingClientHubCards,
   buildDeliverablesClientHubCards,
@@ -60,6 +60,7 @@ import { loadAccountBrandKitSlice } from "@/lib/portal-account-brand-kit";
 import { loadClientWorkflowAccessOpts } from "@/lib/portal-brand-kit-gate";
 import { buildSignageStepRows } from "@/lib/portal-workflow";
 import type { PersonaSlug } from "@/lib/studio-team-config";
+import { type AgencyPortalRole, dashboardPersonaSlugForStudioMember } from "@/lib/studio-team-roles";
 
 type Props = { params: { projectId: string } };
 
@@ -70,16 +71,21 @@ export default async function ProjectOverviewPage({ params }: Props) {
   const project = await getProjectForSession(params.projectId, session);
   if (!project) notFound();
 
-  const studio = isStudioUser(session?.user?.email);
+  const studio = isAgencyPortalSession(session);
   const vis = visiblePortalSections(project.portalKind);
   const viewerStudioMember =
     studio && session?.user?.id
       ? await prisma.studioTeamMember.findUnique({
           where: { userId: session.user.id },
-          select: { personaSlug: true },
+          select: { personaSlug: true, studioRole: true },
         })
       : null;
-  const canAssignProjectLead = viewerStudioMember?.personaSlug === "isabella";
+  const viewerAgencyRole = (session?.user?.agencyRole ?? null) as AgencyPortalRole | null;
+  const canAssignProjectLead = viewerAgencyRole === "ISSY";
+  const dashboardPersonaSlug = dashboardPersonaSlugForStudioMember(
+    viewerStudioMember?.studioRole ?? null,
+    viewerStudioMember?.personaSlug ?? null,
+  );
   const [items, assets, messagesRaw, websitePageBriefs, projectQuote, offboardingReview, accountBrandKit, clientWorkflowAccessOpts] =
     await Promise.all([
     prisma.contentCalendarItem.findMany({
@@ -356,20 +362,24 @@ export default async function ProjectOverviewPage({ params }: Props) {
   }
 
   if (studio) {
+    if (!viewerAgencyRole) notFound();
     const internalNotes = await prisma.projectInternalNote.findMany({
       where: { projectId: project.id },
       orderBy: { createdAt: "desc" },
       take: 100,
       include: { author: { select: { name: true, email: true } } },
     });
-    const slug = viewerStudioMember!.personaSlug;
     const agencyNav: HubNavItem[] = [
       { href: "#agency-project-header", label: "Overview", Icon: HubIconGrid },
-      ...(slug === "isabella"
+      ...(viewerAgencyRole === "ISSY"
         ? ([{ href: "#agency-onboarding", label: "Onboarding", Icon: HubIconChecklist }] as HubNavItem[])
         : []),
-      { href: "#agency-project-steps", label: slug === "may" ? "Social & steps" : "Project steps", Icon: HubIconWebsite },
-      ...(slug === "isabella"
+      {
+        href: "#agency-project-steps",
+        label: viewerAgencyRole === "SOCIAL_MANAGER" ? "Social & steps" : "Project steps",
+        Icon: HubIconWebsite,
+      },
+      ...(viewerAgencyRole === "ISSY"
         ? ([
             { href: "#agency-subscription-payment", label: "Subscription", Icon: HubIconPayment },
             { href: "#agency-wrap-up", label: "Wrap-up", Icon: HubIconRocket },
@@ -405,7 +415,8 @@ export default async function ProjectOverviewPage({ params }: Props) {
             clientWorkflowAccessOpts={clientWorkflowAccessOpts}
             canAssignProjectLead={canAssignProjectLead}
             internalNotes={internalNotes}
-            viewerPersonaSlug={viewerStudioMember!.personaSlug as PersonaSlug}
+            viewerPersonaSlug={dashboardPersonaSlug}
+            viewerAgencyRole={viewerAgencyRole}
             projectQuote={projectQuote}
           />
         </div>

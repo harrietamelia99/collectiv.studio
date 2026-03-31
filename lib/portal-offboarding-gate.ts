@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import type { Session } from "next-auth";
 import { prisma } from "@/lib/prisma";
-import { isStudioUser } from "@/lib/portal-access";
+import { isAgencyPortalSession } from "@/lib/portal-access";
 import { clientHasFullPortalAccess } from "@/lib/portal-client-full-access";
 import { clientNeedsOffboardingForm } from "@/lib/portal-offboarding";
 
@@ -12,7 +12,7 @@ export async function redirectClientIfOffboardingRequired(
   projectId: string,
   session: Session | null,
 ): Promise<void> {
-  if (!session?.user?.id || isStudioUser(session.user.email)) return;
+  if (!session?.user?.id || isAgencyPortalSession(session)) return;
 
   const project = await prisma.project.findFirst({
     where: { id: projectId, userId: session.user.id },

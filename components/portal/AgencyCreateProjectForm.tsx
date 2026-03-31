@@ -175,22 +175,16 @@ function ClientAccountSearch({ clients }: SearchProps) {
 export function AgencyCreateProjectForm({
   clients,
   studioAdmins,
-  creatorPersonaSlug = null,
 }: {
   clients: AgencyClientOption[];
-  /** Registered users in STUDIO_EMAIL — pick who leads this project internally. */
+  /** Users with a studio team profile — pick who leads this project internally. */
   studioAdmins: StudioAdminSelectUser[];
-  /** When `may`, only social media management projects can be created. */
-  creatorPersonaSlug?: string | null;
 }) {
   const [state, formAction] = useFormState(createStudioProject, initial);
   const hasClients = clients.length > 0;
   const [mode, setMode] = useState<"existing" | "invite">(hasClients ? "existing" : "invite");
   const errorRef = useRef<HTMLDivElement>(null);
-  const mayOnlySocial = creatorPersonaSlug === "may";
-  const portalKindOptions: PortalKind[] = mayOnlySocial
-    ? ["SOCIAL"]
-    : PORTAL_KIND_FORM_ORDER;
+  const portalKindOptions: PortalKind[] = PORTAL_KIND_FORM_ORDER;
 
   useEffect(() => {
     if (state?.error && errorRef.current) {
@@ -223,11 +217,7 @@ export function AgencyCreateProjectForm({
           required
           maxLength={200}
           autoComplete="off"
-          placeholder={
-            mayOnlySocial
-              ? "e.g. Client Name — Social"
-              : "e.g. Acme & Co (pair adds “— Website” and “— Social”)"
-          }
+          placeholder="e.g. Acme & Co (pair adds “— Website” and “— Social”)"
           className={`${PORTAL_CLIENT_INPUT_CLASS} min-h-[48px] md:text-sm`}
         />
       </label>
@@ -238,7 +228,7 @@ export function AgencyCreateProjectForm({
         </span>
         <select
           name="portalKind"
-          defaultValue={mayOnlySocial ? "SOCIAL" : "WEBSITE"}
+          defaultValue="WEBSITE"
           className={`${PORTAL_CLIENT_INPUT_CLASS} min-h-[48px] cursor-pointer md:text-sm`}
         >
           {portalKindOptions.map((k) => (
@@ -246,26 +236,15 @@ export function AgencyCreateProjectForm({
               {portalKindLabel(k)}
             </option>
           ))}
-          {mayOnlySocial ? null : (
-            <option value={STUDIO_FORM_WEBSITE_SOCIAL_PAIR}>
-              Website + Social (two separate subscriptions)
-            </option>
-          )}
+          <option value={STUDIO_FORM_WEBSITE_SOCIAL_PAIR}>
+            Website + Social (two separate subscriptions)
+          </option>
         </select>
         <span className="font-body text-[11px] leading-relaxed text-burgundy/55">
-          {mayOnlySocial ? (
-            <>
-              Your role creates <span className="font-medium text-burgundy">social media management</span>{" "}
-              subscriptions only. Ask Issy or Harriet to add website, branding, or combined projects.
-            </>
-          ) : (
-            <>
-              One subscription = one project on the client&apos;s home. Pick{" "}
-              <span className="font-medium text-burgundy">The Pre-Launch Suite</span> for branding + website + social in
-              one hub; choose <span className="font-medium text-burgundy">Website + Social (two subscriptions)</span> when
-              those should be separate cards. Print and signage are their own project types.
-            </>
-          )}
+          One subscription = one project on the client&apos;s home. Pick{" "}
+          <span className="font-medium text-burgundy">The Pre-Launch Suite</span> for branding + website + social in one
+          hub; choose <span className="font-medium text-burgundy">Website + Social (two subscriptions)</span> when those
+          should be separate cards. Print and signage are their own project types.
         </span>
       </label>
 
@@ -281,7 +260,10 @@ export function AgencyCreateProjectForm({
           >
             <option value="">No assignee — anyone on the team can own follow-ups</option>
             {studioAdmins.map((a) => {
-              const role = studioAdminRoleHint(a.studioTeamProfile?.personaSlug);
+              const role = studioAdminRoleHint(
+                a.studioTeamProfile?.personaSlug,
+                a.studioTeamProfile?.studioRole,
+              );
               return (
                 <option key={a.id} value={a.id}>
                   {studioAdminDisplayLabel(a)}
@@ -291,27 +273,16 @@ export function AgencyCreateProjectForm({
             })}
           </select>
           <span className="font-body text-[11px] leading-relaxed text-burgundy/55">
-            {mayOnlySocial ? (
-              <>
-                Set yourself as lead for social retainers you own. Issy and Harriet manage website and full-service
-                accounts.
-              </>
-            ) : (
-              <>
-                <strong className="font-medium text-burgundy">Harriet</strong> owns creative direction on project
-                accounts; <strong className="font-medium text-burgundy">Issy</strong> oversees those clients and flow;{" "}
-                <strong className="font-medium text-burgundy">May</strong> leads assigned{" "}
-                <span className="font-medium text-burgundy">social-only</span> subscriptions. This pick is the named lead
-                on the account.
-              </>
-            )}
+            <strong className="font-medium text-burgundy">Harriet</strong> owns creative direction on project accounts;{" "}
+            <strong className="font-medium text-burgundy">Issy</strong> oversees those clients and flow; social leads own
+            assigned <span className="font-medium text-burgundy">social-only</span> subscriptions. This pick is the named
+            lead on the account.
           </span>
         </label>
       ) : (
         <p className="rounded-cc-card border border-amber-200/60 bg-amber-50/50 px-4 py-3 font-body text-[13px] leading-relaxed text-amber-950/90">
-          No studio admin accounts are registered yet. Add emails to{" "}
-          <span className="font-mono text-[11px]">STUDIO_EMAIL</span> in <span className="font-medium">.env</span>, then
-          have each person sign in once so they appear in the assignee list.
+          No studio team profiles in the database yet — add team members (SQL template or env persona sync), then
+          refresh.
         </p>
       )}
 

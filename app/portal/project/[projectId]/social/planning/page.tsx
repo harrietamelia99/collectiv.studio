@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
-import { getProjectForSession, isStudioUser, studioMemberMayAccessProject } from "@/lib/portal-access";
+import { getProjectForSession, isAgencyPortalSession, studioMemberMayAccessProject } from "@/lib/portal-access";
 import { clientHasFullPortalAccess } from "@/lib/portal-client-full-access";
 import { redirectClientIfProjectWorkspaceLocked } from "@/lib/portal-client-workspace-gate";
 import { redirectClientIfOffboardingRequired } from "@/lib/portal-offboarding-gate";
@@ -25,7 +25,7 @@ export default async function SocialContentPlanningPage({ params }: Props) {
 
   await redirectClientIfOffboardingRequired(params.projectId, session);
 
-  const studio = isStudioUser(session?.user?.email);
+  const studio = isAgencyPortalSession(session);
   const vis = visiblePortalSections(project.portalKind);
   if (!vis.social && !studio) {
     redirect(`/portal/project/${project.id}`);
@@ -61,18 +61,11 @@ export default async function SocialContentPlanningPage({ params }: Props) {
   const clientCanEditPlanning =
     !studio && clientVerified && (isSocialOnly ? step1Complete : true);
 
-  const studioMember =
-    studio && session?.user?.id
-      ? await prisma.studioTeamMember.findUnique({
-          where: { userId: session.user.id },
-          select: { personaSlug: true },
-        })
-      : null;
+  const ar = session?.user?.agencyRole ?? null;
   const canEditWeeklySchedule = (() => {
-    if (!studio || !session?.user?.id || !studioMember) return false;
-    const slug = studioMember.personaSlug;
-    if (slug !== "isabella" && slug !== "harriet") return false;
-    return studioMemberMayAccessProject(project, session.user.id, slug);
+    if (!studio || !session?.user?.id || !ar) return false;
+    if (ar !== "ISSY" && ar !== "HARRIET") return false;
+    return studioMemberMayAccessProject(project, session.user.id, ar);
   })();
 
   return (

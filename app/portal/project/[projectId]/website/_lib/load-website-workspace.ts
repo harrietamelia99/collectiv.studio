@@ -1,7 +1,7 @@
 import type { WebsitePageBrief } from "@prisma/client";
 import type { Session } from "next-auth";
 import { prisma } from "@/lib/prisma";
-import { getProjectForSession, isStudioUser } from "@/lib/portal-access";
+import { getProjectForSession, isAgencyPortalSession } from "@/lib/portal-access";
 import { clientHasFullPortalAccess } from "@/lib/portal-client-full-access";
 import { normalizePortalKind, visiblePortalSections } from "@/lib/portal-project-kind";
 import { parseWebsiteFontPaths } from "@/lib/portal-progress";
@@ -46,7 +46,7 @@ export async function loadWebsiteWorkspace(
   const project = await getProjectForSession(projectId, session);
   if (!project) return { ok: false, notFound: true };
 
-  const studio = isStudioUser(session?.user?.email);
+  const studio = isAgencyPortalSession(session);
   const vis = visiblePortalSections(project.portalKind);
   const isPrint = normalizePortalKind(project.portalKind) === "PRINT";
   const allowWithoutWebsite =

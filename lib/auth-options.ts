@@ -3,7 +3,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { nextAuthSecret } from "@/lib/nextauth-secret";
-import { isStudioUser } from "@/lib/portal-access";
+import { isEnvListedStudioEmail } from "@/lib/portal-studio-users";
+import { agencyPortalRoleFromStudioRole, type AgencyPortalRole } from "@/lib/studio-team-roles";
 
 /** Secure cookies require HTTPS; `next start` on http://localhost is still NODE_ENV=production. */
 function useSecureNextAuthCookies(): boolean {
@@ -12,17 +13,14 @@ function useSecureNextAuthCookies(): boolean {
   return url.startsWith("https://");
 }
 
-function agencyRoleFromPersona(slug: string | null | undefined): "ISSY" | "HARRIET" | "MAY" | null {
-  switch (slug) {
-    case "isabella":
-      return "ISSY";
-    case "harriet":
-      return "HARRIET";
-    case "may":
-      return "MAY";
-    default:
-      return null;
-  }
+function agencyRoleForJwt(
+  inEnvAllowlist: boolean,
+  studioRole: string | null | undefined,
+): AgencyPortalRole | null {
+  const fromDb = agencyPortalRoleFromStudioRole(studioRole ?? null);
+  if (fromDb) return fromDb;
+  if (inEnvAllowlist) return "ISSY";
+  return null;
 }
 
 export const authOptions: NextAuthOptions = {
@@ -51,19 +49,20 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    /** Resolve agency persona once at sign-in so `/api/auth/session` stays DB-free for normal requests. */
+    /** Resolve agency role once at sign-in so `/api/auth/session` stays DB-light. */
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
         const email = user.email?.trim().toLowerCase() ?? "";
-        if (email && isStudioUser(email)) {
+        const inEnv = Boolean(email && isEnvListedStudioEmail(email));
+        const m = await prisma.studioTeamMember.findUnique({
+          where: { userId: user.id },
+          select: { studioRole: true },
+        });
+        if (m || inEnv) {
           token.portalRole = "AGENCY";
-          const m = await prisma.studioTeamMember.findUnique({
-            where: { userId: user.id },
-            select: { personaSlug: true },
-          });
-          token.agencyRole = agencyRoleFromPersona(m?.personaSlug ?? null);
+          token.agencyRole = agencyRoleForJwt(inEnv, m?.studioRole);
         } else {
           token.portalRole = "CLIENT";
           token.agencyRole = null;
@@ -78,19 +77,20 @@ export const authOptions: NextAuthOptions = {
 
       if (token.portalRole) {
         session.user.portalRole = token.portalRole as "CLIENT" | "AGENCY";
-        session.user.agencyRole = (token.agencyRole as typeof session.user.agencyRole) ?? null;
+        session.user.agencyRole = (token.agencyRole as AgencyPortalRole | null) ?? null;
         return session;
       }
 
-      /** Legacy JWTs (before portalRole on token): fall back to DB once per session fetch. */
-      const email = session.user.email;
-      if (email && isStudioUser(email)) {
+      /** Legacy JWTs: fall back to DB once per session fetch. */
+      const email = session.user.email?.trim().toLowerCase() ?? "";
+      const inEnv = Boolean(email && isEnvListedStudioEmail(email));
+      const m = await prisma.studioTeamMember.findUnique({
+        where: { userId: session.user.id },
+        select: { studioRole: true },
+      });
+      if (m || inEnv) {
         session.user.portalRole = "AGENCY";
-        const m = await prisma.studioTeamMember.findUnique({
-          where: { userId: session.user.id },
-          select: { personaSlug: true },
-        });
-        session.user.agencyRole = agencyRoleFromPersona(m?.personaSlug ?? null);
+        session.user.agencyRole = agencyRoleForJwt(inEnv, m?.studioRole);
       } else {
         session.user.portalRole = "CLIENT";
         session.user.agencyRole = null;

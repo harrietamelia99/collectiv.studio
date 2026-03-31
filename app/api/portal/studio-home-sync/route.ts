@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { backfillOpenAgencyTodosMissingDueDate } from "@/lib/agency-todos";
-import { isStudioUser } from "@/lib/portal-access";
+import { isAgencyPortalSession } from "@/lib/portal-access";
 import { syncAutoPhaseTodosForAllProjects } from "@/lib/studio-auto-phase-todos";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,7 @@ export async function POST() {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  if (!isStudioUser(session.user.email)) {
+  if (!isAgencyPortalSession(session)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

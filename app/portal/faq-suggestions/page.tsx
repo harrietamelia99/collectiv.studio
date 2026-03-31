@@ -3,14 +3,14 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { approveFaqSuggestion, rejectFaqSuggestion } from "@/app/portal/actions";
 import { authOptions } from "@/lib/auth-options";
-import { isStudioUser } from "@/lib/portal-access";
+import { isAgencyPortalSession } from "@/lib/portal-access";
 import { prisma } from "@/lib/prisma";
 import { ctaButtonClasses } from "@/components/ui/Button";
 
 export default async function FaqSuggestionsPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/portal/login");
-  if (!isStudioUser(session.user.email)) redirect("/portal");
+  if (!isAgencyPortalSession(session)) redirect("/portal");
 
   const pending = await prisma.faqSuggestion.findMany({
     where: { status: "PENDING" },

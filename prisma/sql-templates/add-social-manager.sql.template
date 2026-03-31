@@ -1,0 +1,47 @@
+-- Reusable template: add a social media manager (SOCIAL_MANAGER — same portal access as May).
+-- 1. Generate two cuids (User id + StudioTeamMember id), e.g. `npx --yes cuid-cli` twice, or any cuid generator.
+-- 2. bcrypt hash (cost 10):  node -e "require('bcryptjs').hash('YOUR_TEMP_PASSWORD', 10).then(console.log)"
+-- 3. Replace placeholders; keep email lowercase. Use a distinct `personaSlug` per person for @-mentions in team chat.
+
+-- __USER_CUID__
+-- __STUDIO_MEMBER_CUID__
+-- __EMAIL__
+-- __NAME__
+-- __BCRYPT_PASSWORD_HASH__
+-- __PERSONA_SLUG__
+
+INSERT INTO "User" (
+  "id",
+  "email",
+  "passwordHash",
+  "name",
+  "createdAt",
+  "updatedAt"
+) VALUES (
+  '__USER_CUID__',
+  '__EMAIL__',
+  '__BCRYPT_PASSWORD_HASH__',
+  '__NAME__',
+  NOW(),
+  NOW()
+);
+
+INSERT INTO "StudioTeamMember" (
+  "id",
+  "userId",
+  "studioRole",
+  "personaSlug",
+  "jobTitle",
+  "availabilityNote",
+  "createdAt",
+  "updatedAt"
+) VALUES (
+  '__STUDIO_MEMBER_CUID__',
+  '__USER_CUID__',
+  'SOCIAL_MANAGER',
+  '__PERSONA_SLUG__',
+  'Social media management — assigned social clients, calendar & messages',
+  '',
+  NOW(),
+  NOW()
+);

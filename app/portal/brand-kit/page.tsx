@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
-import { isStudioUser, listClientOwnedProjects } from "@/lib/portal-access";
+import { isAgencyPortalSession, listClientOwnedProjects } from "@/lib/portal-access";
 import { ClientPortalProfilePhotoSection } from "@/components/portal/ClientPortalProfilePhotoSection";
 import { portalFilePublicUrl } from "@/lib/portal-file-url";
 import { parseWebsiteFontPaths } from "@/lib/portal-progress";
@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 export default async function ClientBrandKitPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/portal/login");
-  if (isStudioUser(session.user.email)) redirect("/portal");
+  if (isAgencyPortalSession(session)) redirect("/portal");
 
   const [kit, projects, userRow] = await Promise.all([
     prisma.userBrandKit.findUnique({ where: { userId: session.user.id } }),

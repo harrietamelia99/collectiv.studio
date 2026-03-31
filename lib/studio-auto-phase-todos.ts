@@ -1,17 +1,37 @@
 import { agencyTodoDueInCalendarDays } from "@/lib/agency-todo-deadlines";
+import {
+  resolveAssigneeUserIdForSocialManagerLane,
+  resolveAssigneeUserIdForStudioRole,
+} from "@/lib/agency-todos";
 import { clientHasFullPortalAccess } from "@/lib/portal-client-full-access";
 import { prisma } from "@/lib/prisma";
 import { visiblePortalSections } from "@/lib/portal-project-kind";
 import { parseWebsiteFontPaths } from "@/lib/portal-progress";
-import type { PersonaSlug } from "@/lib/studio-team-config";
 import { syncStudioTeamFromEnv } from "@/lib/studio-team-sync";
+import { STUDIO_TEAM_ROLE, type StudioTeamRole } from "@/lib/studio-team-roles";
 
-function autoKind(projectId: string, persona: PersonaSlug, slug: string): string {
-  return `AUTO:${projectId}:${persona}:${slug}`;
+/** Middle segment in `AUTO:{projectId}:{lane}:{slug}` — keep `may` / `isabella` / `harriet` for existing rows. */
+type AutoTodoLane = "isabella" | "harriet" | "may";
+
+async function resolveMemberForAutoPhase(
+  lane: AutoTodoLane,
+  projectId: string,
+): Promise<{ userId: string } | null> {
+  if (lane === "may") {
+    const uid = await resolveAssigneeUserIdForSocialManagerLane(projectId);
+    return uid ? { userId: uid } : null;
+  }
+  const role: StudioTeamRole = lane === "isabella" ? STUDIO_TEAM_ROLE.ISSY : STUDIO_TEAM_ROLE.HARRIET;
+  const uid = await resolveAssigneeUserIdForStudioRole(role);
+  return uid ? { userId: uid } : null;
+}
+
+function autoKind(projectId: string, lane: AutoTodoLane, slug: string): string {
+  return `AUTO:${projectId}:${lane}:${slug}`;
 }
 
 async function syncPhaseTodo(
-  persona: PersonaSlug,
+  lane: AutoTodoLane,
   projectId: string,
   slug: string,
   title: string,
@@ -19,13 +39,10 @@ async function syncPhaseTodo(
   shouldExist: boolean,
   dueInCalendarDays = 5,
 ): Promise<void> {
-  const member = await prisma.studioTeamMember.findUnique({
-    where: { personaSlug: persona },
-    select: { userId: true },
-  });
+  const member = await resolveMemberForAutoPhase(lane, projectId);
   if (!member) return;
 
-  const kind = autoKind(projectId, persona, slug);
+  const kind = autoKind(projectId, lane, slug);
   const now = new Date();
 
   const open = await prisma.agencyTodo.findFirst({
@@ -89,7 +106,7 @@ export type SyncAutoPhaseTodosOptions = { skipTeamSync?: boolean };
 
 /**
  * Creates or auto-completes phase todos from live project state (idempotent).
- * Kinds are `AUTO:{projectId}:{persona}:{slug}` — safe to re-run on every /portal load.
+ * Kinds are `AUTO:{projectId}:{lane}:{slug}` — safe to re-run on every /portal load.
  */
 export async function syncAutoPhaseTodosForProject(
   projectId: string,
@@ -131,13 +148,11 @@ export async function syncAutoPhaseTodosForProject(
 
   const brandingAssets = project.reviewAssets.filter((a) => a.kind === "BRANDING");
   const signageAssets = project.reviewAssets.filter((a) => a.kind === "SIGNAGE");
-  const allBrandingSigned =
-    brandingAssets.length > 0 && brandingAssets.every((a) => a.clientSignedOff);
+  const allBrandingSigned = brandingAssets.length > 0 && brandingAssets.every((a) => a.clientSignedOff);
   const allSignageSigned = signageAssets.length > 0 && signageAssets.every((a) => a.clientSignedOff);
 
   const onboardingDone = Boolean(project.socialOnboardingSubmittedAt);
 
-  // --- Issy (isabella) — operations, flow, calendar org, assigning, client comms
   await syncPhaseTodo(
     "isabella",
     projectId,
@@ -148,7 +163,6 @@ export async function syncAutoPhaseTodosForProject(
     2,
   );
 
-  // --- May — social clients, processes, calendar sign-off (Issy oversees flow)
   await syncPhaseTodo(
     "may",
     projectId,
@@ -169,7 +183,6 @@ export async function syncAutoPhaseTodosForProject(
     3,
   );
 
-  // --- Harriet — designer & business owner, creative direction
   await syncPhaseTodo(
     "harriet",
     projectId,

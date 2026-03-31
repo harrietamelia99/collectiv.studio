@@ -22,6 +22,7 @@ async function main() {
     {
       email: "isabella@collectivstudio.uk",
       personaSlug: "isabella",
+      studioRole: "ISSY",
       jobTitle: "Operations — project flow, calendar, assigning, client comms",
       name: "Isabella",
       welcomeName: "Issy",
@@ -30,6 +31,7 @@ async function main() {
     {
       email: "harriet@collectivstudio.uk",
       personaSlug: "harriet",
+      studioRole: "HARRIET",
       jobTitle: "Designer & business owner",
       name: "Harriet",
       welcomeName: null,
@@ -38,6 +40,7 @@ async function main() {
     {
       email: "zbyszka@collectivstudio.uk",
       personaSlug: "may",
+      studioRole: "SOCIAL_MANAGER",
       jobTitle: "Social media — client comms, processes & calendar sign-off",
       name: "May",
       welcomeName: null,
@@ -80,12 +83,14 @@ async function main() {
       create: {
         userId: u.id,
         personaSlug: t.personaSlug,
+        studioRole: t.studioRole,
         jobTitle: t.jobTitle,
         welcomeName: t.welcomeName ?? undefined,
         availabilityNote: "",
       },
       update: {
         personaSlug: t.personaSlug,
+        studioRole: t.studioRole,
         jobTitle: t.jobTitle,
         ...(t.welcomeName != null ? { welcomeName: t.welcomeName } : {}),
       },

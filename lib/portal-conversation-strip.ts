@@ -20,6 +20,7 @@ type AssigneeForStrip = {
   studioTeamProfile: {
     welcomeName: string | null;
     personaSlug: string;
+    studioRole: string;
     jobTitle: string;
     photoUrl: string | null;
   } | null;
@@ -41,6 +42,7 @@ export function buildClientConversationStripData(project: {
       ? {
           welcomeName: su.studioTeamProfile.welcomeName,
           personaSlug: su.studioTeamProfile.personaSlug,
+          studioRole: su.studioTeamProfile.studioRole,
         }
       : null,
   };

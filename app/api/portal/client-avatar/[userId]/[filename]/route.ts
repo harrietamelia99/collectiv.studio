@@ -1,15 +1,17 @@
 import { readFile } from "fs/promises";
 import path from "path";
+import type { Session } from "next-auth";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
-import { isStudioUser } from "@/lib/portal-access";
+import { isAgencyPortalSession } from "@/lib/portal-access";
 import { prisma } from "@/lib/prisma";
 import { uploadRoot } from "@/lib/portal-uploads";
 import { mimeForUploadPath } from "@/lib/upload-mime";
 
-async function mayReadClientAvatar(sessionUserId: string, sessionEmail: string | null | undefined, targetUserId: string) {
-  if (sessionUserId === targetUserId) return true;
-  if (!sessionEmail || !isStudioUser(sessionEmail)) return false;
+async function mayReadClientAvatar(session: Session | null, targetUserId: string): Promise<boolean> {
+  if (!session?.user?.id) return false;
+  if (session.user.id === targetUserId) return true;
+  if (!isAgencyPortalSession(session)) return false;
   const row = await prisma.project.findFirst({
     where: { userId: targetUserId },
     select: { id: true },
@@ -31,7 +33,7 @@ export async function GET(
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return new Response("Not found", { status: 404 });
 
-  const ok = await mayReadClientAvatar(session.user.id, session.user.email, userId);
+  const ok = await mayReadClientAvatar(session, userId);
   if (!ok) return new Response("Not found", { status: 404 });
 
   const user = await prisma.user.findUnique({

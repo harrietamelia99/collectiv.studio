@@ -2,46 +2,60 @@ import type { Prisma, Project } from "@prisma/client";
 import type { Session } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { normalizePortalKind, PORTAL_KINDS_ISSY_PROJECT_SCOPE } from "@/lib/portal-project-kind";
-import { studioEmailSet } from "@/lib/portal-studio-users";
+import { isEnvListedStudioEmail } from "@/lib/portal-studio-users";
+import type { AgencyPortalRole } from "@/lib/studio-team-roles";
+import { STUDIO_TEAM_ROLE } from "@/lib/studio-team-roles";
 
-export function isStudioUser(email: string | null | undefined): boolean {
-  if (!email) return false;
-  return studioEmailSet().has(email.trim().toLowerCase());
+/** True when this session is an agency/studio portal user (JWT `portalRole === "AGENCY"`). */
+export function isAgencyPortalSession(session: Session | null | undefined): boolean {
+  return session?.user?.portalRole === "AGENCY";
 }
 
 /**
- * Social calendar (studio UI: month grid, post list, add post) is limited to the project’s assigned lead
- * (account manager / point of contact). If no lead is set yet, any studio login may access so small teams
- * aren’t blocked — except the **May** persona, who only sees calendars for projects explicitly assigned to her.
+ * @deprecated Prefer `isAgencyPortalSession(session)` when a session is available.
+ * Synchronous check: email listed in STUDIO_EMAIL only (does not include DB-only team members).
  */
-export function studioMayAccessProjectSocialCalendar(
+export function isStudioUser(email: string | null | undefined): boolean {
+  return isEnvListedStudioEmail(email);
+}
+
+/** Agency staff: listed in STUDIO_EMAIL or has a `StudioTeamMember` row (any role). */
+export async function emailBelongsToAgencyStaff(email: string | null | undefined): Promise<boolean> {
+  if (!email) return false;
+  const e = email.trim().toLowerCase();
+  if (isEnvListedStudioEmail(e)) return true;
+  const u = await prisma.user.findUnique({
+    where: { email: e },
+    select: { studioTeamProfile: { select: { id: true } } },
+  });
+  return Boolean(u?.studioTeamProfile);
+}
+
+/**
+ * Social calendar (studio UI) visibility by agency role.
+ * SOCIAL_MANAGER: assigned SOCIAL projects only. Issy: no calendar UI. Harriet: same as legacy non-May studio.
+ */
+export function studioSocialManagerAccessProjectSocialCalendar(
   project: { assignedStudioUserId: string | null },
   studioUserId: string | null | undefined,
-  viewerPersonaSlug?: string | null,
+  viewerAgencyRole?: AgencyPortalRole | null,
 ): boolean {
   if (!studioUserId) return false;
-  /** Issy does not use the social content calendar. */
-  if (viewerPersonaSlug === "isabella") return false;
-  if (viewerPersonaSlug === "may") {
+  if (viewerAgencyRole === "ISSY") return false;
+  if (viewerAgencyRole === "SOCIAL_MANAGER") {
     return project.assignedStudioUserId === studioUserId;
   }
   if (!project.assignedStudioUserId) return true;
   return project.assignedStudioUserId === studioUserId;
 }
 
-/**
- * Prisma filter on nested `project` for calendar aggregations — same visibility as the studio dashboard.
- */
-export function projectWhereStudioMayViewSocialCalendar(
-  studioUserId: string,
-  viewerPersonaSlug?: string | null,
-) {
-  return projectWhereVisibleToStudioMemberOnDashboard(studioUserId, viewerPersonaSlug ?? null);
+/** @deprecated Use `studioSocialManagerAccessProjectSocialCalendar` with `viewerAgencyRole`. */
+export const studioMayAccessProjectSocialCalendar = studioSocialManagerAccessProjectSocialCalendar;
+
+export function projectWhereStudioMayViewSocialCalendar(studioUserId: string, viewerAgencyRole?: AgencyPortalRole | null) {
+  return projectWhereVisibleToStudioMemberOnDashboard(studioUserId, viewerAgencyRole ?? null);
 }
 
-/**
- * Dashboard / deep links: May — **social-only** (`SOCIAL`) projects where she is assignee.
- */
 export function projectWhereMaySocialAssigneeDashboard(userId: string) {
   return {
     assignedStudioUserId: userId,
@@ -49,78 +63,57 @@ export function projectWhereMaySocialAssigneeDashboard(userId: string) {
   };
 }
 
-/**
- * Issy — website / multi / one-off work, led by Harriet or Issy, or still unassigned (ops pickup).
- * Excludes social-only retainers (May’s lane).
- * @deprecated Prefer `projectWhereVisibleToStudioMemberOnDashboard` (assignee-scoped).
- */
-export function projectWhereIsabellaStudioDashboard() {
+export function projectWhereIsabellaStudioDashboard(): Prisma.ProjectWhereInput {
   return {
     portalKind: { in: [...PORTAL_KINDS_ISSY_PROJECT_SCOPE] },
     OR: [
       { assignedStudioUserId: null },
       {
         assignedStudioUser: {
-          studioTeamProfile: { personaSlug: { in: ["harriet", "isabella"] } },
+          studioTeamProfile: {
+            studioRole: { in: [STUDIO_TEAM_ROLE.HARRIET, STUDIO_TEAM_ROLE.ISSY] },
+          },
         },
       },
     ],
   };
 }
 
-/**
- * Studio dashboard, notifications, and social calendar: project is visible only if this member is the
- * assigned lead, or the project is still unassigned (pick-up pool — social: May+Harriet; other: Issy+Harriet).
- */
 export function projectWhereVisibleToStudioMemberOnDashboard(
   studioUserId: string,
-  personaSlug: string | null,
+  agencyRole: AgencyPortalRole | null,
 ): Prisma.ProjectWhereInput {
-  if (!personaSlug) {
+  if (!agencyRole) {
     return { id: { in: [] } };
   }
-  if (personaSlug === "may") {
+  if (agencyRole === "SOCIAL_MANAGER") {
     return projectWhereMaySocialAssigneeDashboard(studioUserId);
   }
-  /** Issy (ops): full visibility across all project types for assignment and oversight. */
-  if (personaSlug === "isabella") {
+  if (agencyRole === "ISSY") {
     return {};
   }
-  /** Harriet (and any other studio persona): assigned projects only — unassigned queue is Issy’s lane. */
   return {
     assignedStudioUserId: studioUserId,
   };
 }
 
-/** Same rules as `projectWhereVisibleToStudioMemberOnDashboard`, for a single project row. */
 export function studioMemberMayAccessProject(
   project: { portalKind: string; assignedStudioUserId: string | null },
   studioUserId: string,
-  personaSlug: string,
+  agencyRole: AgencyPortalRole,
 ): boolean {
   const k = normalizePortalKind(project.portalKind);
   const aid = project.assignedStudioUserId;
 
-  if (personaSlug === "may") {
+  if (agencyRole === "SOCIAL_MANAGER") {
     return k === "SOCIAL" && aid === studioUserId;
   }
-
-  /** Issy: every project (including social) for oversight and assigning leads. */
-  if (personaSlug === "isabella") {
+  if (agencyRole === "ISSY") {
     return true;
   }
-
-  /** Harriet: creative lead — only projects explicitly assigned to them. */
   return aid === studioUserId;
 }
 
-/**
- * Projects shown on /portal for a signed-in client. Scoped strictly by `Project.userId` so clients
- * never see another account’s work. (Invite-only rows have `userId: null` until that client registers.)
- *
- * Returns [] if `userId` is missing — never call Prisma with `undefined` userId (filter would be
- * dropped and could return every project).
- */
 export async function listClientOwnedProjects(userId: string | undefined | null): Promise<Project[]> {
   if (!userId || typeof userId !== "string") return [];
   return prisma.project.findMany({
@@ -141,29 +134,30 @@ export async function getProjectForSession(projectId: string, session: Session |
           email: true,
           name: true,
           studioTeamProfile: {
-            select: { welcomeName: true, personaSlug: true, jobTitle: true, photoUrl: true },
+            select: {
+              welcomeName: true,
+              personaSlug: true,
+              studioRole: true,
+              jobTitle: true,
+              photoUrl: true,
+            },
           },
         },
       },
     },
   });
   if (!project) return null;
-  if (isStudioUser(session.user.email)) {
-    const teamMember = await prisma.studioTeamMember.findUnique({
-      where: { userId: session.user.id },
-      select: { personaSlug: true },
-    });
-    const personaSlug = teamMember?.personaSlug;
-    /** Require a mapped studio persona (env sync). Prevents unknown studio logins from inheriting Issy-level access. */
-    if (!personaSlug) return null;
-    if (!studioMemberMayAccessProject(project, session.user.id, personaSlug)) {
+
+  if (isAgencyPortalSession(session)) {
+    const agencyRole = session.user.agencyRole;
+    if (!agencyRole) return null;
+    if (!studioMemberMayAccessProject(project, session.user.id, agencyRole)) {
       return null;
     }
     return project;
   }
+
   if (!project.userId || project.userId !== session.user.id) return null;
-  // Encrypted vault fields: never expose ciphertext to the client session / RSC props.
-  // Never send password hash or invite tokens to the client bundle.
   let safeUser = project.user;
   if (safeUser) {
     const { passwordHash, clientInviteToken, clientInviteExpiresAt, ...rest } = safeUser;

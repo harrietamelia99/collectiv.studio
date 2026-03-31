@@ -9,6 +9,7 @@ export type ProjectAssigneeForContact = {
   studioTeamProfile: {
     welcomeName: string | null;
     personaSlug: string;
+    studioRole: string;
     jobTitle: string;
     photoUrl: string | null;
   } | null;
@@ -44,6 +45,7 @@ export function ProjectPointOfContact({
       ? {
           welcomeName: assignee.studioTeamProfile.welcomeName,
           personaSlug: assignee.studioTeamProfile.personaSlug,
+          studioRole: assignee.studioTeamProfile.studioRole,
         }
       : null,
   };

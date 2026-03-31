@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 import { getPortalDatabaseAvailable } from "@/lib/portal-db-status";
-import { isStudioUser } from "@/lib/portal-access";
+import { isAgencyPortalSession } from "@/lib/portal-access";
 import { PortalBottomSpacer } from "@/components/portal/PortalBottomSpacer";
 import { PortalChrome } from "@/components/portal/PortalChrome";
 import { PortalSmoothScroll } from "@/components/portal/PortalSmoothScroll";
@@ -47,20 +47,13 @@ export default async function PortalLayout({ children }: { children: React.React
     getServerSession(authOptions),
     getPortalDatabaseAvailable(),
   ]);
-  const studio = isStudioUser(session?.user?.email);
+  const studio = isAgencyPortalSession(session);
 
-  let studioPersonaSlug: string | null = null;
   let clientNotificationUnread = 0;
 
   if (dbAvailable && session?.user?.id) {
     try {
-      if (studio) {
-        const m = await prisma.studioTeamMember.findUnique({
-          where: { userId: session.user.id },
-          select: { personaSlug: true },
-        });
-        studioPersonaSlug = m?.personaSlug ?? null;
-      } else {
+      if (!studio) {
         clientNotificationUnread = await prisma.clientNotification.count({
           where: { userId: session.user.id, readAt: null },
         });
@@ -83,7 +76,7 @@ export default async function PortalLayout({ children }: { children: React.React
         <PortalChrome
           showStudioLinks={studio}
           isAgencyAdmin={studio}
-          showStudioSocialCalendarLink={studioPersonaSlug !== "isabella"}
+          showStudioSocialCalendarLink={session?.user?.agencyRole !== "ISSY"}
           isClientUser={!studio && !!session?.user?.id}
           clientNotificationUnread={clientBellUnread}
         />

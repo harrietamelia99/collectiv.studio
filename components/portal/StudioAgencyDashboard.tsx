@@ -18,23 +18,18 @@ import {
   StudioSectionIcon,
 } from "@/components/portal/StudioDashboardIcons";
 import {
-  isStudioUser,
   projectWhereStudioMayViewSocialCalendar,
   projectWhereVisibleToStudioMemberOnDashboard,
   studioMemberMayAccessProject,
 } from "@/lib/portal-access";
 import { projectIdFromStudioNotificationHref } from "@/lib/studio-notification-href";
 import { PORTAL_KINDS_WITH_SOCIAL } from "@/lib/portal-project-kind";
-import { studioEmailSet } from "@/lib/portal-studio-users";
+import { isEnvListedStudioEmail } from "@/lib/portal-studio-users";
 import { buildStudioProjectCard } from "@/lib/studio-dashboard-project";
 import { portalKindLabel } from "@/lib/portal-project-kind";
-import {
-  isPersonaSlug,
-  PERSONA_DASHBOARD_PUBLIC_ROLE,
-  PERSONA_WELCOME_NAME,
-  type PersonaSlug,
-} from "@/lib/studio-team-config";
+import { PERSONA_DASHBOARD_PUBLIC_ROLE, PERSONA_WELCOME_NAME, type PersonaSlug } from "@/lib/studio-team-config";
 import { loadStudioAdminUserOptions } from "@/lib/studio-admin-options";
+import { agencyPortalRoleFromStudioRole, dashboardPersonaSlugForStudioMember } from "@/lib/studio-team-roles";
 import { resolvePersonaProfilePhoto } from "@/lib/team-headshots";
 import {
   canDismissAgencyInboxCalendarItem,
@@ -116,7 +111,16 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
     }),
   ]);
 
-  if (!viewer?.email || !isStudioUser(viewer.email)) {
+  if (!viewer?.email) {
+    return null;
+  }
+  const listedInEnv = isEnvListedStudioEmail(viewer.email);
+  if (!member && !listedInEnv) {
+    return null;
+  }
+  const viewerAgencyRole =
+    agencyPortalRoleFromStudioRole(member?.studioRole ?? null) ?? (listedInEnv ? "ISSY" : null);
+  if (!viewerAgencyRole) {
     return null;
   }
 
@@ -166,9 +170,7 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
     orderBy: { startDate: "asc" },
   });
 
-  /** `personaSlug` is unique per user in DB; generic agency logins may have no row — use Issy-level visibility. */
-  const rawPersona = member?.personaSlug ?? null;
-  const slug = (rawPersona && isPersonaSlug(rawPersona) ? rawPersona : "isabella") as PersonaSlug;
+  const slug = dashboardPersonaSlugForStudioMember(member?.studioRole ?? null, member?.personaSlug ?? null);
   const dashboardPublicRole = PERSONA_DASHBOARD_PUBLIC_ROLE[slug];
   const personaFirst = slug in PERSONA_WELCOME_NAME ? PERSONA_WELCOME_NAME[slug as PersonaSlug] : slug;
   const accountFirst =
@@ -201,7 +203,7 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
     inboxDismissals,
   ] = await Promise.all([
     prisma.project.findMany({
-      where: projectWhereVisibleToStudioMemberOnDashboard(userId, slug),
+      where: projectWhereVisibleToStudioMemberOnDashboard(userId, viewerAgencyRole),
       orderBy: { updatedAt: "desc" },
       include: {
         user: { select: { name: true, businessName: true, email: true } },
@@ -227,7 +229,7 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
         project: {
           studioMarkedCompleteAt: null,
           portalKind: { in: [...PORTAL_KINDS_WITH_SOCIAL] },
-          ...projectWhereStudioMayViewSocialCalendar(userId, slug),
+          ...projectWhereStudioMayViewSocialCalendar(userId, viewerAgencyRole),
         },
       },
       select: {
@@ -267,6 +269,7 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
       select: {
         userId: true,
         personaSlug: true,
+        studioRole: true,
         welcomeName: true,
         user: { select: { name: true, email: true } },
       },
@@ -275,7 +278,7 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
       where: {
         studioMarkedCompleteAt: null,
         messages: { some: {} },
-        ...projectWhereVisibleToStudioMemberOnDashboard(userId, slug),
+        ...projectWhereVisibleToStudioMemberOnDashboard(userId, viewerAgencyRole),
       },
       select: {
         id: true,
@@ -296,7 +299,7 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
         project: {
           studioMarkedCompleteAt: null,
           portalKind: { in: [...PORTAL_KINDS_WITH_SOCIAL] },
-          ...projectWhereStudioMayViewSocialCalendar(userId, slug),
+          ...projectWhereStudioMayViewSocialCalendar(userId, viewerAgencyRole),
         },
       },
       orderBy: { updatedAt: "desc" },
@@ -340,13 +343,14 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
     if (!pid) return false;
     const p = notificationProjectById.get(pid);
     if (!p) return false;
-    return studioMemberMayAccessProject(p, userId, slug);
+    return studioMemberMayAccessProject(p, userId, viewerAgencyRole);
   });
 
   const inboxUnreadCount = notificationsForUi.filter((n) => !n.readAt).length;
   const mentionMembersForInbox: MentionMember[] = teamMembersForHints.map((m) => ({
     userId: m.userId,
     personaSlug: m.personaSlug,
+    studioRole: m.studioRole,
     welcomeName: m.welcomeName,
     user: m.user,
   }));
@@ -357,7 +361,7 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
       last.body,
       userId,
       { portalKind: p.portalKind, assignedStudioUserId: p.assignedStudioUserId },
-      slug,
+      viewerAgencyRole,
       mentionMembersForInbox,
     );
   });
@@ -383,7 +387,7 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
         authorName: last.authorName,
         createdAt: last.createdAt.toISOString(),
       },
-      dismissAllowed: canDismissAgencyInboxThreadItem(slug, userId, p),
+      dismissAllowed: canDismissAgencyInboxThreadItem(viewerAgencyRole, userId, p),
       dismissEnabled: studioInboxThreadDismissReadOk(p.id, notificationRowsForRead),
     };
   });
@@ -395,19 +399,18 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
     postLabel: (c.title?.trim() || c.caption.trim()).slice(0, 100) || "Post",
     clientFeedback: c.clientFeedback?.trim() ?? "",
     updatedAtIso: c.updatedAt.toISOString(),
-    dismissAllowed: canDismissAgencyInboxCalendarItem(slug, userId, c.project),
+    dismissAllowed: canDismissAgencyInboxCalendarItem(viewerAgencyRole, userId, c.project),
     dismissEnabled: studioInboxCalendarDismissReadOk(c.id, notificationRowsForRead),
   }));
 
-  const showNewProjectForm = slug === "isabella" || slug === "harriet";
-  const studioExcludeEmails = Array.from(studioEmailSet());
+  const showNewProjectForm = viewerAgencyRole === "ISSY" || viewerAgencyRole === "HARRIET";
 
   const [newProjectClients, newProjectStudioAdmins] = showNewProjectForm
     ? await Promise.all([
         prisma.user.findMany({
           where: {
             passwordHash: { not: null },
-            ...(studioExcludeEmails.length > 0 ? { NOT: { email: { in: studioExcludeEmails } } } : {}),
+            studioTeamProfile: null,
           },
           orderBy: { email: "asc" },
           select: { id: true, email: true, name: true, businessName: true },
@@ -417,11 +420,11 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
     : [[], []];
 
   const pendingClientInvites =
-    slug === "isabella"
+    viewerAgencyRole === "ISSY"
       ? await prisma.user.findMany({
           where: {
             passwordHash: null,
-            ...(studioExcludeEmails.length > 0 ? { email: { notIn: studioExcludeEmails } } : {}),
+            studioTeamProfile: null,
           },
           select: {
             id: true,
@@ -503,7 +506,7 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
 
   return (
     <div className="space-y-12">
-      {slug === "isabella" && pendingClientInvites.some((u) => u.projects.length > 0) ? (
+      {viewerAgencyRole === "ISSY" && pendingClientInvites.some((u) => u.projects.length > 0) ? (
         <section
           className="cc-portal-client-shell scroll-mt-28 border border-sky-200/80 bg-sky-50/40"
           aria-labelledby="pending-invites-heading"
@@ -858,11 +861,7 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
             Choose someone who already has a login, or invite by email — when they sign up with that address, the project
             appears for them automatically. Pick the project type and set the studio lead as you prefer.
           </p>
-          <AgencyCreateProjectForm
-            clients={newProjectClients}
-            studioAdmins={newProjectStudioAdmins}
-            creatorPersonaSlug={slug}
-          />
+          <AgencyCreateProjectForm clients={newProjectClients} studioAdmins={newProjectStudioAdmins} />
         </section>
       ) : null}
     </div>

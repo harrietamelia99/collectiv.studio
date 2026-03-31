@@ -12,10 +12,11 @@ import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 import {
   getProjectForSession,
-  isStudioUser,
+  isAgencyPortalSession,
   studioMayAccessProjectSocialCalendar,
   studioMemberMayAccessProject,
 } from "@/lib/portal-access";
+import type { AgencyPortalRole } from "@/lib/studio-team-roles";
 import { clientHasFullPortalAccess } from "@/lib/portal-client-full-access";
 import { clientMayUseSocialPortal, visiblePortalSections } from "@/lib/portal-project-kind";
 import { appendCalendarActivityLog } from "@/lib/calendar-activity-log";
@@ -43,8 +44,8 @@ function revProject(projectId: string) {
   void triggerProjectCalendarRefresh(projectId);
 }
 
-function canConfigureWeeklySchedule(personaSlug: string | null): boolean {
-  return personaSlug === "isabella" || personaSlug === "harriet";
+function canConfigureWeeklySchedule(role: AgencyPortalRole | null | undefined): boolean {
+  return role === "ISSY" || role === "HARRIET";
 }
 
 function prettyMonthLabel(ym: string): string {
@@ -57,16 +58,12 @@ function prettyMonthLabel(ym: string): string {
 
 export async function saveSocialWeeklySchedule(projectId: string, formData: FormData): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || !isStudioUser(session.user.email) || !session.user.id) return;
+  if (!session?.user?.email || !isAgencyPortalSession(session) || !session.user.id) return;
+  const ar = session.user.agencyRole;
+  if (!ar || !canConfigureWeeklySchedule(ar)) return;
   const project = await prisma.project.findUnique({ where: { id: projectId } });
   if (!project) return;
-  const sm = await prisma.studioTeamMember.findUnique({
-    where: { userId: session.user.id },
-    select: { personaSlug: true },
-  });
-  const slug = sm?.personaSlug ?? null;
-  if (!canConfigureWeeklySchedule(slug)) return;
-  if (!studioMemberMayAccessProject(project, session.user.id, slug ?? "")) return;
+  if (!studioMemberMayAccessProject(project, session.user.id, ar)) return;
   const vis = visiblePortalSections(project.portalKind);
   if (!vis.social) return;
 
@@ -92,18 +89,18 @@ export async function saveStudioCalendarPost(
   formData: FormData,
 ): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || !isStudioUser(session.user.email) || !session.user.id) {
+  if (!session?.user?.email || !isAgencyPortalSession(session) || !session.user.id) {
+    return portalFlashErr("Couldn’t save post. Try again.");
+  }
+  const ar = session.user.agencyRole;
+  if (!ar) {
     return portalFlashErr("Couldn’t save post. Try again.");
   }
   const project = await prisma.project.findUnique({ where: { id: projectId } });
   if (!project) {
     return portalFlashErr("Couldn’t save post. Try again.");
   }
-  const sm = await prisma.studioTeamMember.findUnique({
-    where: { userId: session.user.id },
-    select: { personaSlug: true },
-  });
-  if (!studioMayAccessProjectSocialCalendar(project, session.user.id, sm?.personaSlug ?? null)) {
+  if (!studioMayAccessProjectSocialCalendar(project, session.user.id, ar)) {
     return portalFlashErr("Couldn’t save post. Try again.");
   }
 
@@ -258,14 +255,12 @@ export async function saveBatchCalendarPostDraft(
 
 export async function submitSocialMonthBatchForReview(projectId: string, monthYm: string): Promise<void> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || !isStudioUser(session.user.email) || !session.user.id) return;
+  if (!session?.user?.email || !isAgencyPortalSession(session) || !session.user.id) return;
+  const ar = session.user.agencyRole;
+  if (!ar) return;
   const project = await prisma.project.findUnique({ where: { id: projectId } });
   if (!project || !projectUsesBatchSocialCalendar(project.socialWeeklyScheduleJson)) return;
-  const sm = await prisma.studioTeamMember.findUnique({
-    where: { userId: session.user.id },
-    select: { personaSlug: true },
-  });
-  if (!studioMayAccessProjectSocialCalendar(project, session.user.id, sm?.personaSlug ?? null)) return;
+  if (!studioMayAccessProjectSocialCalendar(project, session.user.id, ar)) return;
 
   const ym = monthYm.trim();
   if (!/^\d{4}-\d{2}$/.test(ym)) return;
@@ -301,7 +296,7 @@ export async function submitSocialMonthBatchForReview(projectId: string, monthYm
 export async function approveAllSocialMonthPosts(projectId: string, monthYm: string): Promise<void> {
   const session = await getServerSession(authOptions);
   const project = await getProjectForSession(projectId, session);
-  if (!project || isStudioUser(session?.user?.email) || !clientHasFullPortalAccess(project)) return;
+  if (!project || isAgencyPortalSession(session) || !clientHasFullPortalAccess(project)) return;
   if (!clientMayUseSocialPortal(project.portalKind)) return;
   if (!projectUsesBatchSocialCalendar(project.socialWeeklyScheduleJson)) return;
 
@@ -335,18 +330,18 @@ export async function submitCalendarPostForClientReview(
   itemId: string,
 ): Promise<PortalFormFlash> {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || !isStudioUser(session.user.email) || !session.user.id) {
+  if (!session?.user?.email || !isAgencyPortalSession(session) || !session.user.id) {
+    return portalFlashErr("Couldn’t submit for approval. Try again.");
+  }
+  const ar = session.user.agencyRole;
+  if (!ar) {
     return portalFlashErr("Couldn’t submit for approval. Try again.");
   }
   const project = await prisma.project.findUnique({ where: { id: projectId } });
   if (!project) {
     return portalFlashErr("Couldn’t submit for approval. Try again.");
   }
-  const sm = await prisma.studioTeamMember.findUnique({
-    where: { userId: session.user.id },
-    select: { personaSlug: true },
-  });
-  if (!studioMayAccessProjectSocialCalendar(project, session.user.id, sm?.personaSlug ?? null)) {
+  if (!studioMayAccessProjectSocialCalendar(project, session.user.id, ar)) {
     return portalFlashErr("Couldn’t submit for approval. Try again.");
   }
 

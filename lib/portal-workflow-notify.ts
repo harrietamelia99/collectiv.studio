@@ -21,7 +21,7 @@ export async function notifyStudioWorkflowStepCompletedByClient(input: {
   });
   if (!project) return;
   const team = await prisma.studioTeamMember.findMany({
-    select: { userId: true, personaSlug: true },
+    select: { userId: true, personaSlug: true, studioRole: true },
   });
   const userIds = recipientUserIdsForClientMessage(project, team);
   if (userIds.length === 0) return;
@@ -54,7 +54,7 @@ export async function notifyStudioBrandingQuestionnaireSubmitted(input: {
   });
   if (!project) return;
   const team = await prisma.studioTeamMember.findMany({
-    select: { userId: true, personaSlug: true },
+    select: { userId: true, personaSlug: true, studioRole: true },
   });
   const userIds = recipientUserIdsForBrandingQuestionnaireSubmitted(project, team);
   if (userIds.length === 0) return;
