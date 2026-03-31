@@ -1,5 +1,20 @@
-/** @type {import('next').NextConfig} */
+/**
+ * @type {import('next').NextConfig}
+ *
+ * Vercel: if every `/api/*` route 404s but this repo builds them (see `next build` route list),
+ * check **Project → Settings**:
+ * - **Root Directory** must be the folder that contains this `next.config.mjs` (this repo’s git root).
+ * - **Do not** set env `NEXT_STATIC_EXPORT=1` — it enables `output: "export"` and **removes all API routes**.
+ * - **Output Directory** must stay empty/default for Next.js (do not point at `out` unless you intend static export).
+ * - Confirm the **Production** deployment’s **Commit** matches GitHub (not an old fork or duplicate project).
+ */
 const staticExport = process.env.NEXT_STATIC_EXPORT === "1";
+
+if (process.env.VERCEL === "1" && staticExport) {
+  throw new Error(
+    "[next.config] NEXT_STATIC_EXPORT=1 on Vercel removes API routes (output: export). Remove NEXT_STATIC_EXPORT from Vercel Environment Variables and redeploy.",
+  );
+}
 
 const securityHeaders = [
   { key: "X-DNS-Prefetch-Control", value: "on" },
