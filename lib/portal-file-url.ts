@@ -1,8 +1,17 @@
 /**
- * Browser-safe URL builder for portal uploads (no Node `fs`).
- * Server-only disk paths live in `portal-uploads.ts`.
+ * Browser-safe URL for portal media stored in Prisma (`filePath`, `imagePath`, logo paths, etc.).
+ * New rows hold UploadThing `https://…` URLs; legacy rows use `projectId/...` served via `/api/portal/file/…`.
  */
-export function portalFilePublicUrl(relative: string): string {
-  const parts = relative.split("/").filter(Boolean);
+export function portalFilePublicUrl(stored: string): string {
+  const s = stored?.trim() ?? "";
+  if (!s) return "";
+  if (/^https?:\/\//i.test(s)) return s;
+  const parts = s.split("/").filter(Boolean);
+  if (parts.length === 0) return "";
   return `/api/portal/file/${parts.map(encodeURIComponent).join("/")}`;
+}
+
+export function isRemotePortalAssetUrl(stored: string | null | undefined): boolean {
+  const s = stored?.trim();
+  return Boolean(s && /^https?:\/\//i.test(s));
 }

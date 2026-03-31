@@ -7,7 +7,6 @@ import { prisma } from "@/lib/prisma";
 import { uploadRoot } from "@/lib/portal-uploads";
 import { mimeForUploadPath } from "@/lib/upload-mime";
 
-/** Owner, or studio user who can see a project for this client. */
 async function mayReadClientAvatar(sessionUserId: string, sessionEmail: string | null | undefined, targetUserId: string) {
   if (sessionUserId === targetUserId) return true;
   if (!sessionEmail || !isStudioUser(sessionEmail)) return false;
@@ -41,6 +40,20 @@ export async function GET(
   });
   const expected = user?.profilePhotoPath?.trim();
   if (!expected) return new Response("Not found", { status: 404 });
+
+  if (/^https?:\/\//i.test(expected)) {
+    try {
+      const u = new URL(expected);
+      const last = u.pathname.split("/").filter(Boolean).pop() ?? "";
+      if (decodeURIComponent(last) !== decodeURIComponent(filename)) {
+        return new Response("Not found", { status: 404 });
+      }
+    } catch {
+      return new Response("Not found", { status: 404 });
+    }
+    return Response.redirect(expected, 302);
+  }
+
   const base = path.basename(expected);
   if (base !== filename) return new Response("Not found", { status: 404 });
 

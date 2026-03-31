@@ -1,3 +1,7 @@
+/**
+ * Serves **legacy** rows that still store `projectId/...` paths on local disk (`./uploads`).
+ * New uploads store UploadThing `https://…` URLs in Prisma; the UI uses those URLs directly (see `portalFilePublicUrl`).
+ */
 import { readFile } from "fs/promises";
 import path from "path";
 import { getServerSession } from "next-auth";

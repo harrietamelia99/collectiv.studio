@@ -19,10 +19,12 @@ import {
 import { normalizePhoneForStorage, portalClientPasswordOk, registrationPhoneOk } from "@/lib/portal-registration";
 import { notifyStudioClientRegistered } from "@/lib/portal-notify";
 import {
+  saveFontUpload,
   saveProjectUpload,
   socialCalendarUploadMediaKind,
   validateUploadExtension,
 } from "@/lib/portal-uploads";
+import { deleteUploadThingFileByStoredValue } from "@/lib/uploadthing";
 import { appendCalendarActivityLog } from "@/lib/calendar-activity-log";
 import {
   notifyIssyClientSignedContractInPortal,
@@ -743,7 +745,7 @@ async function tryCreateContentCalendarPostFromStudioForm(
     const buf = Buffer.from(await file.arrayBuffer());
     const maxBytes = mediaKind === "video" ? 80 * 1024 * 1024 : 15 * 1024 * 1024;
     if (buf.length > maxBytes) return { ok: false };
-    imagePath = await saveProjectUpload(projectId, file.name, buf);
+    imagePath = await saveProjectUpload(projectId, file.name, buf, "socialCalendarCreative");
     postFormat = mediaKind === "video" ? "VIDEO" : "GRAPHIC";
   } else if (!isDraft) {
     return { ok: false };
@@ -875,7 +877,7 @@ export async function uploadWebsiteFont(projectId: string, formData: FormData): 
   if (buf.length > 12 * 1024 * 1024) return;
   const lower = file.name.toLowerCase();
   if (!/\.(woff2?|ttf|otf)$/.test(lower)) return;
-  const rel = await saveProjectUpload(projectId, file.name, buf);
+  const rel = await saveFontUpload(projectId, file.name, buf);
   const paths = parseFontPaths(project.websiteFontPaths);
   paths.push(rel);
   await prisma.project.update({
@@ -893,12 +895,13 @@ export async function uploadWebsiteLogo(projectId: string, formData: FormData): 
   if (!clientMayEditWebsiteBrandKitFields(project.portalKind)) return;
   const file = formData.get("logo");
   if (!(file instanceof File) || file.size === 0) return;
-  const okVec = !validateUploadExtension(file.name, "vector");
-  const okRaster = !validateUploadExtension(file.name, "raster");
+  const okVec = validateUploadExtension(file.name, "vector") === null;
+  const okRaster = validateUploadExtension(file.name, "raster") === null;
   if (!okVec && !okRaster) return;
   const buf = Buffer.from(await file.arrayBuffer());
   if (buf.length > 8 * 1024 * 1024) return;
-  const rel = await saveProjectUpload(projectId, file.name, buf);
+  const kind = okVec ? "vector" : "raster";
+  const rel = await saveProjectUpload(projectId, file.name, buf, kind);
   await prisma.project.update({
     where: { id: projectId },
     data: { websiteLogoPath: rel },
@@ -913,6 +916,7 @@ export async function clearWebsiteLogo(projectId: string, formData?: FormData): 
   if (!project || isStudioUser(session?.user?.email)) return;
   if (!canClientUseBrandKitUploads(project)) return;
   if (!clientMayEditWebsiteBrandKitFields(project.portalKind)) return;
+  await deleteUploadThingFileByStoredValue(project.websiteLogoPath);
   await prisma.project.update({
     where: { id: projectId },
     data: { websiteLogoPath: null },
@@ -932,8 +936,8 @@ export async function uploadWebsiteLogoVariation(projectId: string, formData: Fo
   if (!(file instanceof File) || file.size === 0) return;
   const buf = Buffer.from(await file.arrayBuffer());
   if (buf.length > 8 * 1024 * 1024) return;
-  const okVec = !validateUploadExtension(file.name, "vector");
-  const okRaster = !validateUploadExtension(file.name, "raster");
+  const okVec = validateUploadExtension(file.name, "vector") === null;
+  const okRaster = validateUploadExtension(file.name, "raster") === null;
   if (!okVec && !okRaster) return;
 
   const variations = parseWebsiteLogoVariations(project.websiteLogoVariationsJson);
@@ -943,7 +947,8 @@ export async function uploadWebsiteLogoVariation(projectId: string, formData: Fo
   const customRaw = String(formData.get("customLabel") ?? "").trim().slice(0, 80);
   const customLabel = kind === "other" && customRaw ? customRaw : undefined;
 
-  const rel = await saveProjectUpload(projectId, file.name, buf);
+  const uploadKind = okVec ? "vector" : "raster";
+  const rel = await saveProjectUpload(projectId, file.name, buf, uploadKind);
   variations.push({ path: rel, kind, customLabel });
   await prisma.project.update({
     where: { id: projectId },
@@ -965,6 +970,8 @@ export async function removeWebsiteLogoVariation(
   if (!clientMayEditWebsiteBrandKitFields(project.portalKind)) return;
   const variations = parseWebsiteLogoVariations(project.websiteLogoVariationsJson);
   if (index < 0 || index >= variations.length) return;
+  const removed = variations[index];
+  await deleteUploadThingFileByStoredValue(removed?.path);
   variations.splice(index, 1);
   await prisma.project.update({
     where: { id: projectId },
@@ -986,6 +993,8 @@ export async function removeWebsiteFont(
   if (!clientMayEditWebsiteBrandKitFields(project.portalKind)) return;
   const paths = parseFontPaths(project.websiteFontPaths);
   if (index < 0 || index >= paths.length) return;
+  const removed = paths[index];
+  await deleteUploadThingFileByStoredValue(removed);
   paths.splice(index, 1);
   await prisma.project.update({
     where: { id: projectId },
@@ -1275,7 +1284,7 @@ export async function addReviewAsset(formData: FormData): Promise<void> {
     if (bad) return;
     const buf = Buffer.from(await file.arrayBuffer());
     if (buf.length > 20 * 1024 * 1024) return;
-    filePath = await saveProjectUpload(projectId, file.name, buf);
+    filePath = await saveProjectUpload(projectId, file.name, buf, "reviewAsset");
   }
 
   await prisma.reviewAsset.create({
@@ -1390,7 +1399,7 @@ export async function saveWebsitePageBrief(projectId: string, pageIndex: number,
     if (validateUploadExtension(file.name, "raster")) continue;
     const buf = Buffer.from(await file.arrayBuffer());
     if (buf.length > 8 * 1024 * 1024) continue;
-    const rel = await saveProjectUpload(projectId, file.name, buf);
+    const rel = await saveProjectUpload(projectId, file.name, buf, "raster");
     paths.push(rel);
   }
 
@@ -1421,6 +1430,8 @@ export async function removeWebsitePageImage(
   if (!brief) return;
   const paths = parsePageImagePaths(brief.imagePaths);
   if (imageIndex < 0 || imageIndex >= paths.length) return;
+  const removed = paths[imageIndex];
+  await deleteUploadThingFileByStoredValue(removed);
   paths.splice(imageIndex, 1);
   await prisma.websitePageBrief.update({
     where: { projectId_pageIndex: { projectId, pageIndex } },
@@ -2297,13 +2308,16 @@ export async function uploadBrandQuestionnaireFile(
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) return { ok: false, error: "Choose a file first" };
 
+  let uploadKind: "raster" | "pdf";
   if (slot === "inspiration") {
     const err = validateUploadExtension(file.name, "raster");
     if (err) return { ok: false, error: err };
+    uploadKind = "raster";
   } else {
-    const rasterErr = validateUploadExtension(file.name, "raster");
-    const pdfErr = validateUploadExtension(file.name, "reviewAsset");
-    if (rasterErr && pdfErr) return { ok: false, error: "Use an image (JPG, PNG, WEBP) or a PDF." };
+    const rasterOk = validateUploadExtension(file.name, "raster") === null;
+    const pdfOk = validateUploadExtension(file.name, "pdf") === null;
+    if (!rasterOk && !pdfOk) return { ok: false, error: "Use an image (JPG, PNG, WEBP) or a PDF." };
+    uploadKind = rasterOk ? "raster" : "pdf";
   }
 
   const buf = Buffer.from(await file.arrayBuffer());
@@ -2317,7 +2331,7 @@ export async function uploadBrandQuestionnaireFile(
     return { ok: false, error: "Too many files — remove one or contact the studio" };
   }
 
-  const rel = await saveProjectUpload(projectId, file.name, buf);
+  const rel = await saveProjectUpload(projectId, file.name, buf, uploadKind);
   if (slot === "inspiration") data.visualInspirationImagePaths.push(rel);
   else data.existingAssetsFilePaths.push(rel);
 
@@ -2344,9 +2358,11 @@ export async function removeBrandQuestionnaireFile(
   const data = parseBrandQuestionnaireJson(project.brandingQuestionnaireJson);
   if (slot === "inspiration") {
     if (!data.visualInspirationImagePaths.includes(relativePath)) return { ok: false };
+    await deleteUploadThingFileByStoredValue(relativePath);
     data.visualInspirationImagePaths = data.visualInspirationImagePaths.filter((p) => p !== relativePath);
   } else {
     if (!data.existingAssetsFilePaths.includes(relativePath)) return { ok: false };
+    await deleteUploadThingFileByStoredValue(relativePath);
     data.existingAssetsFilePaths = data.existingAssetsFilePaths.filter((p) => p !== relativePath);
   }
 

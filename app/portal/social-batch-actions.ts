@@ -112,7 +112,7 @@ export async function saveStudioCalendarPost(projectId: string, itemId: string, 
     if (bad) return;
     const buf = Buffer.from(await file.arrayBuffer());
     if (buf.length > 8 * 1024 * 1024) return;
-    imagePath = await saveProjectUpload(projectId, file.name, buf);
+    imagePath = await saveProjectUpload(projectId, file.name, buf, "socialCalendarCreative");
   }
 
   const clearImage = String(formData.get("clearImage") ?? "") === "1";

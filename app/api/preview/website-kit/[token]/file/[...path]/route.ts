@@ -25,7 +25,6 @@ export async function GET(
     },
   });
   if (!project || !clientHasFullPortalAccess(project)) return new Response("Not found", { status: 404 });
-  /** Path must start with this project id (token already scoped the project — avoid rejecting valid Prisma ids). */
   if (segments[0] !== project.id) {
     return new Response("Not found", { status: 404 });
   }

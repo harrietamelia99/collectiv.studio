@@ -118,6 +118,13 @@ if (!studio) {
   good("STUDIO_EMAIL is set");
 }
 
+const ut = need("UPLOADTHING_TOKEN");
+if (!ut.ok) {
+  warn("UPLOADTHING_TOKEN is missing — portal uploads will error until set (UploadThing dashboard → API keys)");
+} else {
+  good("UPLOADTHING_TOKEN is set");
+}
+
 console.log("");
 if (errors > 0) {
   console.error(`Failed with ${errors} error(s). Fix and redeploy on Vercel (Environment Variables → Production).`);

@@ -1,12 +1,10 @@
-import { mkdir, writeFile } from "fs/promises";
 import path from "path";
-import { randomUUID } from "crypto";
-
-const UPLOAD_DIR = path.join(process.cwd(), "uploads");
+import { uploadBufferToUploadThing } from "@/lib/uploadthing";
 
 const RASTER_EXT = new Set([".jpg", ".jpeg", ".png", ".webp"]);
-const VECTOR_EXT = new Set([".svg", ".eps", ".ai", ".pdf"]);
-const VIDEO_EXT = new Set([".mp4", ".mov", ".webm", ".m4v"]);
+/** Brand / logo vectors: SVG + PDF only (per product spec). */
+const VECTOR_EXT = new Set([".svg", ".pdf"]);
+const VIDEO_EXT = new Set([".mp4", ".mov"]);
 
 function extFromName(originalName: string): string {
   const base = path.basename(originalName).toLowerCase();
@@ -14,26 +12,33 @@ function extFromName(originalName: string): string {
   return i >= 0 ? base.slice(i) : "";
 }
 
-export type UploadKind = "raster" | "vector" | "video" | "reviewAsset" | "socialCalendarCreative";
+export type UploadKind =
+  | "raster"
+  | "vector"
+  | "video"
+  | "reviewAsset"
+  | "socialCalendarCreative"
+  | "pdf";
 
 const CALENDAR_IMAGE_EXT = new Set([".jpg", ".jpeg", ".png", ".webp"]);
 const CALENDAR_VIDEO_EXT = new Set([".mp4", ".mov"]);
 
-/** JPG / PNG / WEBP / MP4 / MOV for social calendar creative uploads. */
 export function validateUploadExtension(originalName: string, kind: UploadKind): string | null {
   const ext = extFromName(originalName);
   if (!ext) return "Add a file extension (e.g. .png or .svg).";
 
   switch (kind) {
     case "raster":
-      return RASTER_EXT.has(ext) || ext === ".gif" ? null : "Images must be JPG, PNG, WEBP, or GIF.";
+      return RASTER_EXT.has(ext) ? null : "Images must be JPG, PNG, or WEBP.";
     case "vector":
-      return VECTOR_EXT.has(ext) ? null : "Logos and vector art must be SVG, EPS, AI, or PDF.";
+      return VECTOR_EXT.has(ext) ? null : "Logos and vector art must be SVG or PDF.";
     case "video":
       return VIDEO_EXT.has(ext) ? null : "Videos must be MP4 or MOV.";
+    case "pdf":
+      return ext === ".pdf" ? null : "Only PDF is allowed.";
     case "reviewAsset":
-      if (RASTER_EXT.has(ext) || VECTOR_EXT.has(ext) || ext === ".pdf") return null;
-      return "Proofs must be an image (JPG, PNG, WEBP), vector (SVG, EPS, AI), or PDF.";
+      if (RASTER_EXT.has(ext) || VECTOR_EXT.has(ext)) return null;
+      return "Proofs must be an image (JPG, PNG, WEBP), vector (SVG), or PDF.";
     case "socialCalendarCreative":
       if (CALENDAR_IMAGE_EXT.has(ext) || CALENDAR_VIDEO_EXT.has(ext)) return null;
       return "Creative must be JPG, PNG, WEBP, MP4, or MOV.";
@@ -42,7 +47,6 @@ export function validateUploadExtension(originalName: string, kind: UploadKind):
   }
 }
 
-/** For size limits: treat uploads as image vs video. */
 export function socialCalendarUploadMediaKind(originalName: string): "image" | "video" | null {
   const ext = extFromName(originalName);
   if (CALENDAR_IMAGE_EXT.has(ext)) return "image";
@@ -50,28 +54,42 @@ export function socialCalendarUploadMediaKind(originalName: string): "image" | "
   return null;
 }
 
+/** Legacy local upload root (for reading old rows that still store `projectId/...` paths). */
 export function uploadRoot(): string {
-  return UPLOAD_DIR;
+  return path.join(process.cwd(), "uploads");
 }
 
 export function safeSegment(name: string): string {
   return name.replace(/[^a-zA-Z0-9._-]+/g, "_").slice(0, 120) || "file";
 }
 
+/**
+ * Validates `kind`, uploads to UploadThing, returns public `ufsUrl` for Prisma (same string fields as before).
+ */
 export async function saveProjectUpload(
   projectId: string,
   originalName: string,
   data: Buffer,
+  kind: UploadKind,
 ): Promise<string> {
-  const dir = path.join(UPLOAD_DIR, projectId);
-  await mkdir(dir, { recursive: true });
-  const name = `${randomUUID()}-${safeSegment(originalName)}`;
-  const full = path.join(dir, name);
-  await writeFile(full, data);
-  return `${projectId}/${name}`;
+  void projectId;
+  const bad = validateUploadExtension(originalName, kind);
+  if (bad) throw new Error(bad);
+  return uploadBufferToUploadThing(originalName, data);
 }
 
+/** Web font files (woff/woff2/ttf/otf) — not restricted to image/video routes. */
+export async function saveFontUpload(projectId: string, originalName: string, data: Buffer): Promise<string> {
+  void projectId;
+  const lower = originalName.toLowerCase();
+  if (!/\.(woff2?|ttf|otf)$/.test(lower)) {
+    throw new Error("Fonts must be WOFF, WOFF2, TTF, or OTF.");
+  }
+  return uploadBufferToUploadThing(originalName, data);
+}
+
+/** @deprecated Prefer storing UploadThing URLs; used only for legacy disk paths. */
 export function absoluteUploadPath(relative: string): string {
   const normalized = path.normalize(relative).replace(/^(\.\.(\/|\\|$))+/, "");
-  return path.join(UPLOAD_DIR, normalized);
+  return path.join(uploadRoot(), normalized);
 }
