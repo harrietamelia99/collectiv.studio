@@ -3,14 +3,7 @@ import path from "path";
 import { deleteUploadThingFileByStoredValue, uploadBufferToUploadThing } from "@/lib/uploadthing";
 import { assertValidStoredPortalUploadRef, uploadRoot, validateUploadExtension } from "@/lib/portal-uploads";
 
-export function portalClientAvatarPublicUrl(userId: string, stored: string): string {
-  const s = stored.trim();
-  if (!s) return "";
-  if (/^https?:\/\//i.test(s)) return s;
-  const base = s.split("/").filter(Boolean).pop() ?? "";
-  if (!base) return "";
-  return `/api/portal/client-avatar/${encodeURIComponent(userId)}/${encodeURIComponent(base)}`;
-}
+export { portalClientAvatarPublicUrl } from "@/lib/portal-client-avatar-url";
 
 export async function saveClientAvatarFile(
   userId: string,

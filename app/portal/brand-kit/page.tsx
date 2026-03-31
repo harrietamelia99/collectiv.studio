@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 import { isStudioUser, listClientOwnedProjects } from "@/lib/portal-access";
+import { ClientPortalProfilePhotoSection } from "@/components/portal/ClientPortalProfilePhotoSection";
 import { portalFilePublicUrl } from "@/lib/portal-file-url";
 import { parseWebsiteFontPaths } from "@/lib/portal-progress";
 
@@ -14,9 +15,13 @@ export default async function ClientBrandKitPage() {
   if (!session?.user?.id) redirect("/portal/login");
   if (isStudioUser(session.user.email)) redirect("/portal");
 
-  const [kit, projects] = await Promise.all([
+  const [kit, projects, userRow] = await Promise.all([
     prisma.userBrandKit.findUnique({ where: { userId: session.user.id } }),
     listClientOwnedProjects(session.user.id),
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { profilePhotoPath: true },
+    }),
   ]);
   const websiteProject = projects.find((p) => p.portalKind === "WEBSITE" || p.portalKind === "MULTI");
   const fonts = kit ? parseWebsiteFontPaths(kit.websiteFontPaths) : [];
@@ -36,6 +41,11 @@ export default async function ClientBrandKitPage() {
         <strong className="font-medium text-burgundy/85">Website kit</strong> page using{" "}
         <strong className="font-medium text-burgundy/85">Save to my account</strong>.
       </p>
+
+      <ClientPortalProfilePhotoSection
+        userId={session.user.id}
+        profilePhotoPath={userRow?.profilePhotoPath ?? null}
+      />
 
       {!kit ? (
         <p className="mt-8 max-w-xl rounded-xl border border-dashed border-burgundy/25 bg-burgundy/[0.02] px-5 py-8 font-body text-sm text-burgundy/65">

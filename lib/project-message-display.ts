@@ -1,4 +1,4 @@
-import { portalClientAvatarPublicUrl } from "@/lib/portal-client-avatar";
+import { portalClientAvatarPublicUrl } from "@/lib/portal-client-avatar-url";
 import { resolvePersonaProfilePhoto } from "@/lib/team-headshots";
 
 export type ProjectMessageAuthorSlice = {

@@ -1273,6 +1273,7 @@ export async function saveClientProfilePhoto(formData: FormData): Promise<void> 
     });
 
     revalidatePath("/portal");
+    revalidatePath("/portal/brand-kit");
     const projects = await prisma.project.findMany({
       where: { userId },
       select: { id: true },

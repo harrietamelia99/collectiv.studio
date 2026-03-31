@@ -30,7 +30,6 @@ import {
 } from "@/components/portal/ProjectHubIcons";
 import { ClientProjectLogoAvatar } from "@/components/portal/ClientProjectLogoAvatar";
 import { ClientPortalHomeOffline } from "@/components/portal/ClientPortalHomeOffline";
-import { ClientPortalProfilePhotoSection } from "@/components/portal/ClientPortalProfilePhotoSection";
 import { PortalDatabaseOfflineBanner } from "@/components/portal/PortalDatabaseOfflineBanner";
 import { PortalEmptyState } from "@/components/portal/PortalEmptyState";
 import { PhaseProgressBar } from "@/components/portal/PhaseProgressBar";
@@ -317,7 +316,7 @@ export default async function PortalHomePage({ searchParams }: { searchParams?: 
   const [portalClient, projectsForLogo] = await Promise.all([
     prisma.user.findUnique({
       where: { id: clientUserId },
-      select: { businessName: true, name: true, profilePhotoPath: true },
+      select: { businessName: true, name: true },
     }),
     prisma.project.findMany({
       where: { userId: clientUserId },
@@ -365,6 +364,19 @@ export default async function PortalHomePage({ searchParams }: { searchParams?: 
         </p>
       </header>
 
+      <section aria-labelledby="client-projects-heading" className="cc-portal-client-shell">
+        <h2
+          id="client-projects-heading"
+          className="cc-portal-client-shell-title"
+        >
+          Your projects &amp; subscriptions
+        </h2>
+        <p className="mt-3 max-w-xl cc-portal-client-description font-medium">
+          Tap a name to open it—everything for that engagement is on the next page.
+        </p>
+        <ClientProjectList userId={clientUserId} />
+      </section>
+
       <details
         className="group cc-portal-client-shell max-w-xl font-body text-sm leading-relaxed text-burgundy/80 open:shadow-md"
         aria-label="More about the client portal"
@@ -391,26 +403,12 @@ export default async function PortalHomePage({ searchParams }: { searchParams?: 
             <strong className="font-medium text-burgundy">My projects</strong> in the header always brings you back to
             this list.
           </li>
+          <li>
+            Add a <strong className="font-medium text-burgundy">message profile photo</strong> anytime on{" "}
+            <strong className="font-medium text-burgundy">Brand kit</strong> in the bottom navigation.
+          </li>
         </ul>
       </details>
-
-      <ClientPortalProfilePhotoSection
-        userId={clientUserId}
-        profilePhotoPath={portalClient?.profilePhotoPath ?? null}
-      />
-
-      <section aria-labelledby="client-projects-heading" className="cc-portal-client-shell">
-        <h2
-          id="client-projects-heading"
-          className="cc-portal-client-shell-title"
-        >
-          Your projects &amp; subscriptions
-        </h2>
-        <p className="mt-3 max-w-xl cc-portal-client-description font-medium">
-          Tap a name to open it—everything for that engagement is on the next page.
-        </p>
-        <ClientProjectList userId={clientUserId} />
-      </section>
     </div>
   );
 }
