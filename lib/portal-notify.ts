@@ -1,19 +1,10 @@
-import { studioEmailSet } from "@/lib/portal-studio-users";
-import { sendResendEmail } from "@/lib/resend-email";
+import { emailNotifyStudioNewClientRegistered } from "@/lib/email-notifications";
 import { isSafeWebhookUrl } from "@/lib/webhook-url";
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
 
 /**
  * Notify the studio when a client registers.
  * - Set `PORTAL_STUDIO_NOTIFY_WEBHOOK` for Zapier/Make (or any POST endpoint).
- * - Optionally set `RESEND_API_KEY` + `STUDIO_NOTIFICATION_EMAIL` (or rely on first `STUDIO_EMAIL`) for email.
+ * - With `RESEND_API_KEY`, sends a branded email to Issy (isabella persona), with fallback to `STUDIO_NOTIFICATION_EMAIL` or first `STUDIO_EMAIL`.
  */
 export async function notifyStudioClientRegistered(payload: {
   email: string;
@@ -48,18 +39,11 @@ export async function notifyStudioClientRegistered(payload: {
     }
   }
 
-  const explicitTo = process.env.STUDIO_NOTIFICATION_EMAIL?.trim();
-  const fallbackTo = Array.from(studioEmailSet())[0];
-  const studioTo = explicitTo || fallbackTo;
-  if (studioTo) {
-    await sendResendEmail({
-      to: studioTo,
-      subject: `New portal registration: ${payload.email}`,
-      html: `<p>A new client registered for the portal.</p><p><strong>Email:</strong> ${escapeHtml(payload.email)}</p>${
-        payload.name ? `<p><strong>Name:</strong> ${escapeHtml(payload.name)}</p>` : ""
-      }${payload.phone ? `<p><strong>Phone:</strong> ${escapeHtml(payload.phone)}</p>` : ""}<p><strong>Registered at:</strong> ${escapeHtml(registeredAt)}</p>`,
-    });
-  }
+  await emailNotifyStudioNewClientRegistered({
+    clientEmail: payload.email,
+    clientName: payload.name,
+    clientPhone: payload.phone ?? null,
+  });
 
   if (!url && !process.env.RESEND_API_KEY?.trim() && process.env.NODE_ENV === "development") {
     // eslint-disable-next-line no-console

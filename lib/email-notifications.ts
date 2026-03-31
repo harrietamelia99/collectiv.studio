@@ -18,6 +18,13 @@ function portalOrigin(): string {
   return raw.replace(/\/$/, "");
 }
 
+/** Public sign-in URL for client-facing emails (production default; override locally via PORTAL_CLIENT_LOGIN_URL). */
+export function portalClientLoginUrlForEmail(): string {
+  const override = process.env.PORTAL_CLIENT_LOGIN_URL?.trim();
+  if (override) return override.replace(/\/$/, "");
+  return "https://www.collectivstudio.uk/portal/login";
+}
+
 /**
  * Shared transactional layout: burgundy + cream, warm professional tone.
  */
@@ -69,33 +76,49 @@ export async function sendBrandedTransactional(params: {
   const toList = (Array.isArray(params.to) ? params.to : [params.to])
     .map((t) => t.trim().toLowerCase())
     .filter(Boolean);
-  if (toList.length === 0) return;
+  if (toList.length === 0) {
+    // eslint-disable-next-line no-console
+    console.warn(`[email:${params.logTag}] skipped: no recipients`, { subject: params.subject });
+    return;
+  }
 
   if (!resend) {
-    if (process.env.NODE_ENV === "development") {
-      // eslint-disable-next-line no-console
-      console.log(`[email:${params.logTag}] skipped (no RESEND_API_KEY)`, {
-        to: toList,
-        subject: params.subject,
-      });
-    }
+    // eslint-disable-next-line no-console
+    console.warn(`[email:${params.logTag}] skipped: RESEND_API_KEY is not set`, {
+      to: toList,
+      subject: params.subject,
+      from,
+    });
     return;
   }
 
   try {
-    const { error } = await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from,
       to: toList,
       subject: params.subject,
       html: params.html,
     });
     if (error) {
+      const detail =
+        typeof error === "object" && error !== null
+          ? JSON.stringify(error, Object.getOwnPropertyNames(error))
+          : String(error);
       // eslint-disable-next-line no-console
-      console.error(`[email:${params.logTag}] Resend API error`, error);
+      console.error(`[email:${params.logTag}] Resend API error`, detail);
+      return;
     }
-  } catch (e) {
     // eslint-disable-next-line no-console
-    console.error(`[email:${params.logTag}] send failed`, e);
+    console.log(`[email:${params.logTag}] sent OK`, {
+      to: toList,
+      subject: params.subject,
+      from,
+      id: data?.id ?? null,
+    });
+  } catch (e) {
+    const detail = e instanceof Error ? `${e.name}: ${e.message}\n${e.stack ?? ""}` : String(e);
+    // eslint-disable-next-line no-console
+    console.error(`[email:${params.logTag}] send failed`, detail);
   }
 }
 
@@ -144,24 +167,65 @@ export async function emailNotifyClientInvitedToPortal(opts: {
 
 /** Self-service registration at /portal/register — not gated by PORTAL_CLIENT_EMAIL_ALERTS (same as invite). */
 export async function emailNotifyClientWelcomeAfterSelfRegistration(opts: {
+  /** Must be the address the client entered on the registration form (already normalised lower-case in the action). */
   to: string;
   firstName: string;
 }): Promise<void> {
   const name = opts.firstName.trim() || "there";
-  const loginUrl = `${portalOrigin()}/portal/login`;
+  const loginUrl = portalClientLoginUrlForEmail();
   const html = collectivEmailShell({
     greetingHtml: `<p style="margin:0 0 16px;font-size:15px;">Hi ${escapeHtml(name)},</p>`,
     bodyParagraphsHtml: [
-      "Thanks for creating your Collectiv. Studio client account. We’ve received your details and the studio will be in touch with next steps — keep an eye on your inbox.",
-      "When you’re ready, sign in to your portal with the email and password you chose.",
+      "Your Collectiv. Studio client portal account is set up and ready.",
+      "The agency will be in touch with next steps — keep an eye on your inbox.",
     ],
-    cta: { href: loginUrl, label: "Sign in to your portal" },
+    cta: { href: loginUrl, label: "Sign in" },
   });
   await sendBrandedTransactional({
-    to: opts.to,
-    subject: "Welcome to the Collectiv. Studio client portal",
+    to: opts.to.trim().toLowerCase(),
+    subject: "Welcome to your Collectiv. Studio portal",
     html,
     logTag: "client-register-welcome",
+  });
+}
+
+/** Issy (isabella persona) when a client registers; falls back to STUDIO_NOTIFICATION_EMAIL / first STUDIO_EMAIL if no Issy row. */
+export async function emailNotifyStudioNewClientRegistered(opts: {
+  clientEmail: string;
+  clientName: string | null;
+  clientPhone?: string | null;
+}): Promise<void> {
+  const issyRows = await prisma.studioTeamMember.findMany({
+    where: { personaSlug: "isabella" },
+    select: { userId: true },
+  });
+  let to = await emailsForUserIds(issyRows.map((r) => r.userId));
+  if (to.length === 0) {
+    const explicit = process.env.STUDIO_NOTIFICATION_EMAIL?.trim().toLowerCase();
+    const fallback = Array.from(studioEmailSet())[0]?.toLowerCase();
+    if (explicit) to = [explicit];
+    else if (fallback) to = [fallback];
+  }
+  if (to.length === 0) {
+    // eslint-disable-next-line no-console
+    console.warn("[email:studio-new-client] skipped: no Issy persona email and no STUDIO_NOTIFICATION / STUDIO_EMAIL fallback");
+    return;
+  }
+
+  const html = collectivEmailShell({
+    greetingHtml: `<p style="margin:0 0 16px;font-size:15px;">Hello,</p>`,
+    bodyParagraphsHtml: ["A new client has registered on the portal."],
+    detailHtml: `<p style="margin:0 0 8px;"><strong>Name:</strong> ${escapeHtml(opts.clientName?.trim() || "—")}</p><p style="margin:0 0 8px;"><strong>Email:</strong> ${escapeHtml(opts.clientEmail)}</p>${
+      opts.clientPhone?.trim()
+        ? `<p style="margin:0;"><strong>Phone:</strong> ${escapeHtml(opts.clientPhone.trim())}</p>`
+        : ""
+    }`,
+  });
+  await sendBrandedTransactional({
+    to,
+    subject: "New client registered on the portal",
+    html,
+    logTag: "studio-new-client",
   });
 }
 

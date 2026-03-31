@@ -265,6 +265,7 @@ export async function registerUser(
       data: { userId: existing.id, invitedClientEmail: null },
     });
     await notifyStudioClientRegistered({ email, name: fullName || null, phone });
+    /** Client welcome: `to` is the same normalised email they submitted on the form. */
     await emailNotifyClientWelcomeAfterSelfRegistration({ to: email, firstName });
     redirect("/portal/register/success");
   }
@@ -286,6 +287,7 @@ export async function registerUser(
     data: { userId: newUser.id, invitedClientEmail: null },
   });
   await notifyStudioClientRegistered({ email, name: fullName || null, phone });
+  /** Client welcome: `to` is the same normalised email they submitted on the form. */
   await emailNotifyClientWelcomeAfterSelfRegistration({ to: email, firstName });
   redirect("/portal/register/success");
 }
