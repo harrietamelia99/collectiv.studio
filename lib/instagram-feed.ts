@@ -142,36 +142,33 @@ async function fetchMediaOnce(
   return { items: out.length > 0 ? out : null, status: res.status };
 }
 
+export type InstagramFeedCoreResult = {
+  items: InstagramFeedItem[] | null;
+  /** Same style of message logged as `[instagram-feed] …` (for diagnostics). */
+  lastError: string | null;
+};
+
 /**
- * Fetches recent Instagram media using an access token from Meta.
- *
- * Env:
- * - `INSTAGRAM_ACCESS_TOKEN` (required) — long-lived token from Meta.
- * - `INSTAGRAM_GRAPH_BASE_URL` (optional) — default `https://graph.instagram.com` (Instagram Login).
- *   Use `https://graph.facebook.com` for many **Business/Creator** setups (with numeric IG user id below).
- * - `INSTAGRAM_USER_ID` (optional) — numeric Instagram-scoped user id for `/{id}/media`.
- *   **Required** when using `graph.facebook.com` (Business/Creator); optional on `graph.instagram.com` (`me/media`).
- * - `INSTAGRAM_GRAPH_API_VERSION` (optional) — default `v21.0`.
- *
- * @see https://developers.facebook.com/docs/instagram-platform/instagram-graph-api/reference/ig-user/media
+ * Internal: fetch feed and return items + last Graph error string (no secrets).
+ * Env is read only via `process.env` (Vercel injects at runtime for serverless).
  */
-export async function fetchInstagramFeed(limit = 8): Promise<InstagramFeedItem[] | null> {
+async function fetchInstagramFeedCore(limit: number): Promise<InstagramFeedCoreResult> {
   const token = process.env.INSTAGRAM_ACCESS_TOKEN?.trim();
   if (!token) {
-    logFeedFailure(
-      "INSTAGRAM_ACCESS_TOKEN is not set — add it in .env locally or Vercel → Environment Variables for production.",
-    );
-    return null;
+    const msg =
+      "INSTAGRAM_ACCESS_TOKEN is not set — add it in .env locally or Vercel → Environment Variables for production.";
+    logFeedFailure(msg);
+    return { items: null, lastError: msg };
   }
 
   const userId = process.env.INSTAGRAM_USER_ID?.trim();
   const customBase = process.env.INSTAGRAM_GRAPH_BASE_URL?.trim();
 
   if (customBase && isFacebookGraph() && !userId) {
-    logFeedFailure(
-      "INSTAGRAM_GRAPH_BASE_URL points at graph.facebook.com but INSTAGRAM_USER_ID is missing — set your Instagram Business Account id (digits only).",
-    );
-    return null;
+    const msg =
+      "INSTAGRAM_GRAPH_BASE_URL points at graph.facebook.com but INSTAGRAM_USER_ID is missing — set your Instagram Business Account id (digits only).";
+    logFeedFailure(msg);
+    return { items: null, lastError: msg };
   }
 
   const capped = Math.min(Math.max(1, limit), 25);
@@ -201,7 +198,7 @@ export async function fetchInstagramFeed(limit = 8): Promise<InstagramFeedItem[]
               "Instagram: using basic Graph fields (carousel expansion failed or was skipped — grid still loads for image/video posts).",
             );
           }
-          return items;
+          return { items, lastError: null };
         }
         if (error) lastError = `${label}: ${status} ${error}`;
       }
@@ -213,13 +210,65 @@ export async function fetchInstagramFeed(limit = 8): Promise<InstagramFeedItem[]
     }
 
     if (lastErrorOverall) {
-      logFeedFailure(
-        `All attempts failed. Last: ${lastErrorOverall}. For Business/Creator + Page token use INSTAGRAM_GRAPH_BASE_URL=https://graph.facebook.com and a numeric INSTAGRAM_USER_ID.`,
-      );
+      const full = `All attempts failed. Last: ${lastErrorOverall}. For Business/Creator + Page token use INSTAGRAM_GRAPH_BASE_URL=https://graph.facebook.com and a numeric INSTAGRAM_USER_ID.`;
+      logFeedFailure(full);
+      return { items: null, lastError: full };
     }
-    return null;
+    return { items: null, lastError: "No items returned (empty media list or posts missing image URLs)." };
   } catch (e) {
-    logFeedFailure(e instanceof Error ? e.message : "Network error calling Instagram Graph API.");
-    return null;
+    const msg = e instanceof Error ? e.message : "Network error calling Instagram Graph API.";
+    logFeedFailure(msg);
+    return { items: null, lastError: msg };
   }
+}
+
+/**
+ * Fetches recent Instagram media using an access token from Meta.
+ *
+ * Env:
+ * - `INSTAGRAM_ACCESS_TOKEN` (required) — long-lived token from Meta.
+ * - `INSTAGRAM_GRAPH_BASE_URL` (optional) — default `https://graph.instagram.com` (Instagram Login).
+ *   Use `https://graph.facebook.com` for many **Business/Creator** setups (with numeric IG user id below).
+ * - `INSTAGRAM_USER_ID` (optional) — numeric Instagram-scoped user id for `/{id}/media`.
+ *   **Required** when using `graph.facebook.com` (Business/Creator); optional on `graph.instagram.com` (`me/media`).
+ * - `INSTAGRAM_GRAPH_API_VERSION` (optional) — default `v21.0`.
+ *
+ * @see https://developers.facebook.com/docs/instagram-platform/instagram-graph-api/reference/ig-user/media
+ */
+export async function fetchInstagramFeed(limit = 8): Promise<InstagramFeedItem[] | null> {
+  const { items } = await fetchInstagramFeedCore(limit);
+  return items;
+}
+
+/** Safe summary for `/api/test-instagram` — never includes the access token. */
+export async function diagnoseInstagramFeed(limit = 4): Promise<{
+  environment: {
+    hasAccessToken: boolean;
+    accessTokenLength: number;
+    hasUserId: boolean;
+    userId: string | null;
+    customGraphBase: string | null;
+    apiVersion: string;
+  };
+  result: { ok: boolean; postCount: number; lastError: string | null };
+}> {
+  const token = process.env.INSTAGRAM_ACCESS_TOKEN?.trim();
+  const userId = process.env.INSTAGRAM_USER_ID?.trim();
+  const customBase = process.env.INSTAGRAM_GRAPH_BASE_URL?.trim();
+  const { items, lastError } = await fetchInstagramFeedCore(limit);
+  return {
+    environment: {
+      hasAccessToken: Boolean(token),
+      accessTokenLength: token?.length ?? 0,
+      hasUserId: Boolean(userId),
+      userId: userId ?? null,
+      customGraphBase: customBase ?? null,
+      apiVersion: graphVersion(),
+    },
+    result: {
+      ok: Boolean(items?.length),
+      postCount: items?.length ?? 0,
+      lastError,
+    },
+  };
 }
