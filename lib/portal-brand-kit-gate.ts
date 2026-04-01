@@ -21,3 +21,28 @@ export async function loadClientWorkflowAccessOpts(
   });
   return n > 0 ? { inProgressBrandingElsewhere: true } : {};
 }
+
+/** One query for all projects on the client home list (avoids N per-project counts). */
+export async function loadClientWorkflowAccessOptsByProjectId(
+  userId: string | null | undefined,
+  projectIds: string[],
+): Promise<Map<string, ClientWorkflowAccessOptions>> {
+  const map = new Map<string, ClientWorkflowAccessOptions>();
+  if (!userId || projectIds.length === 0) return map;
+
+  const inProgressBranding = await prisma.project.findMany({
+    where: {
+      userId,
+      portalKind: "BRANDING",
+      brandingFinalDeliverablesAcknowledgedAt: null,
+    },
+    select: { id: true },
+  });
+  const brandingIds = new Set(inProgressBranding.map((p) => p.id));
+
+  for (const pid of projectIds) {
+    const elsewhere = Array.from(brandingIds).some((id) => id !== pid);
+    map.set(pid, elsewhere ? { inProgressBrandingElsewhere: true } : {});
+  }
+  return map;
+}

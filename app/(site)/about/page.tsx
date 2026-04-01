@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { IMAGE_BLUR_DATA_URL } from "@/lib/blur-placeholder";
 import { FaqSection } from "@/components/about/FaqSection";
 import { prisma } from "@/lib/prisma";
 import { WhatToExpectSection } from "@/components/services/WhatToExpectSection";
@@ -81,6 +82,8 @@ export default async function AboutPage() {
               className="object-cover object-[center_45%]"
               sizes="(max-width: 767px) 100vw, 50vw"
               priority
+              placeholder="blur"
+              blurDataURL={IMAGE_BLUR_DATA_URL}
             />
           </div>
         </div>

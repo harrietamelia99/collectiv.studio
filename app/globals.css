@@ -491,10 +491,8 @@ button[type="submit"]:hover,
   gap: clamp(28px, 4vw, 72px);
   padding-right: clamp(28px, 4vw, 72px);
 }
-.logo-marquee__set img {
-  height: clamp(52px, 6.25vw, 92px);
-  width: auto;
-  object-fit: contain;
+.logo-marquee__set .logo-marquee__logo {
+  flex-shrink: 0;
 }
 @keyframes logo-marquee-scroll {
   0% {

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ctaButtonClasses } from "@/components/ui/Button";
+import { IMAGE_BLUR_DATA_URL } from "@/lib/blur-placeholder";
 
 type Props = {
   title: ReactNode;
@@ -25,6 +26,8 @@ export function ServiceCard({ title, description, imageSrc, href }: Props) {
           fill
           className="object-cover transition-[transform,filter] duration-500 ease-smooth group-hover:scale-[1.07] group-hover:brightness-[1.04]"
           sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
+          placeholder="blur"
+          blurDataURL={IMAGE_BLUR_DATA_URL}
         />
       </div>
       <div className="flex min-h-0 flex-1 flex-col items-center px-5 py-5 text-center sm:px-6 sm:py-6 lg:py-7">

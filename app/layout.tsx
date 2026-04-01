@@ -4,12 +4,15 @@ import { SmoothScroll } from "@/components/SmoothScroll";
 import "./fallback-layout.css";
 import "./globals.css";
 
+/** Display: Instrument Serif. Body mono: Space Mono (Google Fonts pairing; `next/font` preloads WOFF2 in the document head). */
 const instrumentSerif = Instrument_Serif({
   subsets: ["latin", "latin-ext"],
   weight: ["400"],
   style: ["normal", "italic"],
   variable: "--font-display",
   display: "swap",
+  adjustFontFallback: true,
+  preload: true,
 });
 
 const spaceMono = Space_Mono({
@@ -17,6 +20,8 @@ const spaceMono = Space_Mono({
   weight: ["400", "700"],
   variable: "--font-body",
   display: "swap",
+  adjustFontFallback: true,
+  preload: true,
 });
 
 export const metadata: Metadata = {

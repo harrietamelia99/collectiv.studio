@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { createContext, useContext, useMemo, useState } from "react";
 import { ctaButtonClasses } from "@/components/ui/Button";
+import { IMAGE_BLUR_DATA_URL } from "@/lib/blur-placeholder";
 import { LinkedInIcon } from "@/components/ui/SocialIcons";
 
 /** Stable id segment per person (avoids duplicate DOM ids; used with accordion group). */
@@ -148,6 +149,9 @@ export function TeamCard({
           fill
           className="object-cover object-center transition-transform duration-500 ease-smooth group-hover:scale-[1.04]"
           sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 33vw"
+          loading="lazy"
+          placeholder="blur"
+          blurDataURL={IMAGE_BLUR_DATA_URL}
         />
       </div>
       <div className="flex flex-col px-6 pt-6 pb-5 text-center sm:px-7 md:px-8 md:pt-7 md:pb-6">

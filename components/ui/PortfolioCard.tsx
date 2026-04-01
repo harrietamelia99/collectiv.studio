@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { IMAGE_BLUR_DATA_URL } from "@/lib/blur-placeholder";
 
 type Props = {
   title: string;
@@ -43,6 +44,9 @@ export function PortfolioCard({
               imageObjectPosition ? { objectPosition: imageObjectPosition } : undefined
             }
             sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
+            loading="lazy"
+            placeholder="blur"
+            blurDataURL={IMAGE_BLUR_DATA_URL}
           />
 
           <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-burgundy/65 via-burgundy/10 to-transparent opacity-80 transition-opacity duration-500 group-hover:opacity-100" />

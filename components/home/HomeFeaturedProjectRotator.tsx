@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import type { PortfolioProject } from "@/lib/portfolio";
 import { portfolioProjects } from "@/lib/portfolio";
+import { IMAGE_BLUR_DATA_URL } from "@/lib/blur-placeholder";
 
 const ROTATE_MS = 6000;
 
@@ -36,6 +37,8 @@ function FeaturedProjectCard({
           }
           sizes="(max-width: 1023px) 100vw, (max-width:1536px) 45vw, 40rem"
           priority={priority}
+          placeholder="blur"
+          blurDataURL={IMAGE_BLUR_DATA_URL}
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-burgundy/25 via-transparent to-transparent opacity-70 transition-opacity duration-300 group-hover:opacity-90" />
         <span className="absolute left-4 top-4 z-[1] rounded-[var(--cc-pill-radius)] border border-burgundy/22 bg-cream/95 px-2.5 py-1 font-body text-[9px] font-normal tabular-nums tracking-[0.18em] text-burgundy shadow-[0_1px_10px_rgba(37,13,24,0.12)] md:left-5 md:top-5 md:text-[10px]">

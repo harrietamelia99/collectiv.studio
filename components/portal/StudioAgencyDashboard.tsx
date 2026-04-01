@@ -40,7 +40,6 @@ import {
   studioInboxThreadDismissReadOk,
 } from "@/lib/studio-agency-inbox-dismiss";
 import { studioInboxAwaitingReplyVisibleToViewer } from "@/lib/studio-team-mentions";
-import { runSocialUpcomingMonthFillReminders } from "@/lib/social-may-month-reminder";
 import type { MentionMember } from "@/lib/studio-team-mentions";
 import { StudioDueCalendar, type StudioCalendarEvent, type StudioCalendarTimeOff } from "@/components/portal/StudioDueCalendar";
 import {
@@ -98,8 +97,6 @@ type Props = {
 };
 
 export async function StudioAgencyDashboard({ userId, createdBanner = null, deletedBanner = null }: Props) {
-  await runSocialUpcomingMonthFillReminders();
-
   const [member, viewer] = await Promise.all([
     prisma.studioTeamMember.findUnique({
       where: { userId },
@@ -602,6 +599,8 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
               <img
                 src={profilePhotoSrc}
                 alt={`${welcomeFirst} profile`}
+                width={88}
+                height={88}
                 className="h-20 w-20 rounded-full object-cover object-top ring-2 ring-zinc-300/80 ring-offset-2 ring-offset-cream sm:h-24 sm:w-24 lg:h-[5.5rem] lg:w-[5.5rem]"
               />
             ) : (

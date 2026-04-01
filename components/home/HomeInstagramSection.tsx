@@ -1,9 +1,11 @@
+import Image from "next/image";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { InstagramIcon } from "@/components/ui/SocialIcons";
 import { fetchInstagramFeed } from "@/lib/instagram-feed";
 import { siteInstagramHandleLabel, siteInstagramHref } from "@/lib/site";
 import { ctaButtonClasses } from "@/components/ui/Button";
+import { IMAGE_BLUR_DATA_URL } from "@/lib/blur-placeholder";
 
 /** Single row on the home page; 4:5 portrait tiles. */
 const FEED_COUNT = 4;
@@ -109,16 +111,18 @@ export async function HomeInstagramSection() {
                 href={p.permalink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group block aspect-[4/5] overflow-hidden rounded-none border-cc border-solid border-[var(--cc-hairline)] bg-burgundy/[0.04] shadow-soft transition-[border-color,box-shadow,transform] duration-300 ease-smooth hover:border-burgundy/20 hover:shadow-nav"
+                className="group relative block aspect-[4/5] overflow-hidden rounded-none border-cc border-solid border-[var(--cc-hairline)] bg-burgundy/[0.04] shadow-soft transition-[border-color,box-shadow,transform] duration-300 ease-smooth hover:border-burgundy/20 hover:shadow-nav"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element -- remote Instagram CDN URLs */}
-                <img
+                <Image
                   src={p.imageSrc}
                   alt=""
-                  className="h-full w-full object-cover object-center transition-transform duration-500 ease-smooth group-hover:scale-[1.04]"
+                  fill
+                  className="object-cover object-center transition-transform duration-500 ease-smooth group-hover:scale-[1.04]"
+                  sizes="(max-width: 639px) 50vw, 25vw"
                   loading="lazy"
-                  decoding="async"
-                  sizes="(max-width: 639px) 50vw, 20vw"
+                  placeholder="blur"
+                  blurDataURL={IMAGE_BLUR_DATA_URL}
+                  unoptimized
                 />
               </a>
             </li>

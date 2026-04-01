@@ -2,6 +2,11 @@ import { PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
 
+/**
+ * Serverless (Vercel): prefer a pooled `DATABASE_URL` (e.g. Supabase 6543 + `pgbouncer=true`).
+ * You may append Prisma pool tuning on the URL, e.g.
+ * `?connection_limit=5&pool_timeout=10` (see `.env.example`).
+ */
 function createPrismaClient(): PrismaClient {
   return new PrismaClient({
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],

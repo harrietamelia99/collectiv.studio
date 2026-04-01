@@ -1,3 +1,4 @@
+import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import { ButtonLink } from "@/components/ui/Button";
 import { LogoMarquee } from "@/components/ui/LogoMarquee";
@@ -15,16 +16,62 @@ import { teamBioHarriet, teamBioIsabella, teamBioMay } from "@/lib/team-bios";
 import { TEAM_HEADSHOT_PUBLIC_PATH } from "@/lib/team-headshots";
 import { TeamCard, TeamCardGroup } from "@/components/ui/TeamCard";
 import { HomeHeroCopy } from "@/components/home/HomeHeroCopy";
-import { HomeContactForm } from "@/components/home/HomeContactForm";
-import { HomeFeaturedProjectRotator } from "@/components/home/HomeFeaturedProjectRotator";
+import { HomeTestimonialsSection } from "@/components/home/HomeTestimonialsSection";
 import {
   HomeInstagramSection,
   HomeInstagramSectionFallback,
 } from "@/components/home/HomeInstagramSection";
-import { TestimonialCarousel } from "@/components/ui/TestimonialCarousel";
-import { prisma } from "@/lib/prisma";
 
-export const dynamic = "force-dynamic";
+/** Home shell is static; testimonials use cached DB reads; Instagram streams in Suspense. */
+export const revalidate = 300;
+
+const HomeContactForm = dynamic(
+  () => import("@/components/home/HomeContactForm").then((m) => m.HomeContactForm),
+  {
+    ssr: true,
+    loading: () => (
+      <div className="bg-cream px-6 py-16 md:py-20" aria-busy aria-label="Loading contact form">
+        <div className="mx-auto max-w-xl space-y-4">
+          <div className="h-6 w-40 animate-pulse rounded bg-burgundy/[0.08]" />
+          <div className="h-32 animate-pulse rounded-xl bg-burgundy/[0.06]" />
+        </div>
+      </div>
+    ),
+  },
+);
+
+const HomeFeaturedProjectRotator = dynamic(
+  () =>
+    import("@/components/home/HomeFeaturedProjectRotator").then((m) => m.HomeFeaturedProjectRotator),
+  {
+    ssr: true,
+    loading: () => (
+      <div
+        className="mx-auto max-w-4xl lg:max-w-6xl"
+        aria-busy
+        aria-label="Loading featured projects"
+      >
+        <div className="h-80 animate-pulse rounded-xl bg-burgundy/[0.06] lg:h-96" />
+      </div>
+    ),
+  },
+);
+
+function TestimonialsSkeleton() {
+  return (
+    <MotionSection className="flex min-h-0 items-center justify-center bg-burgundy px-5 py-10 md:min-h-[min(62vh,34rem)] md:px-6 md:py-24">
+      <div
+        className="mx-auto w-full max-w-3xl animate-pulse space-y-6 rounded-xl bg-cream/10 px-6 py-12 md:py-16"
+        aria-busy
+        aria-label="Loading testimonials"
+      >
+        <div className="mx-auto h-6 w-40 rounded bg-cream/20" />
+        <div className="mx-auto h-24 max-w-2xl rounded-lg bg-cream/15" />
+        <div className="mx-auto h-4 w-32 rounded bg-cream/15" />
+      </div>
+    </MotionSection>
+  );
+}
 
 const services = [
   {
@@ -72,28 +119,9 @@ const homeStats = [
   { value: "9,000+", label: "designs created" },
 ] as const;
 
-export default async function HomePage() {
-  let featuredReviews: { id: string; reviewText: string; reviewerName: string }[] = [];
-  try {
-    featuredReviews = await prisma.publishedClientReview.findMany({
-      where: { featuredOnHome: true, rating: 5 },
-      orderBy: { submittedAt: "desc" },
-      take: 12,
-      select: { id: true, reviewText: true, reviewerName: true },
-    });
-  } catch {
-    /* e.g. Vercel without DATABASE_URL or DB unreachable — page still renders */
-  }
-
-  const dbTestimonials = featuredReviews.map((r) => ({
-    id: r.id,
-    text: r.reviewText,
-    name: r.reviewerName,
-  }));
-
+export default function HomePage() {
   return (
     <>
-      {/* Full-bleed looped video + burgundy scrim; solid bg fallback. Negative margin pulls hero under main padding so the pill nav sits over the hero. */}
       <MotionSection className="cc-hero-home relative -mt-[92px] flex min-h-svh flex-col overflow-hidden bg-burgundy text-center lg:-mt-[100px] lg:min-h-[88dvh]">
         <div
           className="cc-hero-video-wrap pointer-events-none absolute inset-0 z-0 overflow-hidden"
@@ -105,7 +133,7 @@ export default async function HomePage() {
             muted
             loop
             playsInline
-            preload="auto"
+            preload="metadata"
           >
             <source src="/videos/hero-background.mp4" type="video/mp4" />
           </video>
@@ -114,7 +142,6 @@ export default async function HomePage() {
             aria-hidden
           />
         </div>
-        {/* Clears fixed pill nav; mobile height follows content (no full-viewport min) so the band isn’t mostly empty below the CTA */}
         <div className="cc-hero-spacer h-[108px] shrink-0 lg:h-[116px]" aria-hidden />
         <div className="cc-hero-stage relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center px-4 pb-[max(2.5rem,calc(env(safe-area-inset-bottom)+1.25rem))] pt-8 sm:px-5 sm:pt-10 lg:px-10 lg:pb-8 lg:pt-10">
           <HomeHeroCopy />
@@ -161,9 +188,9 @@ export default async function HomePage() {
 
       <HomeContactForm />
 
-      <MotionSection className="flex min-h-0 items-center justify-center bg-burgundy px-5 py-10 md:min-h-[min(62vh,34rem)] md:px-6 md:py-24">
-        <TestimonialCarousel dbQuotes={dbTestimonials} />
-      </MotionSection>
+      <Suspense fallback={<TestimonialsSkeleton />}>
+        <HomeTestimonialsSection />
+      </Suspense>
 
       <MotionSection className="bg-cream px-6 py-20 md:py-28">
         <div className="mx-auto max-w-6xl">

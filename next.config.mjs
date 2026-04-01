@@ -51,11 +51,15 @@ const nextConfig = {
             process.env.NODE_ENV === "production"
               ? securityHeaders
               : securityHeaders.filter((h) => h.key !== "X-Frame-Options");
+          const longCache = "public, max-age=31536000, immutable";
           return [
             {
               source: "/:path*",
               headers: headersForEnv,
             },
+            { source: "/images/:path*", headers: [{ key: "Cache-Control", value: longCache }] },
+            { source: "/videos/:path*", headers: [{ key: "Cache-Control", value: longCache }] },
+            { source: "/fonts/:path*", headers: [{ key: "Cache-Control", value: longCache }] },
           ];
         },
       }
@@ -74,6 +78,16 @@ const nextConfig = {
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    formats: ["image/avif", "image/webp"],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    remotePatterns: staticExport
+      ? []
+      : [
+          { protocol: "https", hostname: "scontent.cdninstagram.com", pathname: "/**" },
+          { protocol: "https", hostname: "scontent-*.cdninstagram.com", pathname: "/**" },
+          { protocol: "https", hostname: "*.cdninstagram.com", pathname: "/**" },
+        ],
   },
 };
 

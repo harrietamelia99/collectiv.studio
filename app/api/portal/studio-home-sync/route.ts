@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { backfillOpenAgencyTodosMissingDueDate } from "@/lib/agency-todos";
 import { isAgencyPortalSession } from "@/lib/portal-access";
+import { runSocialUpcomingMonthFillReminders } from "@/lib/social-may-month-reminder";
 import { syncAutoPhaseTodosForAllProjects } from "@/lib/studio-auto-phase-todos";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +22,11 @@ export async function POST() {
   }
 
   try {
-    await Promise.all([syncAutoPhaseTodosForAllProjects(), backfillOpenAgencyTodosMissingDueDate()]);
+    await Promise.all([
+      syncAutoPhaseTodosForAllProjects(),
+      backfillOpenAgencyTodosMissingDueDate(),
+      runSocialUpcomingMonthFillReminders(),
+    ]);
   } catch (e) {
     const message = e instanceof Error ? e.message : "sync_failed";
     return NextResponse.json({ error: message }, { status: 500 });

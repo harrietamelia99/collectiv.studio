@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { PortfolioProject } from "@/lib/portfolio";
 import { ImagePlaceholderFill } from "@/components/ui/ImagePlaceholder";
+import { IMAGE_BLUR_DATA_URL } from "@/lib/blur-placeholder";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 
 type Props = {
@@ -60,6 +61,9 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
                       fill
                       className="object-cover"
                       sizes="(max-width: 640px) 100vw, 50vw"
+                      loading="lazy"
+                      placeholder="blur"
+                      blurDataURL={IMAGE_BLUR_DATA_URL}
                     />
                   ) : (
                     <ImagePlaceholderFill />

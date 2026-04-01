@@ -1,3 +1,6 @@
+import Image from "next/image";
+import { IMAGE_BLUR_DATA_URL } from "@/lib/blur-placeholder";
+
 const MARQUEE_LOGOS = [
   { src: "/images/logos/marquee/malow-london.png", alt: "Malow London" },
   { src: "/images/logos/marquee/core-focus.png", alt: "Core Focus Pilates" },
@@ -20,7 +23,21 @@ function LogoSet() {
   return (
     <div className="logo-marquee__set">
       {MARQUEE_LOGOS.map(({ src, alt }) => (
-        <img key={src} src={src} alt={alt} loading="lazy" decoding="async" />
+        <div
+          key={src}
+          className="logo-marquee__logo relative h-[clamp(52px,6.25vw,92px)] w-[clamp(72px,14vw,160px)] shrink-0"
+        >
+          <Image
+            src={src}
+            alt={alt}
+            fill
+            sizes="160px"
+            className="object-contain object-center"
+            loading="lazy"
+            placeholder="blur"
+            blurDataURL={IMAGE_BLUR_DATA_URL}
+          />
+        </div>
       ))}
     </div>
   );

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 type Props = {
@@ -41,15 +42,13 @@ export function Logo({ variant = "nav", className = "", onNavigate, light }: Pro
       className={`inline-flex shrink-0 items-center ${variant === "nav" ? "translate-y-[3px]" : ""} ${className}`.trim()}
       aria-label="Collectiv. Studio home"
     >
-      {/* eslint-disable-next-line @next/next/no-img-element -- SVG wordmark; avoids next/image SVG pipeline quirks */}
-      <img
+      <Image
         src="/images/logo-wordmark.svg"
         alt=""
         width={imgW}
         height={imgH}
+        priority={variant === "nav"}
         className={`${sizeClass} ${maxW} object-contain object-left ${light ? "brightness-0 invert" : ""}`}
-        decoding="async"
-        fetchPriority={variant === "nav" ? "high" : "auto"}
       />
     </Link>
   );

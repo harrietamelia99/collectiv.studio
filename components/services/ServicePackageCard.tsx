@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import { ImagePlaceholderFill } from "@/components/ui/ImagePlaceholder";
+import { IMAGE_BLUR_DATA_URL } from "@/lib/blur-placeholder";
 import { ButtonLink, ctaButtonClasses } from "@/components/ui/Button";
 import { PackageAccordion } from "@/components/services/PackageAccordion";
 import type { ServicePackageBlock } from "@/components/services/service-package-block";
@@ -118,6 +119,8 @@ export function ServicePackageCard({ pkg, collapsibleDetails, solo = false }: Pr
                     ? "(max-width: 767px) 280px, (max-width: 1200px) 48vw, 400px"
                     : "(max-width: 767px) 100vw, (max-width: 1200px) 48vw, 400px"
               }
+              placeholder="blur"
+              blurDataURL={IMAGE_BLUR_DATA_URL}
             />
           ) : (
             <ImagePlaceholderFill tone="cream" />

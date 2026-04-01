@@ -101,7 +101,7 @@ export const portfolioProjects: PortfolioProject[] = [
     slug: "o-beach-ibiza",
     title: "O Beach Ibiza",
     type: "Social Media",
-    image: "/images/portfolio-obeach-gallery-suite.png",
+    image: "/images/portfolio-obeach-gallery-suite.webp",
     tagline:
       "Bold, Instagram-ready promotional graphics for the Ibiza Spray event series at one of the island's most iconic beach clubs.",
     year: "2022",
@@ -116,7 +116,7 @@ export const portfolioProjects: PortfolioProject[] = [
     services: ["Promotional graphics", "Event campaigns", "Instagram creative"],
     galleryCaptions: ["Ibiza Spray — campaign graphics", "Social suite and feed-ready assets"],
     galleryImages: [
-      "/images/portfolio-obeach-gallery-suite.png",
+      "/images/portfolio-obeach-gallery-suite.webp",
       "/images/portfolio-obeach-gallery-lineup.png",
     ],
   },
