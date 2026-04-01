@@ -629,10 +629,6 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
               </div>
             </div>
             <p className="mt-2 text-center font-body text-sm text-burgundy/60 lg:text-left">{dashboardPublicRole}</p>
-            <p className="mx-auto mt-4 max-w-2xl text-center font-body text-sm leading-relaxed text-burgundy/70 md:text-[15px] lg:mx-0 lg:max-w-none lg:text-left">
-              Use the shortcuts in the bar below to jump anywhere. Your tasks follow next, then inbox &amp; team, then
-              calendar and clients. There&apos;s no rush — open anything when it feels right.
-            </p>
           </div>
 
           <div className="flex min-w-0 shrink-0 flex-col gap-4 border-t border-zinc-200 pt-6 sm:flex-row sm:items-center sm:justify-center sm:pt-6 lg:w-[min(100%,17rem)] lg:flex-col lg:items-stretch lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0 xl:w-[min(100%,19rem)]">
