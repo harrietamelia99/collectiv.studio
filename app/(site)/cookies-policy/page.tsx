@@ -31,7 +31,7 @@ export default function CookiesPolicyPage() {
           Electronic Communications Regulations (PECR) and UK GDPR transparency requirements.
         </p>
 
-        <div className={prose}>
+        <div className={`${prose} mt-10 md:mt-14`}>
           <h2 className={h2}>What are cookies?</h2>
           <p>
             Cookies are small text files stored on your device when you visit a website. They are widely used to keep

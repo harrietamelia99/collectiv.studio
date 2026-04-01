@@ -31,7 +31,7 @@ export default function PrivacyPolicyPage() {
           process data in the United Kingdom in line with the UK GDPR and the Data Protection Act 2018.
         </p>
 
-        <div className={prose}>
+        <div className={`${prose} mt-10 md:mt-14`}>
           <h2 className={h2}>Who we are</h2>
           <p>
             <strong className="font-medium text-burgundy">Business name:</strong> Collectiv. Studio
@@ -46,16 +46,16 @@ export default function PrivacyPolicyPage() {
             </a>
             <br />
             <strong className="font-medium text-burgundy">Contact:</strong>{" "}
-            <a className={a} href="mailto:hello@collectivstudio.uk">
-              hello@collectivstudio.uk
+            <a className={a} href="mailto:isabella@collectivstudio.uk">
+              Isabella@collectivstudio.uk
             </a>
             <br />
             <strong className="font-medium text-burgundy">Data controller:</strong> Harriet Pearce
           </p>
           <p>
             For data protection questions, contact us at{" "}
-            <a className={a} href="mailto:hello@collectivstudio.uk">
-              hello@collectivstudio.uk
+            <a className={a} href="mailto:isabella@collectivstudio.uk">
+              Isabella@collectivstudio.uk
             </a>
             .
           </p>
@@ -213,8 +213,8 @@ export default function PrivacyPolicyPage() {
           </ul>
           <p>
             To exercise any of these rights, email{" "}
-            <a className={a} href="mailto:hello@collectivstudio.uk">
-              hello@collectivstudio.uk
+            <a className={a} href="mailto:isabella@collectivstudio.uk">
+              Isabella@collectivstudio.uk
             </a>
             . We will respond within one month in most cases (we may extend in complex cases as the law allows).
           </p>
@@ -245,8 +245,8 @@ export default function PrivacyPolicyPage() {
 
           <p className="pt-4 text-burgundy/75">
             Questions?{" "}
-            <a className={a} href="mailto:hello@collectivstudio.uk">
-              hello@collectivstudio.uk
+            <a className={a} href="mailto:isabella@collectivstudio.uk">
+              Isabella@collectivstudio.uk
             </a>
           </p>
         </div>
