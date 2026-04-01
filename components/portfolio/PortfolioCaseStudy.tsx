@@ -46,6 +46,34 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
         </div>
       </section>
 
+      <section className="border-b border-solid border-[var(--cc-hairline)] bg-cream px-6 py-10 md:py-14">
+        <div className="mx-auto max-w-6xl">
+          <SectionLabel className="mb-6 md:mb-8">[ project gallery ]</SectionLabel>
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-6 md:gap-8">
+            {project.galleryCaptions.slice(0, 2).map((caption, i) => (
+              <figure key={i} className="m-0 flex flex-col">
+                <div className="relative aspect-[4/3] w-full min-w-0 overflow-hidden bg-burgundy/[0.06]">
+                  {project.galleryImages?.[i] ? (
+                    <Image
+                      src={project.galleryImages[i]}
+                      alt={`${project.title} — ${caption}`}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 100vw, 50vw"
+                    />
+                  ) : (
+                    <ImagePlaceholderFill />
+                  )}
+                </div>
+                <figcaption className="cc-caption mt-4 uppercase tracking-[0.12em] text-burgundy/70">
+                  {caption}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="bg-cream px-6 py-14 md:py-20">
         <div className="mx-auto max-w-3xl">
           <SectionLabel className="mb-4">[ overview ]</SectionLabel>
@@ -83,34 +111,6 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
           </div>
         </section>
       ) : null}
-
-      <section className="bg-cream px-6 py-14 md:py-20">
-        <div className="mx-auto max-w-6xl">
-          <SectionLabel className="mb-6 md:mb-8">[ project gallery ]</SectionLabel>
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-6 md:gap-8">
-            {project.galleryCaptions.slice(0, 2).map((caption, i) => (
-              <figure key={i} className="m-0 flex flex-col">
-                <div className="relative aspect-[4/3] w-full min-w-0 overflow-hidden bg-burgundy/[0.06]">
-                  {project.galleryImages?.[i] ? (
-                    <Image
-                      src={project.galleryImages[i]}
-                      alt={`${project.title} — ${caption}`}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 640px) 100vw, 50vw"
-                    />
-                  ) : (
-                    <ImagePlaceholderFill />
-                  )}
-                </div>
-                <figcaption className="cc-caption mt-4 uppercase tracking-[0.12em] text-burgundy/70">
-                  {caption}
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </div>
-      </section>
 
       <section className="bg-cream px-6 py-16 md:py-24">
         <div className="mx-auto max-w-6xl">
