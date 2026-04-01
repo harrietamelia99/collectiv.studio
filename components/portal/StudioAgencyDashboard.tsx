@@ -775,6 +775,7 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
         calendarInboxRows={calendarInboxRows}
         teamChatMessages={teamChatForUi}
         teamMembersForHints={teamMembersForHints}
+        currentUserId={userId}
       />
 
       <section

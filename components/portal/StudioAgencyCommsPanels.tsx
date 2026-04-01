@@ -10,15 +10,9 @@ import {
   type CalendarInboxRowUi,
   type ThreadInboxRowUi,
 } from "@/components/portal/StudioAgencyClientInboxSections";
-import {
-  DashIconBell,
-  DashIconInbox,
-  DashIconUsers,
-  StudioSectionIcon,
-} from "@/components/portal/StudioDashboardIcons";
+import { DashIconBell, DashIconInbox, StudioSectionIcon } from "@/components/portal/StudioDashboardIcons";
 import type { PersonaSlug } from "@/lib/studio-team-config";
 import { PERSONA_WELCOME_NAME } from "@/lib/studio-team-config";
-import { resolvePersonaProfilePhoto } from "@/lib/team-headshots";
 
 function utcYmd(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -39,11 +33,15 @@ function NotificationRemoveIcon() {
   );
 }
 
-function formatChatBody(body: string): React.ReactNode {
+function formatChatBody(body: string, bubble: "self" | "other"): React.ReactNode {
+  const mentionClass =
+    bubble === "self"
+      ? "rounded bg-cream/25 px-1 font-body text-[12px] font-semibold text-cream"
+      : "rounded bg-burgundy/15 px-1 font-body text-[12px] font-semibold text-burgundy";
   const parts = body.split(/(@[\w.-]+)/gi);
   return parts.map((part, i) =>
     /^@[\w.-]+$/i.test(part) ? (
-      <span key={i} className="rounded bg-zinc-200/90 px-1 font-mono text-[12px] font-semibold text-zinc-800">
+      <span key={i} className={mentionClass}>
         {part}
       </span>
     ) : (
@@ -66,6 +64,7 @@ type ChatRow = {
   id: string;
   body: string;
   createdAt: Date;
+  authorUserId: string;
   author: {
     name: string | null;
     email: string;
@@ -87,20 +86,6 @@ function chatAuthorLabel(msg: ChatRow): string {
     msg.author.name?.trim().split(/\s+/)[0] ||
     msg.author.email.split("@")[0] ||
     "Teammate"
-  );
-}
-
-function chatAuthorInitials(msg: ChatRow): string {
-  const label = chatAuthorLabel(msg);
-  const parts = label.trim().split(/\s+/).filter(Boolean);
-  if (parts.length >= 2) return (parts[0]![0] + parts[1]![0]).toUpperCase();
-  return (parts[0] ?? "?").slice(0, 2).toUpperCase();
-}
-
-function chatAuthorPhotoSrc(msg: ChatRow): string | null {
-  return resolvePersonaProfilePhoto(
-    msg.author.studioTeamProfile?.photoUrl,
-    msg.author.studioTeamProfile?.personaSlug,
   );
 }
 
@@ -127,12 +112,14 @@ export function StudioAgencyCommsPanels({
   calendarInboxRows,
   teamChatMessages,
   teamMembersForHints,
+  currentUserId,
 }: {
   notifications: NotificationRow[];
   threadInboxRows: ThreadInboxRowUi[];
   calendarInboxRows: CalendarInboxRowUi[];
   teamChatMessages: ChatRow[];
   teamMembersForHints: TeamMemberHint[];
+  currentUserId: string;
 }) {
   const unreadCount = notifications.filter((n) => !n.readAt).length;
 
@@ -263,64 +250,66 @@ export function StudioAgencyCommsPanels({
 
         <div
           id="studio-team-chat"
-          className="scroll-mt-28 flex min-h-0 flex-col rounded-xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6"
+          className="scroll-mt-28 flex min-h-0 flex-col overflow-hidden rounded-cc-card border border-burgundy/18 bg-cream shadow-nav"
+          aria-labelledby="studio-team-chat-title"
         >
-          <div className="flex items-start gap-2 sm:gap-3">
-            <StudioSectionIcon Icon={DashIconUsers} className="!h-9 !w-9 max-sm:mt-0.5" />
-            <div className="min-w-0">
-              <h3 className="m-0 font-display text-lg tracking-[-0.02em] text-zinc-900">Team chat</h3>
-              <p className="mt-1 font-body text-xs leading-relaxed text-burgundy/55">
-                Studio-only.
-                {mentionHint
-                  ? ` Examples: ${mentionHint} — tagged people get an email.`
-                  : " Use @names to ping someone — they get a notification."}
-              </p>
-            </div>
+          <div className="border-b border-burgundy/10 bg-burgundy/[0.06] px-4 py-4">
+            <h3
+              id="studio-team-chat-title"
+              className="m-0 font-display text-lg leading-tight tracking-[-0.03em] text-burgundy sm:text-xl"
+            >
+              Team chat
+            </h3>
+            <p className="mt-1.5 font-body text-[10px] uppercase tracking-[0.08em] text-burgundy/50 sm:text-[11px]">
+              Studio-only ·{" "}
+              {mentionHint
+                ? `e.g. ${mentionHint} — tagged people get an email`
+                : "Use @names to ping someone"}
+            </p>
           </div>
-          <div className="mt-5 max-h-[min(420px,50vh)] flex-1 space-y-3 overflow-y-auto rounded-xl border border-zinc-200/90 bg-zinc-50/40 p-3 sm:p-4">
+          <div
+            className="max-h-[min(52dvh,22rem)] flex-1 space-y-3 overflow-y-auto px-3 py-3"
+            role="log"
+            aria-relevant="additions"
+            aria-label="Team chat messages"
+          >
             {teamChatMessages.length === 0 ? (
-              <p className="px-1 font-mono text-[13px] text-zinc-500">Say hi — first message starts the thread.</p>
+              <p className="px-1 font-body text-[13px] leading-relaxed text-burgundy/55">
+                Say hi — first message starts the thread.
+              </p>
             ) : (
               teamChatMessages.map((msg) => {
-                const photo = chatAuthorPhotoSrc(msg);
+                const isSelf = msg.authorUserId === currentUserId;
+                const time = msg.createdAt.toLocaleString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
                 return (
                   <div
                     key={msg.id}
-                    className="flex gap-4 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5"
+                    className={`flex flex-col gap-1 ${isSelf ? "items-end" : "items-start"}`}
                   >
-                    {photo ? (
-                      <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border border-zinc-200/90 bg-zinc-50 shadow-sm">
-                        {/* eslint-disable-next-line @next/next/no-img-element -- team profile or default headshot path */}
-                        <img src={photo} alt="" className="h-full w-full object-cover" />
+                    {!isSelf ? (
+                      <span className="font-body text-[10px] uppercase tracking-[0.08em] text-burgundy/45">
+                        {chatAuthorLabel(msg)} · {time}
                       </span>
                     ) : (
-                      <span
-                        className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-zinc-200/90 bg-zinc-100 font-mono text-sm font-semibold text-zinc-600 shadow-sm"
-                        aria-hidden
-                      >
-                        {chatAuthorInitials(msg)}
+                      <span className="font-body text-[10px] uppercase tracking-[0.08em] text-burgundy/45">
+                        You · {time}
                       </span>
                     )}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-baseline justify-between gap-2">
-                        <p className="font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-zinc-500">
-                          From
-                        </p>
-                        <span className="font-mono text-[10px] tabular-nums text-zinc-400">
-                          {msg.createdAt.toLocaleString(undefined, {
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                      </div>
-                      <p className="mt-0.5 font-display text-lg font-normal tracking-[-0.02em] text-zinc-900">
-                        {chatAuthorLabel(msg)}
-                      </p>
-                      <p className="mt-2 whitespace-pre-wrap break-words font-mono text-[13px] leading-relaxed text-zinc-700">
-                        {formatChatBody(msg.body)}
-                      </p>
+                    <div
+                      className={`max-w-[min(100%,18rem)] rounded-cc-card px-3 py-2 font-body text-[13px] leading-relaxed sm:max-w-[min(100%,20rem)] ${
+                        isSelf
+                          ? "bg-burgundy text-cream"
+                          : "border border-burgundy/10 bg-white text-burgundy/90"
+                      }`}
+                    >
+                      <span className="whitespace-pre-wrap break-words">
+                        {formatChatBody(msg.body, isSelf ? "self" : "other")}
+                      </span>
                     </div>
                   </div>
                 );
