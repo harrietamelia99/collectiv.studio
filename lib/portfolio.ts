@@ -49,21 +49,26 @@ export const portfolioProjects: PortfolioProject[] = [
   },
   {
     slug: "ateau",
-    title: "Ateau",
+    title: "Âteau",
     type: "Social Media",
     image: "/images/portfolio-ateau.png",
-    tagline: "Editorial social content for a slow-living kitchen and tableware label.",
+    tagline:
+      "A year of end-to-end Instagram for a boutique wine glass brand—luxury craft, editorial grid, scroll-stopping product photography.",
     year: "2023",
     overview:
-      "Ateau sells thoughtful, small-batch pieces for everyday rituals. We translated that philosophy into a social rhythm that feels like a quiet Sunday - recipe-led, tactile and never shouty.",
+      "Âteau is a boutique wine glass company with a strong focus on elegance and craftsmanship. Over the course of a year, we managed their Instagram presence end to end - creating content that matched the refined, luxury aesthetic the brand was built on.",
     challenge:
-      "Product shots alone weren’t enough to differentiate in a crowded homeware feed. The brand needed a narrative thread that could carry launches, behind-the-scenes and UGC without looking disjointed.",
+      "Glassware is a tactile, sensory product that can easily fall flat on a screen. The challenge was to create an Instagram presence that made people stop scrolling - something that communicated quality and set the brand apart from generic product photography.",
     approach:
-      "We defined three recurring content pillars - process, place and plate - each with layout templates, caption cadence and hashtag sets. Stories became the home for slower, longer-form moments; the grid stayed clean and catalogue-sharp.",
+      "We worked closely with the founder to plan and shoot product photography that placed the glasses in considered, beautiful settings. Every post was treated as part of a wider visual story, building a cohesive grid that felt editorial and intentional rather than promotional.",
     outcome:
-      "Stronger save rates on tutorial-style carousels and a clearer uptick in profile visits during collection drops. The founder’s small team can now batch content with a shared shot list and caption prompts.",
-    services: ["Social strategy", "Content templates", "Campaign art direction"],
-    galleryCaptions: ["Carousel templates for seasonal drops", "Story frames for process reels"],
+      "A year of consistent, considered content that gave Âteau a social presence as refined as the product itself. The brand's Instagram became a genuine brand asset - a portfolio of imagery that communicated luxury from the first visit to the page.",
+    services: ["Instagram management", "Product photography", "Content strategy"],
+    galleryCaptions: ["Editorial grid and feed", "Product photography in setting"],
+    galleryImages: [
+      "/images/portfolio-ateau-gallery-grid.png",
+      "/images/portfolio-ateau-gallery-product.png",
+    ],
   },
   {
     slug: "peaches-nutrition",
