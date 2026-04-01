@@ -196,20 +196,25 @@ export const portfolioProjects: PortfolioProject[] = [
   {
     slug: "bath-arms",
     title: "Bath Arms",
-    type: "Social Media",
+    type: "Social Media Marketing",
     image: "/images/portfolio-batharms.png",
-    tagline: "Country pub charm with room for roasts, rooms and live weekends.",
-    year: "2023",
+    tagline:
+      "Graphics for Instagram, Facebook and LinkedIn—cosy Cheddar pub charm, consistent online, from menus to feed.",
+    year: "2025",
     overview:
-      "The Bath Arms is a destination pub with rooms, a busy kitchen and a calendar of events. Social needed to sell the whole offer - not just plates - while staying true to a relaxed Wiltshire tone of voice.",
+      "The Bath Arms is a cosy countryside pub in Cheddar with a warm, welcoming atmosphere and plenty of character. Starting from almost no social media presence, we created a suite of graphics across Instagram, Facebook and LinkedIn to establish a consistent visual style and help them connect with new customers online.",
     challenge:
-      "Multiple audiences: locals, weekenders and wedding parties. Posts that worked for one group sometimes felt off for another; the feed risked becoming a patchwork.",
+      "The pub had a strong personality in person but nothing to show for it online. The graphics needed to feel warm and inviting rather than polished and corporate - close enough to the real experience that new customers would walk in already feeling at home.",
     approach:
-      "We split content into recurring ‘chapters’ - kitchen, bar, stays, gatherings - each with its own cover style but shared type and colour hooks. User-generated moments get a light branded frame so reposts still feel on-brand.",
+      "Over a couple of months we designed a collection of social media assets tailored to food, drinks and events, building a visual language that reflected the charm and character of the pub. Assets were adapted across all three platforms to ensure consistency without feeling copy-pasted.",
     outcome:
-      "More balanced engagement across food, rooms and events. The team can plan a month ahead with a simple content calendar tied to the chapter system.",
-    services: ["Social strategy", "Content design", "Community repost styling"],
-    galleryCaptions: ["Chapter covers - stays & kitchen", "Event weekend takeovers"],
+      "A social presence that finally matched the pub's personality. The Bath Arms moved from no visual identity online to a consistent, recognisable look across three platforms - giving them the foundations to keep building their audience with confidence.",
+    services: ["Social media graphics", "Cross-platform campaigns", "Content design"],
+    galleryCaptions: ["Takeaway menu — campaign graphic", "Feed and multi-platform suite"],
+    galleryImages: [
+      "/images/portfolio-batharms-gallery-menu.png",
+      "/images/portfolio-batharms-gallery-suite.png",
+    ],
     quote: {
       text: "Our feed finally feels like walking through the front door.",
       attribution: "General Manager, Bath Arms",
