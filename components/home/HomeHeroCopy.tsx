@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { ctaButtonClasses } from "@/components/ui/Button";
 
@@ -15,7 +14,7 @@ type HeroSlide = {
 };
 
 const ROTATE_MS = 6500;
-const FADE_S = 0.42;
+const FADE_MS = 420;
 
 const heroCtaClass = `cc-hero-cta w-full max-w-[17.5rem] sm:max-w-none lg:w-auto lg:max-w-fit ${ctaButtonClasses({
   variant: "cream",
@@ -53,8 +52,16 @@ const slides: HeroSlide[] = [
 ];
 
 export function HomeHeroCopy() {
-  const reduceMotion = useReducedMotion();
+  const [reduceMotion, setReduceMotion] = useState(false);
   const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduceMotion(mq.matches);
+    const onChange = () => setReduceMotion(mq.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
   const advance = useCallback(() => {
     setIndex((i) => (i + 1) % slides.length);
@@ -78,21 +85,14 @@ export function HomeHeroCopy() {
         {slides.map((slide, i) => {
           const isOn = i === active;
           return (
-            <motion.div
+            <div
               key={slide.id}
-              initial={false}
-              animate={{
-                opacity: isOn ? 1 : 0,
-              }}
-              transition={{
-                duration: reduceMotion ? 0 : FADE_S,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              className={
+              className={`flex w-full flex-col items-center gap-4 transition-opacity ease-[cubic-bezier(0.22,1,0.36,1)] md:gap-6 lg:gap-8 ${
                 isOn
-                  ? "flex w-full flex-col items-center gap-4 md:gap-6 lg:gap-8"
-                  : "pointer-events-none flex w-full flex-col items-center gap-4 md:gap-6 lg:gap-8"
-              }
+                  ? "relative z-10 opacity-100"
+                  : "pointer-events-none relative z-0 opacity-0"
+              }`}
+              style={{ transitionDuration: reduceMotion ? "0ms" : `${FADE_MS}ms` }}
               aria-hidden={!isOn}
             >
               <p className="cc-hero-tag font-body text-[9px] font-normal uppercase leading-none tracking-[0.09em] text-white/88 sm:text-[10px] md:text-[11px] md:tracking-[0.09em]">
@@ -115,7 +115,7 @@ export function HomeHeroCopy() {
                   {slide.cta.label}
                 </Link>
               </div>
-            </motion.div>
+            </div>
           );
         })}
       </div>

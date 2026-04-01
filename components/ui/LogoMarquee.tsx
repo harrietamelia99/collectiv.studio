@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 /**
  * Client logos strip — uses native <img> so JPEGs are not mis-served as PNG (files were .png extension with JPEG data,
  * which broke decoding and showed grey boxes). Paths use .jpg; animation stays on the track (GPU transform only).
@@ -37,8 +41,32 @@ function LogoSet() {
 }
 
 export function LogoMarquee() {
+  const [live, setLive] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (mq.matches) {
+      setLive(true);
+      return;
+    }
+    const run = () => setLive(true);
+    let idleHandle: number | undefined;
+    if (typeof window.requestIdleCallback === "function") {
+      idleHandle = window.requestIdleCallback(run, { timeout: 2200 });
+      return () => {
+        if (idleHandle !== undefined) window.cancelIdleCallback(idleHandle);
+      };
+    }
+    const t = window.setTimeout(run, 400);
+    return () => window.clearTimeout(t);
+  }, []);
+
   return (
-    <div className="logo-marquee" role="region" aria-label="Client logos">
+    <div
+      className={`logo-marquee ${live ? "logo-marquee--live" : ""}`}
+      role="region"
+      aria-label="Client logos"
+    >
       <div className="logo-marquee__track">
         <LogoSet />
         <LogoSet />

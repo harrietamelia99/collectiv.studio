@@ -14,24 +14,45 @@ export function SmoothScroll() {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (mq.matches) return;
 
-    const lenis = new Lenis({
-      autoRaf: true,
-      lerp: 0.075,
-      smoothWheel: true,
-      wheelMultiplier: 1,
-      touchMultiplier: 1,
-      stopInertiaOnNavigate: true,
-      anchors: {
-        offset: 96,
-        lerp: 0.12,
-      },
-    });
+    let lenis: Lenis | null = null;
 
-    globalLenisRef.current = lenis;
+    const start = () => {
+      lenis = new Lenis({
+        autoRaf: true,
+        lerp: 0.075,
+        smoothWheel: true,
+        wheelMultiplier: 1,
+        touchMultiplier: 1,
+        stopInertiaOnNavigate: true,
+        anchors: {
+          offset: 96,
+          lerp: 0.12,
+        },
+      });
+      globalLenisRef.current = lenis;
+    };
+
+    let cancelled = false;
+    let idleHandle: number | undefined;
+    let timeoutId = 0;
+
+    const runStart = () => {
+      if (cancelled) return;
+      start();
+    };
+
+    if (typeof window.requestIdleCallback === "function") {
+      idleHandle = window.requestIdleCallback(runStart, { timeout: 2000 });
+    } else {
+      timeoutId = window.setTimeout(runStart, 0);
+    }
 
     return () => {
+      cancelled = true;
+      if (idleHandle !== undefined) window.cancelIdleCallback(idleHandle);
+      if (timeoutId) window.clearTimeout(timeoutId);
       globalLenisRef.current = null;
-      lenis.destroy();
+      lenis?.destroy();
     };
   }, []);
 

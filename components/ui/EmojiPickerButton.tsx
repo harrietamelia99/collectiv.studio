@@ -94,6 +94,7 @@ export function EmojiPickerButton({ inputRef, controlled, className = "", size =
                   key={`${EMOJI_GROUPS[tab]!.id}-${idx}`}
                   type="button"
                   className="flex h-9 w-9 items-center justify-center rounded-lg text-lg leading-none hover:bg-burgundy/[0.08]"
+                  aria-label={`Add ${emoji} to message`}
                   onClick={() => pick(emoji)}
                 >
                   {emoji}

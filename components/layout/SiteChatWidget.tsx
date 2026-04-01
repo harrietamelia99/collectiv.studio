@@ -58,11 +58,15 @@ export function SiteChatWidget() {
         }`}
         id={panelId}
         role="dialog"
-        aria-label="Quick questions"
+        aria-modal={open ? true : undefined}
+        aria-labelledby="site-chat-dialog-title"
         hidden={!open}
       >
         <div className="border-b border-burgundy/10 bg-burgundy/[0.06] px-4 py-4">
-          <p className="font-display text-lg leading-tight tracking-[-0.03em] text-burgundy sm:text-xl">
+          <p
+            id="site-chat-dialog-title"
+            className="font-display text-lg leading-tight tracking-[-0.03em] text-burgundy sm:text-xl"
+          >
             Quick questions
           </p>
           <p className="mt-1.5 font-body text-[10px] uppercase tracking-[0.08em] text-burgundy/50 sm:text-[11px]">

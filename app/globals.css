@@ -484,6 +484,10 @@ button[type="submit"]:hover,
   display: flex;
   width: max-content;
   animation: logo-marquee-scroll 45s linear infinite;
+  animation-play-state: paused;
+}
+.logo-marquee--live .logo-marquee__track {
+  animation-play-state: running;
 }
 .logo-marquee__set {
   display: flex;

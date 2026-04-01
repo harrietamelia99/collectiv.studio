@@ -95,6 +95,7 @@ export function Navbar() {
                 <button
                   type="button"
                   className="inline-flex cursor-pointer items-center border-0 bg-transparent p-0 font-body text-xs font-normal uppercase leading-none tracking-[0.06em] text-burgundy transition-[transform,opacity] duration-200 ease-smooth hover:translate-y-[-2px] hover:opacity-85"
+                  aria-haspopup="true"
                 >
                   Services
                 </button>

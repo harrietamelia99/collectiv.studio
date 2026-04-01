@@ -18,6 +18,7 @@ import { HomeStatsStrip } from "@/components/home/HomeStatsStrip";
 import { teamBioHarriet, teamBioIsabella, teamBioMay } from "@/lib/team-bios";
 import { TEAM_HEADSHOT_PUBLIC_PATH } from "@/lib/team-headshots";
 import { TeamCard, TeamCardGroup } from "@/components/ui/TeamCard";
+import { HomeHeroBackground } from "@/components/home/HomeHeroBackground";
 import { HomeHeroCopy } from "@/components/home/HomeHeroCopy";
 import { HomeTestimonialsSection } from "@/components/home/HomeTestimonialsSection";
 import {
@@ -137,25 +138,7 @@ export default function HomePage() {
         Collectiv. Studio — boutique brand, website and social media creative agency in Bristol, UK
       </h1>
       <MotionSection className="cc-hero-home relative -mt-[92px] flex min-h-svh flex-col overflow-hidden bg-burgundy text-center lg:-mt-[100px] lg:min-h-[88dvh]">
-        <div
-          className="cc-hero-video-wrap pointer-events-none absolute inset-0 z-0 overflow-hidden"
-          aria-hidden
-        >
-          <video
-            className="cc-hero-bg-video"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-          >
-            <source src="/videos/hero-background.mp4" type="video/mp4" />
-          </video>
-          <div
-            className="absolute inset-0 bg-gradient-to-b from-burgundy/70 via-burgundy/55 to-burgundy/58"
-            aria-hidden
-          />
-        </div>
+        <HomeHeroBackground />
         <div className="cc-hero-spacer h-[108px] shrink-0 lg:h-[116px]" aria-hidden />
         <div className="cc-hero-stage relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center px-4 pb-[max(2.5rem,calc(env(safe-area-inset-bottom)+1.25rem))] pt-8 sm:px-5 sm:pt-10 lg:px-10 lg:pb-8 lg:pt-10">
           <HomeHeroCopy />

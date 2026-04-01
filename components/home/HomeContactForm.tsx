@@ -148,7 +148,7 @@ export function HomeContactForm() {
                 type="email"
                 autoComplete="email"
                 placeholder="you@example.com"
-                className="w-full border-0 border-b-cc border-solid border-burgundy bg-transparent py-2 text-center font-body text-sm text-burgundy placeholder:text-burgundy/35 transition-[border-color,opacity] duration-200 focus:border-burgundy focus:outline-none focus:ring-0 md:text-[15px]"
+                className="w-full border-0 border-b-cc border-solid border-burgundy bg-transparent py-2 text-center font-body text-sm text-burgundy placeholder:text-burgundy/50 transition-[border-color,opacity] duration-200 focus:border-burgundy focus:outline-none focus:ring-0 md:text-[15px]"
                 aria-invalid={errors.email ? "true" : "false"}
                 {...register("email", {
                   required: "Please add your email",
@@ -166,8 +166,12 @@ export function HomeContactForm() {
             </div>
 
             <div className="mx-auto mt-5 max-w-[min(100%,320px)] text-left">
-              <label className="flex cursor-pointer items-start gap-3 font-body text-[11px] leading-snug text-burgundy/85 sm:text-[12px] sm:leading-relaxed">
+              <label
+                htmlFor="home-contact-privacy"
+                className="flex cursor-pointer items-start gap-3 font-body text-[11px] leading-snug text-burgundy/85 sm:text-[12px] sm:leading-relaxed"
+              >
                 <input
+                  id="home-contact-privacy"
                   type="checkbox"
                   className="cc-no-lift mt-0.5 h-3.5 w-3.5 shrink-0 rounded-sm border border-burgundy/40 text-burgundy focus:ring-burgundy/30"
                   {...register("privacyConsent", {
