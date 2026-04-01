@@ -118,7 +118,9 @@ export function StudioAgencyCommsPanels({
           ) : null}
         </div>
         {notifications.length === 0 ? (
-          <p className="mt-4 font-body text-sm text-burgundy/55">You&apos;re all caught up — nothing new yet.</p>
+          <p className="mt-4 font-body text-sm text-burgundy/55">
+            No notifications yet — mentions, enquiries, and updates will appear here.
+          </p>
         ) : (
           <ul className="mt-4 flex flex-col gap-2">
             {notifications.map((n) => (

@@ -227,7 +227,9 @@ export function StudioAgencyClientInboxSections({
   return (
     <div className="space-y-8">
       {columnEmpty ? (
-        <p className="font-body text-sm text-burgundy/55">You&apos;re all caught up — nothing new yet.</p>
+        <p className="font-body text-sm text-burgundy/55">
+          No client threads or calendar feedback waiting on you right now.
+        </p>
       ) : null}
 
       {threads.length > 0 ? (
