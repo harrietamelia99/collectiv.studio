@@ -142,10 +142,6 @@ export const portfolioProjects: PortfolioProject[] = [
       "/images/portfolio-powerhouse-gallery-identity.png",
       "/images/portfolio-powerhouse-gallery-site.png",
     ],
-    quote: {
-      text: "Members say the studio finally looks as strong as it feels.",
-      attribution: "Owner, Powerhouse Pilates",
-    },
   },
   {
     slug: "core-focus-pilates",
@@ -215,10 +211,6 @@ export const portfolioProjects: PortfolioProject[] = [
       "/images/portfolio-batharms-gallery-menu.png",
       "/images/portfolio-batharms-gallery-suite.png",
     ],
-    quote: {
-      text: "Our feed finally feels like walking through the front door.",
-      attribution: "General Manager, Bath Arms",
-    },
   },
 ];
 

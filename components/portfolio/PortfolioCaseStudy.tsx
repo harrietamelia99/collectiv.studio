@@ -13,7 +13,7 @@ type Props = {
 export function PortfolioCaseStudy({ project, prev, next }: Props) {
   return (
     <>
-      <section className="border-b border-solid border-[var(--cc-hairline)] bg-cream px-6 pb-10 pt-4 md:pb-14 md:pt-5">
+      <section className="bg-cream px-6 pb-10 pt-4 md:pb-14 md:pt-5">
         <div className="mx-auto max-w-6xl">
           <Link
             href="/portfolio"
@@ -26,7 +26,7 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
             {project.title}
           </h1>
           <p className="cc-copy-muted mt-5 max-w-2xl md:mt-6">{project.tagline}</p>
-          <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-3 border-t border-solid border-[var(--cc-hairline)] pt-8 md:mt-10 md:gap-x-6 md:pt-10">
+          <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-3 border-t-cc border-solid border-burgundy pt-8 md:mt-10 md:gap-x-6 md:pt-10">
             <span className="cc-caption text-burgundy/55">{project.year}</span>
             <span className="hidden text-burgundy/25 md:inline" aria-hidden>
               ·
@@ -36,7 +36,7 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
               {project.services.map((s) => (
                 <span
                   key={s}
-                  className="cc-caption inline-flex rounded-[var(--cc-pill-radius)] border border-burgundy/15 bg-burgundy/[0.03] px-3 py-1 text-burgundy/80"
+                  className="cc-caption inline-flex rounded-[var(--cc-pill-radius)] border-cc border-solid border-burgundy/15 bg-burgundy/[0.03] px-3 py-1 text-burgundy/80"
                 >
                   {s}
                 </span>
@@ -46,7 +46,7 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
         </div>
       </section>
 
-      <section className="border-b border-solid border-[var(--cc-hairline)] bg-cream px-6 py-10 md:py-14">
+      <section className="bg-cream px-6 py-10 md:py-14">
         <div className="mx-auto max-w-6xl">
           <SectionLabel className="mb-6 md:mb-8">[ project gallery ]</SectionLabel>
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-6 md:gap-8">
@@ -87,7 +87,7 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
             <SectionLabel className="mb-4">[ challenge ]</SectionLabel>
             <p className="cc-copy">{project.challenge}</p>
           </div>
-          <div className="border-t border-solid border-[var(--cc-hairline)] pt-10 md:border-l md:border-t-0 md:pl-16 md:pt-0 lg:pl-20">
+          <div className="border-t-cc border-solid border-burgundy pt-10 md:border-t-0 md:border-l-cc md:pl-16 md:pt-0 lg:pl-20">
             <SectionLabel className="mb-4">[ approach ]</SectionLabel>
             <p className="cc-copy">{project.approach}</p>
           </div>
@@ -118,7 +118,7 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
             <Link
               href={`/portfolio/${prev.slug}`}
-              className="group flex flex-col border border-solid border-burgundy bg-cream p-6 transition-[box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:shadow-nav md:p-8"
+              className="group flex flex-col border-cc border-solid border-burgundy bg-cream p-6 transition-[box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:shadow-nav md:p-8"
             >
               <span className="cc-caption text-burgundy/45">Previous</span>
               <span className="mt-3 font-display text-cc-h3 font-normal text-burgundy transition-colors group-hover:text-burgundy">
@@ -128,7 +128,7 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
             </Link>
             <Link
               href={`/portfolio/${next.slug}`}
-              className="group flex flex-col border border-solid border-burgundy bg-cream p-6 transition-[box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:shadow-nav md:items-end md:p-8"
+              className="group flex flex-col border-cc border-solid border-burgundy bg-cream p-6 transition-[box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:shadow-nav md:items-end md:p-8"
             >
               <span className="cc-caption text-burgundy/45">Next</span>
               <span className="mt-3 text-left font-display text-cc-h3 font-normal text-burgundy transition-colors group-hover:text-burgundy md:text-right">
