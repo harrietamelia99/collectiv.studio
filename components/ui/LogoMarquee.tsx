@@ -7,8 +7,6 @@ const MARQUEE_LOGOS = [
   { src: "/images/logos/marquee/core-focus.jpg", alt: "Core Focus Pilates" },
   { src: "/images/logos/marquee/gasworld.jpg", alt: "GasWorld" },
   { src: "/images/logos/marquee/prosite-uk.jpg", alt: "Prosite UK" },
-  { src: "/images/logos/marquee/twinn.jpg", alt: "Twinn" },
-  { src: "/images/logos/marquee/choc-nibbles.jpg", alt: "Choc Nibbles" },
   { src: "/images/logos/marquee/petite-social-club.jpg", alt: "Petite Social Club" },
   { src: "/images/logos/marquee/peaches-nutrition.jpg", alt: "Peaches Nutrition" },
   { src: "/images/logos/marquee/powerhouse.jpg", alt: "Powerhouse" },
