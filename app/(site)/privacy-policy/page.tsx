@@ -18,7 +18,7 @@ const a =
 
 export default function PrivacyPolicyPage() {
   return (
-    <MotionSection className="cc-rule-t-burgundy bg-cream px-6 py-16 md:py-24">
+    <MotionSection className="cc-rule-t-burgundy mt-6 bg-cream px-6 py-16 md:mt-8 md:py-24">
       <div className="cc-outline-hairline mx-auto max-w-2xl px-6 py-10 md:px-10 md:py-12">
         <p className="font-body text-[10px] uppercase tracking-[0.14em] text-burgundy/50">
           Last updated: April 2026

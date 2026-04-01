@@ -266,7 +266,7 @@ export default function ContactPage() {
   const buttonLabel = isSubmitting ? "Sending..." : buttonSuccessFlash ? "Message sent ✓" : "Send";
 
   return (
-    <MotionSection className="cc-rule-t-burgundy bg-cream px-6 py-16 md:py-24">
+    <MotionSection className="cc-rule-t-burgundy mt-6 bg-cream px-6 py-16 md:mt-8 md:py-24">
       <div className="cc-outline-hairline mx-auto max-w-3xl px-6 py-10 md:px-10 md:py-12">
         <SectionLabel className="mb-4 text-center">[ Discovery enquiry ]</SectionLabel>
         <h1 className="cc-no-heading-hover mb-4 text-center text-burgundy">
