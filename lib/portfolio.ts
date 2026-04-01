@@ -70,18 +70,23 @@ export const portfolioProjects: PortfolioProject[] = [
     title: "Peaches Nutrition",
     type: "Website",
     image: "/images/portfolio-peaches.png",
-    tagline: "A clarity-first site for one-to-one nutrition coaching.",
-    year: "2024",
+    tagline:
+      "A full Squarespace site that feels pink, feminine, and welcoming—without sacrificing clarity or navigation.",
+    year: "2026",
     overview:
-      "Peaches Nutrition helps clients rebuild their relationship with food through evidence-led coaching. The new site had to feel approachable for anxious first-time visitors while signalling professionalism to referrers and partners.",
+      "Peaches Nutrition is a coaching platform helping women build healthier relationships with food, fitness, and their bodies. Working from an existing logo, we developed a full Squarespace site that feels pink, feminine, and welcoming without sacrificing clarity or ease of navigation.",
     challenge:
-      "The previous site buried services and pricing. Prospects weren’t sure who the offer was for, or what the first step looked like - so enquiries were inconsistent and often misqualified.",
+      "The brief called for something that felt genuinely warm and community-led, not clinical or generic. The site needed to balance a playful, girly aesthetic with structured content, so women could land on the page, feel at home, and find exactly what they needed.",
     approach:
-      "We restructured the journey around three questions: Is this for me? What do I get? How do I start? Service tiers, FAQs and a warm but direct about section sit alongside a streamlined contact flow. Typography and spacing prioritise readability over decoration.",
+      "We built on the existing brand identity, developing a colour-led design system that carried the personality through every page. Layout decisions prioritised clear content hierarchy and intuitive user journeys, making it easy to move from discovery to booking without friction.",
     outcome:
-      "Fewer ‘just browsing’ emails and more bookings that match the practitioner’s ideal client profile. Analytics show a shorter path from services page to contact, with mobile accounting for the majority of conversions.",
-    services: ["UX structure", "Web design", "Copy alignment"],
-    galleryCaptions: ["Services and pricing clarity", "Mobile-first enquiry flow"],
+      "A site the founder describes as her \"website of dreams.\" The design holds the brand's warmth while giving the business a credible, structured platform to grow its community and convert visitors into coaching clients.",
+    services: ["Squarespace build", "Web design", "UX structure", "Copy alignment"],
+    galleryCaptions: ["Site - coaching and community", "Site - programme and booking"],
+    galleryImages: [
+      "/images/portfolio-peaches-gallery-tablet.png",
+      "/images/portfolio-peaches-gallery-mobile.png",
+    ],
     quote: {
       text: "Finally a website that sounds like me - and actually converts.",
       attribution: "Peaches Nutrition",
