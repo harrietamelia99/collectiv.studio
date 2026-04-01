@@ -241,6 +241,15 @@ a {
     }
   }
 
+  /**
+   * Global `a { color: var(--cc-burgundy) }` is for cream backgrounds. On burgundy panels,
+   * cream body copy would otherwise make link text burgundy-on-burgundy (invisible).
+   */
+  .cc-copy-light a,
+  .cc-copy-inverse a {
+    color: inherit;
+  }
+
   /* Body-sized line on dark (credits, captions). */
   .cc-copy-inverse {
     @apply font-body font-normal text-cream/85;
