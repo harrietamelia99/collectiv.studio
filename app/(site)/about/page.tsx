@@ -104,7 +104,7 @@ export default async function AboutPage() {
       <MotionSection className="bg-burgundy px-6 py-16 text-center md:py-20">
         <div className="mx-auto flex max-w-3xl flex-col items-center gap-8 md:max-w-[42rem] md:gap-10">
           <h2 className="cc-no-heading-hover max-w-[min(100%,34rem)] text-balance text-cream md:max-w-[40rem]">
-            Ready to bring <em>clarity</em> and intention to your brand?
+            Ready to bring <em>clarity</em> and <em>intention</em> to your brand?
           </h2>
           <ButtonLink href="/contactus" variant="cream">
             Book a discovery call
