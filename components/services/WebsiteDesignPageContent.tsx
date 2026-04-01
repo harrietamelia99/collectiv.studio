@@ -22,8 +22,8 @@ const PACKAGE_IMAGES: Record<
   "03": {
     imageSrc: "/images/website-the-elevate-build.png",
     imageAlt:
-      "Open ring binder and stationery on a round table with calla lily and soft daylight — strategic planning mood.",
-    imageObjectPosition: "50% 38%",
+      "Gold MacBook on linen-bound books on a marble side table, iPhone nearby, soft natural light and blurred grey sofa in the background.",
+    imageObjectPosition: "50% 48%",
   },
   "04": {
     imageSrc: "/images/website-the-signature-site.png",
