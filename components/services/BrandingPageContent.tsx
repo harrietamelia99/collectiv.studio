@@ -2,7 +2,7 @@ import { ServicePackagePageLayout } from "@/components/services/ServicePackagePa
 import { brandingPackages } from "@/lib/branding-packages";
 import { brandingWhatToExpect } from "@/lib/service-what-to-expect";
 
-/** Stock lifestyle imagery — primary tier matches the home “Logo + Branding” desk scene; other tiers stay distinct on-page. */
+/** Stock lifestyle imagery — tier 01 matches the home “Logo + Branding” desk scene; other tiers stay distinct on-page. */
 const PACKAGE_IMAGES: Record<
   string,
   { imageSrc: string; imageAlt: string; imageObjectPosition?: string }
@@ -14,10 +14,10 @@ const PACKAGE_IMAGES: Record<
     imageObjectPosition: "50% 42%",
   },
   "02": {
-    imageSrc: "/images/website-the-essential-build.png",
+    imageSrc: "/images/branding-logo-design.png",
     imageAlt:
-      "iMac on a light wood desk with brass lamp, candle, and notebook — polished creative studio.",
-    imageObjectPosition: "50% 40%",
+      "Overhead view of a professional working on a silver laptop at a light wood desk, pen in hand, brown blazer and watch — focused, modern workspace.",
+    imageObjectPosition: "50% 44%",
   },
   "03": {
     imageSrc: "/images/website-the-expansion-build.png",
@@ -26,10 +26,10 @@ const PACKAGE_IMAGES: Record<
     imageObjectPosition: "48% 45%",
   },
   "04": {
-    imageSrc: "/images/service-signage.png",
+    imageSrc: "/images/branding-signage-services.png",
     imageAlt:
-      "Laptop and mug on a light desk with warm diagonal sunlight — print-ready, detail-focused setup.",
-    imageObjectPosition: "50% 44%",
+      "Mirrored A-frame sidewalk sign with Collectiv. Studio branding, reflecting city buildings on grey stone paving beside a stone building.",
+    imageObjectPosition: "50% 46%",
   },
 };
 
