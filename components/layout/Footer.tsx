@@ -120,6 +120,7 @@ export function Footer() {
                 className="border-t border-solid border-[var(--cc-hairline-on-burgundy)] pt-10 sm:border-l sm:border-t-0 sm:pl-8 sm:pt-0 md:pl-10 lg:pl-12"
               >
                 <FooterLink href="/privacy-policy">Privacy Policy</FooterLink>
+                <FooterLink href="/cookies-policy">Cookies Policy</FooterLink>
               </Column>
             </div>
           </div>
@@ -127,7 +128,11 @@ export function Footer() {
       </div>
 
       <div className="border-t border-solid border-[var(--cc-hairline-on-burgundy)] px-6 py-6 md:px-10 md:py-7">
-        <p className="mx-auto max-w-[min(100%,1440px)] text-center font-body text-[10px] font-normal tracking-[0.06em] text-cream/50 md:text-[11px]">
+        <p className="mx-auto max-w-[min(100%,42rem)] text-center font-body text-[10px] font-normal leading-relaxed tracking-[0.04em] text-cream/45 md:text-[11px] md:leading-relaxed">
+          This site uses essential cookies only to keep you logged in to your portal. No tracking or marketing
+          cookies are used.
+        </p>
+        <p className="mx-auto mt-4 max-w-[min(100%,1440px)] text-center font-body text-[10px] font-normal tracking-[0.06em] text-cream/50 md:mt-5 md:text-[11px]">
           © {new Date().getFullYear()} Collectiv. Studio. All rights reserved.
         </p>
       </div>

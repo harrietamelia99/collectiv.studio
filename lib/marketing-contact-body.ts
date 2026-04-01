@@ -39,6 +39,11 @@ function str(v: unknown): string {
   return typeof v === "string" ? v : "";
 }
 
+/** JSON body: checkbox sent as boolean true from fetch API. */
+export function privacyConsentGiven(o: Record<string, unknown>): boolean {
+  return o.privacyConsent === true;
+}
+
 export function parseContactApiJson(body: unknown): ContactApiParsed {
   if (!body || typeof body !== "object") {
     return { ok: false, error: "Invalid JSON" };
@@ -50,6 +55,15 @@ export function parseContactApiJson(body: unknown): ContactApiParsed {
     if (!email) return { ok: false, error: "Email is required", fieldErrors: { email: "Required" } };
     if (!CONTACT_EMAIL_PATTERN.test(email)) {
       return { ok: false, error: "Invalid email", fieldErrors: { email: "Enter a valid email address" } };
+    }
+    if (!privacyConsentGiven(o)) {
+      return {
+        ok: false,
+        error: "Privacy consent required",
+        fieldErrors: {
+          privacyConsent: "Please agree to our Privacy Policy to submit this form",
+        },
+      };
     }
     return {
       ok: true,
@@ -75,6 +89,9 @@ export function parseContactApiJson(body: unknown): ContactApiParsed {
   if (!servicesInterested) fieldErrors.servicesInterested = "Required";
   if (!budget) fieldErrors.budget = "Please choose an option";
   if (!timeline) fieldErrors.timeline = "Please choose an option";
+  if (!privacyConsentGiven(o)) {
+    fieldErrors.privacyConsent = "Please agree to our Privacy Policy to submit this form";
+  }
 
   if (Object.keys(fieldErrors).length > 0) {
     return { ok: false, error: "Validation failed", fieldErrors };

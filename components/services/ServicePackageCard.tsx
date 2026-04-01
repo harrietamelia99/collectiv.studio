@@ -82,7 +82,7 @@ export function ServicePackageCard({ pkg, collapsibleDetails, solo = false }: Pr
   return (
     <article
       id={pkg.id}
-      className={`flex overflow-hidden border-cc border-solid border-burgundy/10 bg-cream shadow-soft transition-[box-shadow,border-color] duration-300 ease-smooth ${
+      className={`group flex overflow-hidden border-cc border-solid border-burgundy/10 bg-cream shadow-soft transition-[transform,box-shadow,border-color] duration-300 ease-smooth hover:-translate-y-1 hover:border-burgundy/22 hover:shadow-lift ${
         solo
           ? /* Stacked layout: full-width image avoids tight side-column crops on square / flat-lay photos */
             "w-full max-w-lg flex-col sm:max-w-xl md:max-w-3xl lg:max-w-[56rem]"
@@ -109,7 +109,7 @@ export function ServicePackageCard({ pkg, collapsibleDetails, solo = false }: Pr
               src={pkg.imageSrc}
               alt={pkg.imageAlt ?? ""}
               fill
-              className={pkg.imageObjectFit === "contain" ? "object-contain" : "object-cover"}
+              className={`${pkg.imageObjectFit === "contain" ? "object-contain" : "object-cover"} transition-transform duration-500 ease-smooth group-hover:scale-[1.03]`}
               style={pkg.imageObjectPosition ? { objectPosition: pkg.imageObjectPosition } : undefined}
               sizes={
                 solo

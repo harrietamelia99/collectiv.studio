@@ -10,6 +10,7 @@ const HOME_EMAIL_KEY = "cc-home-contact-email";
 
 type Values = {
   email: string;
+  privacyConsent: boolean;
   trap: string;
 };
 
@@ -24,8 +25,10 @@ export function HomeContactForm() {
     register,
     handleSubmit,
     reset,
+    setError,
+    clearErrors,
     formState: { errors },
-  } = useForm<Values>({ defaultValues: { email: "", trap: "" } });
+  } = useForm<Values>({ defaultValues: { email: "", privacyConsent: false, trap: "" } });
 
   const onSubmit = async (data: Values) => {
     setBanner("none");
@@ -40,7 +43,10 @@ export function HomeContactForm() {
           honeypot: data.trap,
         }),
       });
-      const payload = (await res.json().catch(() => ({}))) as { ok?: boolean };
+      const payload = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        fieldErrors?: Record<string, string>;
+      };
 
       if (res.ok && payload.ok) {
         try {
@@ -48,7 +54,7 @@ export function HomeContactForm() {
         } catch {
           /* private mode */
         }
-        reset({ email: "", trap: "" });
+        reset({ email: "", privacyConsent: false, trap: "" });
         setSent(true);
         setButtonSuccessFlash(true);
         if (successTimerRef.current) clearTimeout(successTimerRef.current);
@@ -57,6 +63,12 @@ export function HomeContactForm() {
         return;
       }
 
+      if (payload.fieldErrors?.privacyConsent) {
+        setError("privacyConsent", {
+          type: "server",
+          message: payload.fieldErrors.privacyConsent,
+        });
+      }
       setBanner("error");
       setIsSubmitting(false);
     } catch {
@@ -109,7 +121,7 @@ export function HomeContactForm() {
           </div>
         ) : (
           <form
-            className="relative mx-auto mt-5 w-full max-w-[min(100%,360px)] text-center md:mt-6"
+            className="relative mx-auto mt-5 w-full max-w-md text-center md:mt-6"
             onSubmit={handleSubmit(onSubmit)}
             noValidate
           >
@@ -153,7 +165,38 @@ export function HomeContactForm() {
               ) : null}
             </div>
 
-            <div className="mt-4 flex flex-col items-center gap-2 md:mt-5">
+            <div className="mx-auto mt-5 max-w-[min(100%,320px)] text-left">
+              <label className="flex cursor-pointer items-start gap-3 font-body text-[11px] leading-snug text-burgundy/85 sm:text-[12px] sm:leading-relaxed">
+                <input
+                  type="checkbox"
+                  className="cc-no-lift mt-0.5 h-3.5 w-3.5 shrink-0 rounded-sm border border-burgundy/40 text-burgundy focus:ring-burgundy/30"
+                  {...register("privacyConsent", {
+                    validate: (v) =>
+                      v === true ||
+                      "Please agree to our Privacy Policy to submit this form",
+                  })}
+                />
+                <span>
+                  I agree to my data being stored and used to respond to my enquiry in accordance with the{" "}
+                  <Link
+                    href="/privacy-policy"
+                    className="font-medium text-burgundy underline decoration-burgundy/35 underline-offset-2 hover:decoration-burgundy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Privacy Policy
+                  </Link>
+                  .
+                </span>
+              </label>
+              {errors.privacyConsent ? (
+                <p className="cc-copy-sm mt-2 text-rose-800/90" role="alert">
+                  {errors.privacyConsent.message}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="mt-5 flex flex-col items-center gap-2 md:mt-6">
               <button
                 type="submit"
                 disabled={buttonDisabled}

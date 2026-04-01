@@ -59,7 +59,10 @@ export async function POST(request: Request) {
       const { studioSent, autoReplySent } = await sendMarketingContactEmails({
         source: "home",
         submitterEmail: parsed.data.email,
-        studioRows: [{ label: "Email", value: parsed.data.email }],
+        studioRows: [
+          { label: "Email", value: parsed.data.email },
+          { label: "Privacy policy consent", value: "Yes — home contact form" },
+        ],
       });
       if (!studioSent || !autoReplySent) {
         // eslint-disable-next-line no-console
@@ -71,7 +74,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true });
     }
 
-    const rows = fullContactToStudioRows(parsed.data);
+    const rows = [
+      ...fullContactToStudioRows(parsed.data),
+      { label: "Privacy policy consent", value: "Yes — discovery enquiry form" },
+    ];
     const { studioSent, autoReplySent } = await sendMarketingContactEmails({
       source: "contact",
       submitterEmail: parsed.data.email,

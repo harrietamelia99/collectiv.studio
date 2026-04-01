@@ -101,6 +101,13 @@ export function RegisterForm() {
       >
         Create account
       </button>
+      <p className="max-w-md font-body text-[11px] leading-relaxed text-burgundy/60">
+        By creating an account you agree to our{" "}
+        <Link href="/privacy-policy" className="text-burgundy underline underline-offset-2 hover:text-burgundy/90">
+          Privacy Policy
+        </Link>
+        . Your data is processed in accordance with UK GDPR.
+      </p>
       <p className="font-body text-[11px] text-burgundy/55">
         Already registered?{" "}
         <Link href="/portal/login" className="text-burgundy underline underline-offset-4">

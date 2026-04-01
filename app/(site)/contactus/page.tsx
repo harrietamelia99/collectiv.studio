@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useForm, type UseFormRegister } from "react-hook-form";
 import { HOME_EMAIL_KEY } from "@/components/home/HomeContactForm";
@@ -26,6 +27,7 @@ type FormValues = {
   howHeard: string;
   wordOfMouthThanks: string;
   additionalQuestions: string;
+  privacyConsent: boolean;
   trap: string;
 };
 
@@ -153,6 +155,7 @@ export default function ContactPage() {
         howHeard: "",
         wordOfMouthThanks: "",
         additionalQuestions: "",
+        privacyConsent: false,
       },
     });
 
@@ -200,6 +203,7 @@ export default function ContactPage() {
           howHeard: data.howHeard.trim() || undefined,
           wordOfMouthThanks: data.wordOfMouthThanks.trim() || undefined,
           additionalQuestions: data.additionalQuestions.trim() || undefined,
+          privacyConsent: data.privacyConsent === true,
           honeypot: data.trap,
         }),
       });
@@ -232,6 +236,7 @@ export default function ContactPage() {
           howHeard: "",
           wordOfMouthThanks: "",
           additionalQuestions: "",
+          privacyConsent: false,
         });
         setBanner("success");
         setButtonSuccessFlash(true);
@@ -448,6 +453,32 @@ export default function ContactPage() {
                 />
               </UnderlineField>
             </div>
+          </div>
+
+          <div className="mx-auto max-w-xl pt-2">
+            <label className="flex cursor-pointer items-start gap-3 font-body text-[11px] leading-snug text-burgundy/90 sm:text-[12px] sm:leading-relaxed">
+              <input
+                type="checkbox"
+                className="cc-no-lift mt-0.5 h-3.5 w-3.5 shrink-0 rounded-sm border border-burgundy/40 text-burgundy focus:ring-burgundy/30"
+                {...register("privacyConsent", {
+                  validate: (v) =>
+                    v === true || "Please agree to our Privacy Policy to submit this form",
+                })}
+              />
+              <span>
+                I agree to my data being stored and used to respond to my enquiry in accordance with the{" "}
+                <Link
+                  href="/privacy-policy"
+                  className="font-medium text-burgundy underline decoration-burgundy/35 underline-offset-2 hover:decoration-burgundy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Privacy Policy
+                </Link>
+                .
+              </span>
+            </label>
+            <FieldError message={errors.privacyConsent?.message} />
           </div>
 
           <div className="mt-12 flex flex-col gap-4 border-t-cc border-solid border-[var(--cc-border)] pt-10">
