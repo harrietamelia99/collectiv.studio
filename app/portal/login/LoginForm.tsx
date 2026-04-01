@@ -11,6 +11,7 @@ export function LoginForm() {
   const callbackUrl = searchParams.get("callbackUrl") ?? "/portal";
   const registered = searchParams.get("registered");
   const reset = searchParams.get("reset");
+  const emailChanged = searchParams.get("emailChanged");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -47,6 +48,12 @@ export function LoginForm() {
       {reset ? (
         <p className="rounded-cc-card border border-burgundy/15 bg-burgundy/[0.04] px-4 py-3 font-body text-[12px] leading-relaxed text-burgundy/80">
           Your password was updated. Sign in with your new password.
+        </p>
+      ) : null}
+      {emailChanged ? (
+        <p className="rounded-cc-card border border-burgundy/15 bg-burgundy/[0.04] px-4 py-3 font-body text-[12px] leading-relaxed text-burgundy/80">
+          Your sign-in email was updated. Sign in with your <strong className="font-semibold text-burgundy">new</strong>{" "}
+          email address.
         </p>
       ) : null}
       {error ? (

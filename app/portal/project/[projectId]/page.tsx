@@ -61,6 +61,7 @@ import { loadClientWorkflowAccessOpts } from "@/lib/portal-brand-kit-gate";
 import { buildSignageStepRows } from "@/lib/portal-workflow";
 import type { PersonaSlug } from "@/lib/studio-team-config";
 import { type AgencyPortalRole, dashboardPersonaSlugForStudioMember } from "@/lib/studio-team-roles";
+import { formatUkMonthYearFromDate } from "@/lib/uk-datetime";
 
 type Props = { params: { projectId: string } };
 
@@ -119,7 +120,7 @@ export default async function ProjectOverviewPage({ params }: Props) {
   const socialOnboardingData = parseSocialOnboardingJson(project.socialOnboardingJson);
 
   const nowProgress = new Date();
-  const monthLabelProgress = nowProgress.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  const monthLabelProgress = formatUkMonthYearFromDate(nowProgress);
   const monthCountsProgress = socialMonthlyPostCounts(items, nowProgress);
   const socialPct = vis.social
     ? Math.round(

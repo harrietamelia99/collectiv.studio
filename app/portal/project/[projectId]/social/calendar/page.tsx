@@ -24,6 +24,7 @@ import { SocialContentCalendar } from "@/components/portal/SocialContentCalendar
 import { SocialMonthBatchBar } from "@/components/portal/SocialMonthBatchBar";
 import { SocialWeeklyDeliverablesBanner } from "@/components/portal/SocialWeeklyDeliverablesBanner";
 import { SocialCalendarLiveSync } from "@/components/portal/SocialCalendarLiveSync";
+import { formatUkMonthYearFromDate } from "@/lib/uk-datetime";
 
 type Props = {
   params: { projectId: string };
@@ -75,7 +76,7 @@ export default async function ProjectSocialCalendarPage({ params, searchParams }
       );
 
   const nowCal = new Date();
-  const monthLabelCal = nowCal.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  const monthLabelCal = formatUkMonthYearFromDate(nowCal);
   const pct = socialMonthlyCalendarProgressPercent(itemsForCalendar, nowCal);
   const monthCountsCal = socialMonthlyPostCounts(itemsForCalendar, nowCal);
 
@@ -230,6 +231,7 @@ export default async function ProjectSocialCalendarPage({ params, searchParams }
                     items={calendarItems}
                     clientReviewMode={clientCalendarReview}
                     projectId={project.id}
+                    projectDisplayName={project.name}
                     studioCanAddPosts={Boolean(studio && studioSeesSocialCalendar)}
                     initialOpenPostId={initialOpenPostId}
                     batchMode={batchMode}

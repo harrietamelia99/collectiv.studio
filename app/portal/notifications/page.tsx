@@ -9,6 +9,7 @@ import { markAllClientNotificationsRead, markClientNotificationRead } from "@/ap
 import { ClientNotificationsDemoList } from "@/components/portal/ClientNotificationsDemoList";
 import { PortalDatabaseOfflineBanner } from "@/components/portal/PortalDatabaseOfflineBanner";
 import { ctaButtonClasses } from "@/components/ui/Button";
+import { formatUkMediumDateShortTime } from "@/lib/uk-datetime";
 
 export const dynamic = "force-dynamic";
 
@@ -136,7 +137,7 @@ export default async function ClientNotificationsPage() {
                   <p className="mt-2 font-body text-[11px] tabular-nums text-burgundy/45">
                     {n.isDemo
                       ? `${n.createdLabel} · not saved`
-                      : n.createdAt.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
+                      : formatUkMediumDateShortTime(n.createdAt)}
                     {n.readAt ? " · Read" : ""}
                   </p>
                 </div>

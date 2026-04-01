@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   MessageSquare,
   Palette,
+  UserCircle,
 } from "lucide-react";
 
 function useHash(): string {
@@ -102,13 +103,14 @@ export function PortalBottomNav({
   const projectsActive = pathname === "/portal" || pathname === "/portal/";
   const notificationsActive = pathname.startsWith("/portal/notifications");
   const brandActive = pathname.startsWith("/portal/brand-kit");
+  const accountActive = pathname.startsWith("/portal/account");
 
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-[90] border-t border-zinc-200/90 bg-cream/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-6px_24px_rgba(37,13,24,0.06)] backdrop-blur-xl md:hidden"
       aria-label="Primary portal navigation"
     >
-      <div className="mx-auto flex max-w-lg items-stretch justify-around gap-1 px-2 pt-2">
+      <div className="mx-auto flex max-w-lg items-stretch justify-around gap-0.5 px-1 pt-2">
         <Link
           href="/portal"
           className={`${itemBase} ${projectsActive ? "text-burgundy" : "text-burgundy/45"}`}
@@ -131,12 +133,20 @@ export function PortalBottomNav({
           <span className="font-body text-[9px] font-semibold uppercase tracking-[0.1em]">Alerts</span>
         </Link>
         <Link
+          href="/portal/account"
+          className={`${itemBase} ${accountActive ? "text-burgundy" : "text-burgundy/45"}`}
+          aria-current={accountActive ? "page" : undefined}
+        >
+          <UserCircle className={`${iconClass} ${accountActive ? "text-burgundy" : "text-burgundy/50"}`} />
+          <span className="font-body text-[9px] font-semibold uppercase tracking-[0.1em]">Account</span>
+        </Link>
+        <Link
           href="/portal/brand-kit"
           className={`${itemBase} ${brandActive ? "text-burgundy" : "text-burgundy/45"}`}
           aria-current={brandActive ? "page" : undefined}
         >
           <Palette className={`${iconClass} ${brandActive ? "text-burgundy" : "text-burgundy/50"}`} />
-          <span className="font-body text-[9px] font-semibold uppercase tracking-[0.1em]">Brand kit</span>
+          <span className="font-body text-[9px] font-semibold uppercase tracking-[0.1em]">Brand</span>
         </Link>
       </div>
     </nav>

@@ -25,6 +25,7 @@ import { loadAccountBrandKitSlice } from "@/lib/portal-account-brand-kit";
 import { loadClientWorkflowAccessOpts } from "@/lib/portal-brand-kit-gate";
 import { assertClientWorkflowStepAccess } from "@/lib/portal-workflow-guard";
 import { clientStepEditable } from "@/lib/portal-workflow";
+import { formatUkDateDayMonthLongYear } from "@/lib/uk-datetime";
 
 type Props = { params: { projectId: string } };
 
@@ -400,7 +401,7 @@ export default async function WebsiteKitPage({ params }: Props) {
             {project.websiteKitSignedOff ? (
               <p className="mb-0 mt-4 font-body text-[12px] text-burgundy/70">
                 Website kit signed off on{" "}
-                {project.updatedAt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}.
+                {formatUkDateDayMonthLongYear(project.updatedAt)}.
               </p>
             ) : null}
             <p className="mb-0 mt-6 font-body text-sm text-burgundy/65">

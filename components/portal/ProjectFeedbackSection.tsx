@@ -3,6 +3,7 @@ import { ProjectMessageComposer } from "@/components/portal/ProjectMessageCompos
 import { PortalSectionCard } from "@/components/portal/PortalSectionCard";
 import { ClientProjectLogoAvatar } from "@/components/portal/ClientProjectLogoAvatar";
 import type { ConversationStripClient, ConversationStripStudio } from "@/lib/portal-conversation-strip";
+import { formatUkMessageThreadTimestamp } from "@/lib/uk-datetime";
 
 type Message = {
   id: string;
@@ -173,13 +174,7 @@ function MessagesList({
                       dateTime={m.createdAt.toISOString()}
                       className="font-mono text-[10px] tabular-nums tracking-[0.04em] text-burgundy/45"
                     >
-                      {m.createdAt.toLocaleString("en-GB", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {formatUkMessageThreadTimestamp(m.createdAt)}
                     </time>
                     {studioCanDeleteMessages ? (
                       <form action={deleteProjectMessage.bind(null, projectId, m.id)} className="inline">

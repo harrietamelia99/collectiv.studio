@@ -33,6 +33,7 @@ import {
 import { rethrowPortalUploadAction, saveProjectUpload, validateUploadExtension } from "@/lib/portal-uploads";
 import { normalizeCalendarChannelsFromForm } from "@/lib/calendar-channels";
 import { type PortalFormFlash, portalFlashErr, portalFlashOk } from "@/lib/portal-form-flash";
+import { formatUkYearMonthLabel } from "@/lib/uk-datetime";
 
 function revProject(projectId: string) {
   revalidatePath("/portal");
@@ -53,7 +54,7 @@ function prettyMonthLabel(ym: string): string {
   if (!m) return ym;
   const y = Number(m[1]);
   const mo = Number(m[2]) - 1;
-  return new Date(y, mo, 1).toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  return formatUkYearMonthLabel(y, mo);
 }
 
 export async function saveSocialWeeklySchedule(projectId: string, formData: FormData): Promise<void> {

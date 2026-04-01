@@ -54,7 +54,7 @@ export default function PrivacyPolicyPage() {
               isabella@collectivstudio.uk
             </a>
             <br />
-            <strong className="font-medium text-burgundy">Data controller:</strong> Harriet Pearce
+            <strong className="font-medium text-burgundy">Data controller:</strong> Isabella Pearce
           </p>
           <p>
             For data protection questions, contact us at{" "}

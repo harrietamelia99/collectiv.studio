@@ -26,6 +26,8 @@ export function agencyPortalRoleFromStudioRole(studioRole: string | null | undef
   if (studioRole === STUDIO_TEAM_ROLE.ISSY) return "ISSY";
   if (studioRole === STUDIO_TEAM_ROLE.HARRIET) return "HARRIET";
   if (studioRole === STUDIO_TEAM_ROLE.SOCIAL_MANAGER) return "SOCIAL_MANAGER";
+  /** Legacy DB values before `SOCIAL_MANAGER` migration. */
+  if (studioRole.toUpperCase() === "MAY") return "SOCIAL_MANAGER";
   return null;
 }
 

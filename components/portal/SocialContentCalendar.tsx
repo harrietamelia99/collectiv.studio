@@ -10,6 +10,7 @@ import { WorkflowStatusBadge } from "@/components/portal/WorkflowStatusBadge";
 import { SocialPlatformIcon } from "@/components/portal/SocialPlatformIcon";
 import type { CalendarActivityEntry } from "@/lib/calendar-activity-log";
 import { isSocialCalendarMediaVideoUrl } from "@/lib/social-calendar-media";
+import { formatUkWeekdayDayMonthLong, formatUkYearMonthLabel } from "@/lib/uk-datetime";
 import { CalendarDays, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
 export type SocialCalendarItem = {
@@ -212,6 +213,8 @@ type Props = {
   studioMasterPostTargets?: { id: string; name: string }[];
   /** Studio on a single project: tap an empty day to add a post (requires `projectId`). */
   studioCanAddPosts?: boolean;
+  /** Human-readable project name for the add-post modal (client assignment is implicit on this screen). */
+  projectDisplayName?: string;
   /** Optional class on outer card (e.g. mt-8 on standalone page) */
   containerClassName?: string;
   /** Deep-link: open this post’s preview on load (`?post=` from notifications). */
@@ -227,6 +230,7 @@ export function SocialContentCalendar({
   studioAggregate = false,
   studioMasterPostTargets,
   studioCanAddPosts = false,
+  projectDisplayName,
   containerClassName = "mt-10",
   initialOpenPostId = null,
   batchMode = false,
@@ -288,7 +292,7 @@ export function SocialContentCalendar({
 
   const year = view.getFullYear();
   const month = view.getMonth();
-  const monthLabel = view.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  const monthLabel = formatUkYearMonthLabel(view.getFullYear(), view.getMonth());
 
   const firstDow = new Date(year, month, 1).getDay(); // 0 Sun
   const mondayOffset = firstDow === 0 ? 6 : firstDow - 1;
@@ -548,7 +552,7 @@ export function SocialContentCalendar({
                 key={key}
                 type="button"
                 role="gridcell"
-                aria-label={`${cell.date.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}${
+                aria-label={`${formatUkWeekdayDayMonthLong(cell.date)}${
                   hasPosts
                     ? `, ${cell.posts.length} post${cell.posts.length === 1 ? "" : "s"}`
                     : canAddFromMasterCalendar
@@ -821,6 +825,7 @@ export function SocialContentCalendar({
       {addPostDate && projectId && !studioAggregate ? (
         <SocialCalendarAddPostModal
           projectId={projectId}
+          assignedProjectName={projectDisplayName}
           defaultScheduledLocal={toDatetimeLocalValue(addPostDate)}
           onClose={closeAddPostModal}
         />

@@ -13,6 +13,7 @@ import {
   LogOut,
   MessageSquare,
   Palette,
+  UserCircle,
 } from "lucide-react";
 import { PortalBottomNav } from "@/components/portal/PortalBottomNav";
 import { ctaButtonClasses } from "@/components/ui/Button";
@@ -41,6 +42,7 @@ export function PortalChrome({
   const portalHomeActive = pathname === "/portal" || pathname === "/portal/";
   const notificationsActive = pathname.startsWith("/portal/notifications");
   const brandKitActive = pathname.startsWith("/portal/brand-kit");
+  const accountActive = pathname.startsWith("/portal/account");
   const studioSocialCalActive = pathname.startsWith("/portal/studio-social-calendar");
 
   const linkBase =
@@ -110,6 +112,21 @@ export function PortalChrome({
                     {clientNotificationUnread > 9 ? "9+" : clientNotificationUnread}
                   </span>
                 ) : null}
+              </Link>
+            ) : null}
+            {isClientUser ? (
+              <Link
+                href="/portal/account"
+                className={`${linkBase} ${
+                  accountActive
+                    ? "bg-burgundy/[0.1] font-semibold text-burgundy ring-1 ring-burgundy/20 hover:bg-burgundy/[0.14]"
+                    : "text-burgundy hover:bg-burgundy/[0.06]"
+                }`}
+              >
+                <UserCircle
+                  className={`${navIcon} ${accountActive ? "text-burgundy" : "text-burgundy/65 group-hover:text-burgundy"}`}
+                />
+                Account
               </Link>
             ) : null}
             {isClientUser ? (

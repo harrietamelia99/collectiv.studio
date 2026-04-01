@@ -7,6 +7,7 @@ import {
   sumQuoteLinePounds,
 } from "@/lib/portal-quote-lines";
 import { normalizePortalKind } from "@/lib/portal-project-kind";
+import { formatUkLongDate } from "@/lib/uk-datetime";
 
 type Props = {
   intro: string;
@@ -98,7 +99,7 @@ export function ClientQuoteView({
         Your quote
       </h2>
       <p className="mt-2 font-body text-[11px] font-semibold uppercase tracking-[0.1em] text-burgundy/60">
-        Shared {sentAt.toLocaleDateString(undefined, { dateStyle: "long" })}
+        Shared {formatUkLongDate(sentAt)}
       </p>
       {intro.trim() ? (
         <p className="mt-5 max-w-2xl font-body text-base font-medium leading-relaxed text-burgundy">{intro.trim()}</p>

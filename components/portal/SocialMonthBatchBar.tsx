@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { approveAllSocialMonthPosts, submitSocialMonthBatchForReview } from "@/app/portal/social-batch-actions";
+import { formatUkYearMonthLabel } from "@/lib/uk-datetime";
 
 type Props = {
   projectId: string;
@@ -18,7 +19,7 @@ function prettyYm(ym: string) {
   if (!m) return ym;
   const y = Number(m[1]);
   const mo = Number(m[2]) - 1;
-  return new Date(y, mo, 1).toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  return formatUkYearMonthLabel(y, mo);
 }
 
 export function SocialMonthBatchBar({

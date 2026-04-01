@@ -14,6 +14,7 @@ import {
 } from "@/lib/portal-quote-status";
 import type { QuoteLineRow } from "@/lib/portal-quote-lines";
 import { formatPoundsTotal, parseQuoteLineItemsJson, sumQuoteLinePounds } from "@/lib/portal-quote-lines";
+import { formatUkMediumDateShortTime } from "@/lib/uk-datetime";
 
 type Props = {
   projectId: string;
@@ -219,7 +220,7 @@ export function AgencyProjectQuotePanel({
           {lastSavedAt ? (
             <p className="font-body text-xs text-burgundy/60">
               Last saved at{" "}
-              {lastSavedAt.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}
+              {formatUkMediumDateShortTime(lastSavedAt)}
             </p>
           ) : null}
         </div>
@@ -229,7 +230,7 @@ export function AgencyProjectQuotePanel({
         {sentAtState ? (
           <p className="m-0">
             <span className="font-medium text-burgundy">Sent to client</span> ·{" "}
-            {sentAtState.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}
+            {formatUkMediumDateShortTime(sentAtState)}
           </p>
         ) : (
           <p className="m-0 text-burgundy/65">Quote not sent yet — the client only sees it after you send.</p>
@@ -254,13 +255,13 @@ export function AgencyProjectQuotePanel({
               {normalizeQuoteClientStatus(quoteStatus) === QUOTE_STATUS_ACCEPTED && quoteRespondedAt ? (
                 <span className="text-burgundy/65">
                   {" "}
-                  · {quoteRespondedAt.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}
+                  · {formatUkMediumDateShortTime(quoteRespondedAt)}
                 </span>
               ) : null}
               {normalizeQuoteClientStatus(quoteStatus) === QUOTE_STATUS_DECLINED && quoteRespondedAt ? (
                 <span className="text-burgundy/65">
                   {" "}
-                  · {quoteRespondedAt.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}
+                  · {formatUkMediumDateShortTime(quoteRespondedAt)}
                 </span>
               ) : null}
             </p>

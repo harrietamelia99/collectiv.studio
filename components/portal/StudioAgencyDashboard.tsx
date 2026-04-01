@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ctaButtonClasses } from "@/components/ui/Button";
 import { prisma } from "@/lib/prisma";
 import { completeAgencyTodo } from "@/app/portal/agency-actions";
 import { AgencyCreateProjectForm } from "@/components/portal/AgencyCreateProjectForm";
@@ -22,6 +23,7 @@ import {
   projectWhereVisibleToStudioMemberOnDashboard,
   studioMemberMayAccessProject,
 } from "@/lib/portal-access";
+import { formatUkMediumDateShortTime } from "@/lib/uk-datetime";
 import { projectIdFromStudioNotificationHref } from "@/lib/studio-notification-href";
 import { PORTAL_KINDS_WITH_SOCIAL } from "@/lib/portal-project-kind";
 import { isEnvListedStudioEmail } from "@/lib/portal-studio-users";
@@ -510,7 +512,7 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
                   {u.clientInviteSentAt ? (
                     <span className="mt-1 block text-[12px] text-burgundy/55">
                       Invite sent{" "}
-                      {u.clientInviteSentAt.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}
+                      {formatUkMediumDateShortTime(u.clientInviteSentAt)}
                       {u.clientInviteExpiresAt && u.clientInviteExpiresAt.getTime() <= Date.now() ? (
                         <span className="font-medium text-amber-900"> · Link expired — resend from project</span>
                       ) : null}
@@ -634,10 +636,21 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
           <div className="flex min-w-0 shrink-0 flex-col gap-4 border-t border-zinc-200 pt-6 sm:flex-row sm:items-center sm:justify-center sm:pt-6 lg:w-[min(100%,17rem)] lg:flex-col lg:items-stretch lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0 xl:w-[min(100%,19rem)]">
             <a
               href="#studio-projects"
-              className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-zinc-300 bg-white px-4 py-2.5 font-body text-sm font-semibold text-burgundy transition-colors hover:border-zinc-400 hover:bg-zinc-50 sm:w-auto lg:w-full"
+              className={ctaButtonClasses({
+                variant: "burgundy",
+                size: "lg",
+                className:
+                  "group w-full gap-2.5 !normal-case !text-[13px] !font-medium !tracking-[0.02em] md:!text-sm sm:w-auto lg:w-full",
+              })}
             >
-              Browse client projects
-              <span aria-hidden>→</span>
+              <DashIconProjects className="h-4 w-4 shrink-0 opacity-95" aria-hidden />
+              <span>Browse client projects</span>
+              <span
+                aria-hidden
+                className="text-base font-light leading-none transition-transform duration-200 ease-smooth group-hover:translate-x-0.5"
+              >
+                →
+              </span>
             </a>
           </div>
         </div>

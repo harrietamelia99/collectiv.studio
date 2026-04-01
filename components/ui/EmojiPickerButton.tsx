@@ -16,9 +16,20 @@ type Props = {
   className?: string;
   /** Visual size of the icon button. */
   size?: "sm" | "md";
+  /**
+   * Open the popover above the button instead of below. Use when the control sits at the bottom of a
+   * parent with `overflow-hidden` (e.g. floating chat panels), so the grid is not clipped.
+   */
+  openAbove?: boolean;
 };
 
-export function EmojiPickerButton({ inputRef, controlled, className = "", size = "sm" }: Props) {
+export function EmojiPickerButton({
+  inputRef,
+  controlled,
+  className = "",
+  size = "sm",
+  openAbove = false,
+}: Props) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState(0);
   const panelId = useId();
@@ -71,7 +82,9 @@ export function EmojiPickerButton({ inputRef, controlled, className = "", size =
           id={panelId}
           role="dialog"
           aria-label="Emoji picker"
-          className="absolute right-0 top-full z-[80] mt-1 w-[min(100vw-1.5rem,18rem)] rounded-xl border border-burgundy/15 bg-white p-2 shadow-lg"
+          className={`absolute right-0 z-[80] w-[min(100vw-1.5rem,18rem)] rounded-xl border border-burgundy/15 bg-white p-2 shadow-lg ${
+            openAbove ? "bottom-full mb-1" : "top-full mt-1"
+          }`}
         >
           <div className="flex gap-1 overflow-x-auto border-b border-burgundy/10 pb-2">
             {EMOJI_GROUPS.map((g, i) => (

@@ -445,7 +445,7 @@ export default function ContactPage() {
             </div>
           </div>
 
-          <div className="mx-auto max-w-xl pt-2">
+          <div className="w-full pt-2">
             <label className="flex cursor-pointer items-start gap-3 font-body text-[11px] leading-snug text-burgundy/90 sm:text-[12px] sm:leading-relaxed">
               <input
                 type="checkbox"

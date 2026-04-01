@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from
 import { signProjectContractInPortal } from "@/app/portal/actions";
 import { ctaButtonClasses } from "@/components/ui/Button";
 import { PORTAL_CLIENT_INPUT_CLASS } from "@/components/portal/PortalSectionCard";
+import { formatUkLongDateShortTime } from "@/lib/uk-datetime";
 
 const SCROLL_END_PX = 8;
 
@@ -73,9 +74,7 @@ export function ClientContractSignOff({
   const canSign = reachedEnd && typedName.trim().length >= 2 && agreed && !pending;
 
   if (alreadySigned) {
-    const when = signedAt
-      ? signedAt.toLocaleString(undefined, { dateStyle: "long", timeStyle: "short" })
-      : "";
+    const when = signedAt ? formatUkLongDateShortTime(signedAt) : "";
     const name = signedTypedName?.trim() || "Client";
 
     return (

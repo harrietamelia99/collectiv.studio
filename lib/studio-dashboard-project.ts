@@ -11,6 +11,7 @@ import {
   websiteProgressPercent,
 } from "@/lib/portal-progress";
 import { parseSocialOnboardingJson } from "@/lib/social-onboarding";
+import { formatUkMonthYearFromDate } from "@/lib/uk-datetime";
 
 export type ProjectProgressTrack = {
   key: string;
@@ -191,7 +192,7 @@ function deriveNextFocus(
     return "Website kit in progress — colours, fonts, copy, then sign-off.";
   }
   if (sections.social) {
-    const monthLabel = now.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+    const monthLabel = formatUkMonthYearFromDate(now);
     const { inMonth, signedOff } = socialMonthlyPostCounts(calendarItems, now);
     const setupPct = socialAccountSetupProgressPercent(project, onboardingData, inspirationLinkCount);
     if (setupPct < 100) {

@@ -199,8 +199,8 @@ export default async function PortalHomePage({ searchParams }: { searchParams?: 
             this list.
           </li>
           <li>
-            Add a <strong className="font-medium text-burgundy">message profile photo</strong> anytime on{" "}
-            <strong className="font-medium text-burgundy">Brand kit</strong> in the bottom navigation.
+            Update your <strong className="font-medium text-burgundy">email, password, or profile photo</strong> under{" "}
+            <strong className="font-medium text-burgundy">Account</strong> in the header or bottom navigation.
           </li>
         </ul>
       </details>

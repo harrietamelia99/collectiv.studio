@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { addCalendarPost, addCalendarPostFromStudioMasterCalendar } from "@/app/portal/actions";
 import { SocialPlatformIcon } from "@/components/portal/SocialPlatformIcon";
@@ -18,6 +19,8 @@ const ACCEPT_CREATIVE =
 type Props = {
   /** Single-project social calendar — redirects to that project’s calendar after save. */
   projectId?: string;
+  /** Shown when adding from a project workspace (post always saves to this client). */
+  assignedProjectName?: string;
   /** Studio master calendar — pick which client/project; refreshes aggregate view after save. */
   projectChoices?: { id: string; name: string }[];
   /** Value for `datetime-local` input (YYYY-MM-DDTHH:mm, local). */
@@ -42,8 +45,22 @@ function orderedChannelOptions() {
   return out;
 }
 
+/** Split `YYYY-MM-DDTHH:mm` for separate `date` / `time` inputs (smaller native pickers, avoids modal clipping). */
+function splitScheduledLocal(v: string): { date: string; time: string } {
+  const trimmed = v.trim();
+  const [datePart, rest] = trimmed.split("T");
+  const timePart = rest ? rest.slice(0, 5) : "";
+  const dateOk = datePart && /^\d{4}-\d{2}-\d{2}$/.test(datePart) ? datePart : "";
+  const timeOk = timePart && /^\d{2}:\d{2}$/.test(timePart) ? timePart : "12:00";
+  return { date: dateOk, time: timeOk };
+}
+
+const scheduleInputClass =
+  "min-h-[44px] w-full rounded-cc-card border border-burgundy/15 bg-white px-4 py-3 font-body text-sm text-burgundy outline-none ring-burgundy/20 focus:ring-2";
+
 export function SocialCalendarAddPostModal({
   projectId,
+  assignedProjectName,
   projectChoices,
   defaultScheduledLocal,
   onClose,
@@ -60,8 +77,18 @@ export function SocialCalendarAddPostModal({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const [submitIntent, setSubmitIntent] = useState<"draft" | "submit" | null>(null);
+  const [scheduledDate, setScheduledDate] = useState(() => splitScheduledLocal(defaultScheduledLocal).date);
+  const [scheduledTime, setScheduledTime] = useState(() => splitScheduledLocal(defaultScheduledLocal).time);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const captionRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const s = splitScheduledLocal(defaultScheduledLocal);
+    setScheduledDate(s.date);
+    setScheduledTime(s.time);
+  }, [defaultScheduledLocal]);
 
   const revokePreview = useCallback(() => {
     if (previewUrl) {
@@ -145,15 +172,39 @@ export function SocialCalendarAddPostModal({
   };
 
   const onFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    const fd = new FormData(e.currentTarget);
-    const intent = String(fd.get("intent") ?? "submit") === "draft" ? "draft" : "submit";
+    e.preventDefault();
+    const form = e.currentTarget;
+    const se = e.nativeEvent as SubmitEvent;
+    const submitter = se.submitter as HTMLButtonElement | null;
+    let intent: "draft" | "submit";
+    if (submitter?.name === "intent" && (submitter.value === "draft" || submitter.value === "submit")) {
+      intent = submitter.value === "draft" ? "draft" : "submit";
+    } else {
+      intent = String(new FormData(form).get("intent") ?? "submit") === "draft" ? "draft" : "submit";
+    }
+
     const msg = validateBeforeSubmit(intent);
     if (msg) {
-      e.preventDefault();
       setError(msg);
       return;
     }
     setError(null);
+
+    const fd = new FormData(form);
+    setSubmitIntent(intent);
+    startTransition(async () => {
+      try {
+        if (masterMode) {
+          await addCalendarPostFromStudioMasterCalendar(fd);
+          onClose();
+          router.refresh();
+        } else {
+          await addCalendarPost(projectId!, fd);
+        }
+      } finally {
+        setSubmitIntent(null);
+      }
+    });
   };
 
   const previewIsVideo = previewUrl && file ? isLocalCreativeVideoFileName(file.name) : false;
@@ -211,19 +262,31 @@ export function SocialCalendarAddPostModal({
           )}
           </p>
 
+          {!masterMode && assignedProjectName?.trim() ? (
+            <div className="border-b border-burgundy/10 bg-burgundy/[0.03] px-4 py-3 sm:px-5">
+              <p className="font-body text-[10px] uppercase tracking-[0.12em] text-burgundy/55">Client / subscription</p>
+              <p className="mt-1 font-display text-base font-medium tracking-[-0.02em] text-burgundy">
+                {assignedProjectName.trim()}
+              </p>
+              <p className="mt-2 font-body text-sm leading-relaxed text-burgundy/70">
+                You&apos;re in this project&apos;s workspace — new posts are saved to this client only. There is no
+                separate &quot;assign&quot; step here.
+              </p>
+              <Link
+                href="/portal/studio-social-calendar"
+                onClick={onClose}
+                className="mt-3 inline-flex font-body text-sm font-medium text-burgundy underline decoration-burgundy/35 underline-offset-4 hover:decoration-burgundy/70"
+              >
+                Add a post for a different client (studio calendar) →
+              </Link>
+            </div>
+          ) : null}
+
           <form
             key={`${defaultScheduledLocal}-${masterMode ? "master" : projectId}`}
-            action={
-              masterMode
-                ? async (formData) => {
-                    await addCalendarPostFromStudioMasterCalendar(formData);
-                    onClose();
-                    router.refresh();
-                  }
-                : addCalendarPost.bind(null, projectId!)
-            }
             encType="multipart/form-data"
             onSubmit={onFormSubmit}
+            aria-busy={isPending}
             className="flex flex-col gap-5 px-4 py-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-5 lg:flex-row lg:gap-8"
           >
             <input type="hidden" name="hashtags" value={hashtagsHiddenValue} />
@@ -386,16 +449,39 @@ export function SocialCalendarAddPostModal({
                 </span>
               </div>
 
-              <label className="flex flex-col gap-1.5">
-                <span className="font-body text-[10px] uppercase tracking-[0.12em] text-burgundy/55">Scheduled for *</span>
+              <fieldset className="flex flex-col gap-1.5 border-0 p-0">
+                <legend className="font-body text-[10px] uppercase tracking-[0.12em] text-burgundy/55">
+                  Scheduled for *
+                </legend>
                 <input
+                  type="hidden"
                   name="scheduledFor"
-                  type="datetime-local"
-                  required
-                  defaultValue={defaultScheduledLocal}
-                  className="rounded-cc-card border border-burgundy/15 bg-white px-4 py-3 font-body text-sm text-burgundy outline-none ring-burgundy/20 focus:ring-2"
+                  value={scheduledDate && scheduledTime ? `${scheduledDate}T${scheduledTime}` : ""}
                 />
-              </label>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
+                  <label className="flex min-w-0 flex-1 flex-col gap-1.5">
+                    <span className="font-body text-[10px] uppercase tracking-[0.08em] text-burgundy/50">Date</span>
+                    <input
+                      type="date"
+                      required
+                      value={scheduledDate}
+                      onChange={(e) => setScheduledDate(e.target.value)}
+                      className={scheduleInputClass}
+                    />
+                  </label>
+                  <label className="flex min-w-0 flex-col gap-1.5 sm:w-[11rem] sm:shrink-0">
+                    <span className="font-body text-[10px] uppercase tracking-[0.08em] text-burgundy/50">Time</span>
+                    <input
+                      type="time"
+                      required
+                      step={60}
+                      value={scheduledTime}
+                      onChange={(e) => setScheduledTime(e.target.value)}
+                      className={scheduleInputClass}
+                    />
+                  </label>
+                </div>
+              </fieldset>
             </div>
 
             <div className="min-w-0 flex-1 space-y-5 lg:border-l lg:border-burgundy/10 lg:pl-8">
@@ -436,17 +522,19 @@ export function SocialCalendarAddPostModal({
                   type="submit"
                   name="intent"
                   value="draft"
+                  disabled={isPending}
                   className={ctaButtonClasses({ variant: "outline", size: "md", className: "w-full sm:w-auto sm:min-w-[10rem]" })}
                 >
-                  Save as Draft
+                  {isPending && submitIntent === "draft" ? "Saving…" : "Save as Draft"}
                 </button>
                 <button
                   type="submit"
                   name="intent"
                   value="submit"
+                  disabled={isPending}
                   className={ctaButtonClasses({ variant: "burgundy", size: "md", className: "w-full sm:w-auto sm:min-w-[10rem]" })}
                 >
-                  Submit for Approval
+                  {isPending && submitIntent === "submit" ? "Submitting…" : "Submit for Approval"}
                 </button>
               </div>
             </div>

@@ -28,6 +28,7 @@ import { FinalPaymentDialog, FinalDesignDownloadLink } from "@/components/portal
 import { hasLockedFinalDesignFiles, isFinalDesignFileDownloadLocked } from "@/lib/portal-final-files";
 import { portalFilePublicUrl } from "@/lib/portal-file-url";
 import { reviewProgressPercent } from "@/lib/portal-progress";
+import { formatUkMediumDateShortTime } from "@/lib/uk-datetime";
 import { reopenClientWorkflowStep } from "@/app/portal/agency-actions";
 import { acknowledgeBrandingFinalDeliverables } from "@/app/portal/actions";
 import { ClientReviewAssetSignOffForm } from "@/components/portal/ClientReviewAssetSignOffForm";
@@ -244,10 +245,9 @@ function QuestionnaireSection({
           )}
           <p className="font-body text-xs text-burgundy/55">
             Submitted{" "}
-            {project.brandingQuestionnaireSubmittedAt?.toLocaleString(undefined, {
-              dateStyle: "medium",
-              timeStyle: "short",
-            })}
+            {project.brandingQuestionnaireSubmittedAt
+              ? formatUkMediumDateShortTime(project.brandingQuestionnaireSubmittedAt)
+              : null}
           </p>
         </div>
       ) : null}
@@ -581,10 +581,7 @@ function FinalFilesSection({
       {project.brandingFinalDeliverablesAcknowledgedAt ? (
         <p className="mt-4 font-body text-xs text-burgundy/60">
           Acknowledged{" "}
-          {project.brandingFinalDeliverablesAcknowledgedAt.toLocaleString(undefined, {
-            dateStyle: "medium",
-            timeStyle: "short",
-          })}
+          {formatUkMediumDateShortTime(project.brandingFinalDeliverablesAcknowledgedAt)}
         </p>
       ) : null}
     </>

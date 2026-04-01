@@ -15,6 +15,7 @@ import {
 } from "@/lib/email-notifications";
 import { normalizePortalKind } from "@/lib/portal-project-kind";
 import { resolveTeamChatMentionNotifyEmail } from "@/lib/studio-team-mention-notify-email";
+import { formatUkMediumDateShortTime } from "@/lib/uk-datetime";
 
 const PREVIEW = 240;
 
@@ -111,12 +112,12 @@ export async function notifyStudioTeamClientMessage(
 
   const to = await emailsForUserIds(userIds);
   if (to.length > 0) {
-    await emailNotifyAssigneesClientMessage({
+    void emailNotifyAssigneesClientMessage({
       recipientEmails: to,
       projectName,
       projectId,
       messagePreview: preview,
-    });
+    }).catch((err) => console.error("[notifyStudioTeamClientMessage] email", err));
   }
 }
 
@@ -387,7 +388,7 @@ export async function notifyIssyClientSignedContractInPortal(opts: {
   if (issyMembers.length === 0) return;
 
   const title = `Contract signed · ${projectName}`.slice(0, 200);
-  const when = signedAt.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+  const when = formatUkMediumDateShortTime(signedAt);
   const body = `${signedName} · ${when} · IP ${signedIp}`.slice(0, PREVIEW);
   const href = `/portal/project/${projectId}#agency-onboarding`;
 
@@ -426,7 +427,7 @@ export async function notifyIssyQuoteAcceptedInPortal(opts: {
     select: { userId: true },
   });
 
-  const when = respondedAt.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+  const when = formatUkMediumDateShortTime(respondedAt);
   const title = `Quote accepted · ${projectName}`.slice(0, 200);
   const body = `${clientName} · ${when}`.slice(0, PREVIEW);
   const href = `/portal/project/${projectId}#agency-project-quote`;

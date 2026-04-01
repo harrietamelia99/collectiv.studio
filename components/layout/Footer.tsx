@@ -123,10 +123,6 @@ export function Footer() {
                 title="Connect"
                 className="border-t border-solid border-[var(--cc-hairline-on-burgundy)] pt-10 sm:border-l sm:border-t-0 sm:pl-8 sm:pt-0 md:pl-10 lg:pl-12"
               >
-                <FooterLink href="mailto:hello@collectivstudio.uk">hello@collectivstudio.uk</FooterLink>
-                <p className="font-display text-[15px] font-normal tracking-[-0.01em] text-cream/80">
-                  Bristol, UK
-                </p>
                 <FooterLink href="/portal/login">Client portal</FooterLink>
               </Column>
               <Column

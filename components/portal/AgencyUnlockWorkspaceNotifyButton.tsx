@@ -7,6 +7,7 @@ import { PortalFormSubmitButton } from "@/components/portal/PortalFormSubmitButt
 import { PortalFormWithFlash } from "@/components/portal/PortalFormWithFlash";
 import { ctaButtonClasses } from "@/components/ui/Button";
 import type { PortalFormFlash } from "@/lib/portal-form-flash";
+import { formatUkMediumDateShortTime } from "@/lib/uk-datetime";
 
 type Props = {
   projectId: string;
@@ -33,7 +34,7 @@ export function AgencyUnlockWorkspaceNotifyButton({
       return (
         <span className="inline-flex items-center rounded-full border border-emerald-300/90 bg-emerald-50/95 px-4 py-2 font-body text-sm font-semibold text-emerald-950">
           Workspace open ·{" "}
-          {workspaceUnlockedAt.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}
+          {formatUkMediumDateShortTime(workspaceUnlockedAt)}
         </span>
       );
     }

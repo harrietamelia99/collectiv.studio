@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getResend, getResendFromEmail } from "@/lib/resend";
 import { studioEmailSet } from "@/lib/portal-studio-users";
+import { UK_PORTAL_TIMEZONE } from "@/lib/uk-datetime";
 
 export const COLLECTIV_BURGUNDY = "#250d18";
 export const COLLECTIV_CREAM = "#f2edeb";
@@ -725,7 +726,7 @@ export async function sendMarketingContactEmails(opts: {
   const submittedAt = new Date().toLocaleString("en-GB", {
     dateStyle: "full",
     timeStyle: "short",
-    timeZone: "Europe/London",
+    timeZone: UK_PORTAL_TIMEZONE,
   });
 
   let studioSubject: string;

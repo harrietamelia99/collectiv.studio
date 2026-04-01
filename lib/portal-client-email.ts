@@ -253,13 +253,15 @@ export async function notifyClientStudioMessage(projectId: string): Promise<void
     ctaLabel: "Read message",
     footerLine: r.projectName,
   });
-  await deliverClientEmail(r.email, subject, html);
   await createClientInAppNotificationForProject(projectId, {
     kind: "STUDIO_MESSAGE",
     title: "New message from the studio",
     body: "",
     href: `/portal/project/${projectId}#project-messages`,
   });
+  void deliverClientEmail(r.email, subject, html).catch((err) =>
+    console.error("[notifyClientStudioMessage] email", err),
+  );
 }
 
 /** Quote marked as sent. */

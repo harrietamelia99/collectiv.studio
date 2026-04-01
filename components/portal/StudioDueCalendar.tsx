@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { formatUkAgendaDayLabel, formatUkYearMonthLabel } from "@/lib/uk-datetime";
 
 export type StudioCalendarEvent = {
   id: string;
@@ -54,7 +55,7 @@ function daysInMonth(year: number, monthIndex: number) {
 }
 
 function monthLabel(year: number, monthIndex: number) {
-  return new Date(year, monthIndex, 1).toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  return formatUkYearMonthLabel(year, monthIndex);
 }
 
 function isDayInTimeOff(y: number, m: number, d: number, startIso: string, endIso: string): boolean {
@@ -254,13 +255,7 @@ export function StudioDueCalendar({ events, timeOff }: Props) {
           <ul className="mt-4 flex flex-col gap-2">
             {agenda.map(({ key, items }) => {
               const parsed = parseLocalYmd(key);
-              const label = parsed
-                ? new Date(parsed.y, parsed.m, parsed.d).toLocaleDateString(undefined, {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                  })
-                : key;
+              const label = parsed ? formatUkAgendaDayLabel(parsed.y, parsed.m, parsed.d) : key;
               return (
                 <li key={key} className="rounded-xl border border-burgundy/12 bg-white/80 p-3 sm:p-4">
                   <p className="font-body text-xs font-semibold uppercase tracking-[0.08em] text-burgundy/55">{label}</p>

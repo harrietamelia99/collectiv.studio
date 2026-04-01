@@ -3,6 +3,7 @@ import type { Session } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { normalizePortalKind, PORTAL_KINDS_ISSY_PROJECT_SCOPE } from "@/lib/portal-project-kind";
 import { isEnvListedStudioEmail } from "@/lib/portal-studio-users";
+import { resolveAgencyRoleForUserId } from "@/lib/resolve-studio-agency-role";
 import type { AgencyPortalRole } from "@/lib/studio-team-roles";
 import { STUDIO_TEAM_ROLE } from "@/lib/studio-team-roles";
 
@@ -149,10 +150,20 @@ export async function getProjectForSession(projectId: string, session: Session |
   if (!project) return null;
 
   if (isAgencyPortalSession(session)) {
-    const agencyRole = session.user.agencyRole;
+    let agencyRole = session.user.agencyRole as AgencyPortalRole | null | undefined;
+    if (!agencyRole) {
+      agencyRole = await resolveAgencyRoleForUserId(session.user.id, session.user.email);
+    }
     if (!agencyRole) return null;
     if (!studioMemberMayAccessProject(project, session.user.id, agencyRole)) {
       return null;
+    }
+    if (project.user) {
+      const { passwordHash, clientInviteToken, clientInviteExpiresAt, ...rest } = project.user;
+      void passwordHash;
+      void clientInviteToken;
+      void clientInviteExpiresAt;
+      return { ...project, user: rest as typeof project.user };
     }
     return project;
   }

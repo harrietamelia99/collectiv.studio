@@ -1,12 +1,11 @@
 "use client";
 
-import { useMemo, useRef } from "react";
-import { postProjectMessage } from "@/app/portal/actions";
+import { useRef } from "react";
+import { postProjectMessageFormAction } from "@/app/portal/actions";
 import { PORTAL_CLIENT_FORM_WELL_CLASS } from "@/components/portal/PortalSectionCard";
 import { PortalFormSubmitButton } from "@/components/portal/PortalFormSubmitButton";
 import { PortalFormWithFlash } from "@/components/portal/PortalFormWithFlash";
 import { EmojiPickerButton } from "@/components/ui/EmojiPickerButton";
-import type { PortalFormFlash } from "@/lib/portal-form-flash";
 
 type Props = {
   projectId: string;
@@ -16,11 +15,6 @@ type Props = {
 export function ProjectMessageComposer({ projectId, variant }: Props) {
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const fieldId = `project-message-${projectId}`;
-
-  const action = useMemo(
-    () => async (_prev: PortalFormFlash | null, fd: FormData) => postProjectMessage(projectId, fd),
-    [projectId],
-  );
 
   const textareaClass =
     variant === "clientEmphasis"
@@ -96,7 +90,17 @@ export function ProjectMessageComposer({ projectId, variant }: Props) {
     );
 
   return (
-    <PortalFormWithFlash action={action} className={formClass}>
+    <PortalFormWithFlash
+      action={postProjectMessageFormAction}
+      className={formClass}
+      defaultSuccessMessage="Message sent ✓"
+      onFlash={(flash) => {
+        if (flash?.ok && bodyRef.current) {
+          bodyRef.current.value = "";
+        }
+      }}
+    >
+      <input type="hidden" name="projectId" value={projectId} />
       {inner}
     </PortalFormWithFlash>
   );

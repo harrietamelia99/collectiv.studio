@@ -13,13 +13,19 @@ const ACCEPT = "image/jpeg,image/png,image/webp";
 type Props = {
   userId: string;
   profilePhotoPath: string | null;
+  /** Extra classes on the root section (defaults include top margin). */
+  className?: string;
 };
 
 function isAllowedImage(file: File): boolean {
   return /^image\/(jpeg|png|webp)$/i.test(file.type) && file.size > 0 && file.size <= MAX_BYTES;
 }
 
-export function ClientPortalProfilePhotoSection({ userId, profilePhotoPath }: Props) {
+export function ClientPortalProfilePhotoSection({
+  userId,
+  profilePhotoPath,
+  className = "mt-6",
+}: Props) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [localObjectUrl, setLocalObjectUrl] = useState<string | null>(null);
@@ -81,7 +87,7 @@ export function ClientPortalProfilePhotoSection({ userId, profilePhotoPath }: Pr
 
   return (
     <section
-      className="cc-portal-client-shell mt-6 max-w-xl"
+      className={`cc-portal-client-shell max-w-xl ${className}`}
       aria-labelledby="client-profile-photo-heading"
     >
       <h2 id="client-profile-photo-heading" className="cc-portal-client-shell-title text-lg">

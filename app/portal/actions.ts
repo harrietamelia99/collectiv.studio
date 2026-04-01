@@ -185,6 +185,13 @@ async function revalidateProject(projectId: string) {
   void triggerProjectCalendarRefresh(projectId);
 }
 
+/** Thread + dashboards only — avoids full project revalidation and auto-phase sync on every message. */
+function revalidateProjectMessageSurfaces(projectId: string) {
+  revalidatePath("/portal");
+  revalidatePath(`/portal/project/${projectId}`);
+  revalidatePath("/portal/notifications");
+}
+
 function newWebsiteKitPreviewToken(): string {
   return randomBytes(24).toString("hex");
 }
@@ -446,6 +453,132 @@ export async function resetPasswordWithToken(
     },
   });
   redirect("/portal/login?reset=1");
+}
+
+export type ClientAccountEmailChangeResult =
+  | { ok: true; relogin: true }
+  | { ok: false; error: string };
+
+/** Logged-in client: change password without signing out. */
+export async function changeClientPortalPassword(
+  _prev: PortalFormFlash | null,
+  formData: FormData,
+): Promise<PortalFormFlash> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id || !session.user.email || isAgencyPortalSession(session)) {
+    return portalFlashErr("You don’t have permission to update your password.");
+  }
+  const currentPassword = String(formData.get("currentPassword") ?? "");
+  const password = String(formData.get("newPassword") ?? "");
+  const confirmPassword = String(formData.get("confirmPassword") ?? "");
+  if (!portalClientPasswordOk(password)) {
+    return portalFlashErr("New password must be at least 8 characters and include at least one number.");
+  }
+  if (password !== confirmPassword) {
+    return portalFlashErr("New passwords do not match.");
+  }
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { passwordHash: true },
+  });
+  if (!user?.passwordHash) {
+    return portalFlashErr("Set a password using your invite link before changing it here.");
+  }
+  const match = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!match) {
+    return portalFlashErr("Current password is incorrect.");
+  }
+  const passwordHash = await bcrypt.hash(password, 10);
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { passwordHash },
+  });
+  return portalFlashOk("Password updated. You’re still signed in.");
+}
+
+/** Logged-in client: change sign-in email (must sign in again afterward). */
+export async function changeClientPortalEmail(
+  _prev: ClientAccountEmailChangeResult | null,
+  formData: FormData,
+): Promise<ClientAccountEmailChangeResult> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id || !session.user.email || isAgencyPortalSession(session)) {
+    return { ok: false, error: "You don’t have permission to update your email." };
+  }
+  const currentPassword = String(formData.get("currentPassword") ?? "");
+  const newEmailRaw = String(formData.get("newEmail") ?? "").trim().toLowerCase();
+  if (!registrationEmailOk(newEmailRaw)) {
+    return { ok: false, error: "Enter a valid email address." };
+  }
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { email: true, passwordHash: true },
+  });
+  if (!user) return { ok: false, error: "Account not found." };
+  if (newEmailRaw === user.email.trim().toLowerCase()) {
+    return { ok: false, error: "That’s already your sign-in email." };
+  }
+  if (!user.passwordHash) {
+    return { ok: false, error: "Set a password using your invite link before changing your email here." };
+  }
+  const pwOk = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!pwOk) {
+    return { ok: false, error: "Current password is incorrect." };
+  }
+  const taken = await prisma.user.findUnique({ where: { email: newEmailRaw }, select: { id: true } });
+  if (taken) {
+    return {
+      ok: false,
+      error: "That email is already in use. Choose another or sign in with that account.",
+    };
+  }
+  const previousEmail = user.email.trim();
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: session.user.id },
+      data: { email: newEmailRaw },
+    }),
+    prisma.project.updateMany({
+      where: { invitedClientEmail: previousEmail, userId: null },
+      data: { invitedClientEmail: newEmailRaw },
+    }),
+  ]);
+  revalidatePath("/portal");
+  revalidatePath("/portal/account");
+  revalidatePath("/portal/brand-kit");
+  return { ok: true, relogin: true };
+}
+
+/** Logged-in client: send the same password-reset email as the forgot-password flow. */
+export async function requestPortalPasswordResetForSelf(): Promise<PortalFormFlash> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id || !session.user.email || isAgencyPortalSession(session)) {
+    return portalFlashErr("You’re not signed in as a client.");
+  }
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true, email: true, passwordHash: true },
+  });
+  if (!user?.email) {
+    return portalFlashErr("Couldn’t load your account.");
+  }
+  if (!user.passwordHash) {
+    return portalFlashErr("Finish registration from your invite email before resetting your password.");
+  }
+  const token = randomBytes(32).toString("hex");
+  const expires = new Date(Date.now() + 60 * 60 * 1000);
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      passwordResetToken: token,
+      passwordResetTokenExpiresAt: expires,
+    },
+  });
+  const resetUrl = `${getPortalPublicOrigin()}/portal/reset-password?token=${encodeURIComponent(token)}`;
+  await sendPortalPasswordResetEmail(user.email, resetUrl);
+  return portalFlashOk(
+    "Check your email — we sent a link to reset your password. It expires in about an hour.",
+  );
 }
 
 async function resolveAssignedStudioUserIdForCreate(
@@ -1262,13 +1395,32 @@ export async function postProjectMessage(projectId: string, formData: FormData):
       authorUserId: session.user.id,
     },
   });
-  if (studio) await notifyClientStudioMessage(projectId);
-  if (!studio) {
-    await appendClientMessageTodo(projectId, project.name, body);
-    await notifyStudioTeamClientMessage(projectId, project.name, body);
+  revalidateProjectMessageSurfaces(projectId);
+
+  if (studio) {
+    await notifyClientStudioMessage(projectId);
+  } else {
+    await Promise.all([
+      appendClientMessageTodo(projectId, project.name, body),
+      notifyStudioTeamClientMessage(projectId, project.name, body),
+    ]);
   }
-  await revalidateProject(projectId);
   return portalFlashOk("Message sent ✓");
+}
+
+/**
+ * `useFormState` + `<form action>` must use a direct server-action reference. A client
+ * `async (prev, fd) => postProjectMessage(id, fd)` wrapper is not a registered action and can leave the form stuck pending.
+ */
+export async function postProjectMessageFormAction(
+  _prev: PortalFormFlash | null,
+  formData: FormData,
+): Promise<PortalFormFlash> {
+  const projectId = String(formData.get("projectId") ?? "").trim();
+  if (!projectId) {
+    return portalFlashErr("Couldn’t send your message. Try again.");
+  }
+  return postProjectMessage(projectId, formData);
 }
 
 /** Client only — optional portrait shown next to their messages in project threads. */
@@ -1299,6 +1451,7 @@ export async function saveClientProfilePhoto(formData: FormData): Promise<void> 
 
     revalidatePath("/portal");
     revalidatePath("/portal/brand-kit");
+    revalidatePath("/portal/account");
     const projects = await prisma.project.findMany({
       where: { userId },
       select: { id: true },
@@ -1626,7 +1779,12 @@ export async function unlockClientWorkspaceAndNotify(
     where: { id: projectId },
     data: { workspaceUnlockedAt: now },
   });
-  await notifyClientWorkspaceUnlocked(projectId);
+  try {
+    await notifyClientWorkspaceUnlocked(projectId);
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error("[unlockClientWorkspaceAndNotify] notify failed after unlock", e);
+  }
   await revalidateProject(projectId);
   return portalFlashOk("Workspace unlocked ✓");
 }

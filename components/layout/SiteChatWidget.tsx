@@ -99,6 +99,7 @@ export function SiteChatWidget() {
               <div className="absolute right-1.5 top-1/2 z-10 -translate-y-1/2">
                 <EmojiPickerButton
                   inputRef={chatInputRef}
+                  openAbove
                   controlled={{ value: input, setValue: setInput }}
                   size="md"
                 />

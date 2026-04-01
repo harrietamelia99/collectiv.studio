@@ -4,23 +4,13 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { nextAuthSecret } from "@/lib/nextauth-secret";
 import { isEnvListedStudioEmail } from "@/lib/portal-studio-users";
-import { agencyPortalRoleFromStudioRole, type AgencyPortalRole } from "@/lib/studio-team-roles";
+import { resolveAgencyRoleFromMember } from "@/lib/resolve-studio-agency-role";
 
 /** Secure cookies require HTTPS; `next start` on http://localhost is still NODE_ENV=production. */
 function useSecureNextAuthCookies(): boolean {
   if (process.env.NODE_ENV !== "production") return false;
   const url = process.env.NEXTAUTH_URL?.trim().toLowerCase() ?? "";
   return url.startsWith("https://");
-}
-
-function agencyRoleForJwt(
-  inEnvAllowlist: boolean,
-  studioRole: string | null | undefined,
-): AgencyPortalRole | null {
-  const fromDb = agencyPortalRoleFromStudioRole(studioRole ?? null);
-  if (fromDb) return fromDb;
-  if (inEnvAllowlist) return "ISSY";
-  return null;
 }
 
 export const authOptions: NextAuthOptions = {
@@ -49,7 +39,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    /** Resolve agency role once at sign-in so `/api/auth/session` stays DB-light. */
+    /** Seed JWT at sign-in; `session` callback re-reads DB so roles stay in sync. */
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
@@ -58,11 +48,11 @@ export const authOptions: NextAuthOptions = {
         const inEnv = Boolean(email && isEnvListedStudioEmail(email));
         const m = await prisma.studioTeamMember.findUnique({
           where: { userId: user.id },
-          select: { studioRole: true },
+          select: { studioRole: true, personaSlug: true },
         });
         if (m || inEnv) {
           token.portalRole = "AGENCY";
-          token.agencyRole = agencyRoleForJwt(inEnv, m?.studioRole);
+          token.agencyRole = resolveAgencyRoleFromMember(m, inEnv);
         } else {
           token.portalRole = "CLIENT";
           token.agencyRole = null;
@@ -75,22 +65,16 @@ export const authOptions: NextAuthOptions = {
       session.user.id = token.id as string;
       if (token.email) session.user.email = token.email as string;
 
-      if (token.portalRole) {
-        session.user.portalRole = token.portalRole as "CLIENT" | "AGENCY";
-        session.user.agencyRole = (token.agencyRole as AgencyPortalRole | null) ?? null;
-        return session;
-      }
-
-      /** Legacy JWTs: fall back to DB once per session fetch. */
+      /** Always resolve from DB so new `StudioTeamMember` rows / role fixes apply without re-login. */
       const email = session.user.email?.trim().toLowerCase() ?? "";
       const inEnv = Boolean(email && isEnvListedStudioEmail(email));
       const m = await prisma.studioTeamMember.findUnique({
         where: { userId: session.user.id },
-        select: { studioRole: true },
+        select: { studioRole: true, personaSlug: true },
       });
       if (m || inEnv) {
         session.user.portalRole = "AGENCY";
-        session.user.agencyRole = agencyRoleForJwt(inEnv, m?.studioRole);
+        session.user.agencyRole = resolveAgencyRoleFromMember(m, inEnv);
       } else {
         session.user.portalRole = "CLIENT";
         session.user.agencyRole = null;

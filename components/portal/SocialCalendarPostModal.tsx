@@ -33,6 +33,7 @@ import { StudioPostScheduleActions } from "@/components/portal/StudioPostSchedul
 import type { CalendarActivityEntry } from "@/lib/calendar-activity-log";
 import { isSocialCalendarMediaVideoUrl } from "@/lib/social-calendar-media";
 import type { PortalFormFlash } from "@/lib/portal-form-flash";
+import { formatUkActivityTimestamp } from "@/lib/uk-datetime";
 
 function activityEntryTitle(kind: string): string {
   switch (kind) {
@@ -63,14 +64,7 @@ function ActivityTimeline({ entries, heading }: { entries: CalendarActivityEntry
         {ordered.map((e, i) => (
           <li key={`${e.at}-${e.kind}-${i}`} className="border-t border-burgundy/10 pt-3 first:border-t-0 first:pt-0">
             <p className="font-body text-[10px] uppercase tracking-[0.08em] text-burgundy/45">
-              {new Date(e.at).toLocaleString(undefined, {
-                weekday: "short",
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-                hour: "numeric",
-                minute: "2-digit",
-              })}{" "}
+              {formatUkActivityTimestamp(e.at)}{" "}
               · {activityEntryTitle(e.kind)}
             </p>
             <p className="mt-1.5 whitespace-pre-wrap font-body text-sm leading-relaxed text-burgundy/90">
@@ -418,23 +412,28 @@ export function SocialCalendarPostModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex justify-center bg-black/55 backdrop-blur-[2px] max-md:items-stretch max-md:p-0 md:items-center md:p-4 lg:p-8"
+      className="fixed inset-0 z-50 overflow-y-auto overflow-x-hidden overscroll-y-contain bg-black/55 backdrop-blur-[2px]"
+      data-lenis-prevent
       role="dialog"
       aria-modal="true"
       aria-labelledby={`post-modal-${post.id}`}
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
     >
       <div
-        className={
-          "relative flex min-h-0 flex-col bg-cream shadow-2xl " +
-          "max-md:h-[100dvh] max-md:max-h-[100dvh] max-md:w-full max-md:rounded-none " +
-          "md:max-lg:max-h-[90vh] md:max-lg:w-[90vw] md:max-lg:overflow-y-auto md:max-lg:overscroll-contain md:max-lg:rounded-2xl " +
-          "lg:h-[min(90vh,900px)] lg:max-h-[90vh] lg:w-[min(80vw,1100px)] lg:overflow-hidden lg:rounded-2xl"
-        }
-        onMouseDown={(e) => e.stopPropagation()}
+        className="flex min-h-full w-full justify-center max-md:items-stretch max-md:p-0 md:items-center md:p-4 md:py-6 lg:p-8 lg:py-8"
+        onMouseDown={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
       >
+        <div
+          className={
+            "relative flex min-h-0 flex-col bg-cream shadow-2xl " +
+            "max-md:min-h-[100dvh] max-md:w-full max-md:rounded-none " +
+            "md:max-lg:max-h-[min(90dvh,900px)] md:max-lg:w-[min(90vw,1100px)] md:max-lg:overflow-y-auto md:max-lg:overscroll-contain md:max-lg:rounded-2xl " +
+            "md:max-lg:my-auto md:max-lg:min-h-0 " +
+            "lg:my-auto lg:max-h-[min(90dvh,900px)] lg:min-h-0 lg:w-[min(80vw,1100px)] lg:overflow-hidden lg:rounded-2xl"
+          }
+          onMouseDown={(e) => e.stopPropagation()}
+        >
         {/* Header: full-width, sticky; close top-left on phone, top-right on lg */}
         <header className="sticky top-0 z-30 flex shrink-0 items-center gap-2 border-b border-burgundy/10 bg-cream/95 px-4 py-3 backdrop-blur-md sm:px-6 lg:px-8 lg:py-4">
           <button
@@ -1262,6 +1261,7 @@ export function SocialCalendarPostModal({
             ) : null}
           </div>
         ) : null}
+      </div>
       </div>
     </div>
   );

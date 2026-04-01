@@ -4,6 +4,7 @@ import { clientHasFullPortalAccess } from "@/lib/portal-client-full-access";
 import { parsePageImagePaths, parseWebsiteFontPaths } from "@/lib/website-kit-pages";
 import type { ClientWorkflowAccessOptions } from "@/lib/portal-brand-kit-gate";
 import type { AccountBrandKitSlice } from "@/lib/portal-workflow";
+import { formatUkMonthYearFromDate } from "@/lib/uk-datetime";
 import {
   buildBrandingStepRows,
   buildPrintStepRows,
@@ -309,7 +310,7 @@ export function buildSocialClientHubCards(
 ): WebsiteClientHubCard[] {
   const base = `/portal/project/${projectId}/social`;
   const now = new Date();
-  const monthLabel = now.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  const monthLabel = formatUkMonthYearFromDate(now);
   const { inMonth, signedOff } = socialMonthlyPostCounts(items, now);
   const signed = items.filter((i) => i.clientSignedOff).length;
   const calHint =

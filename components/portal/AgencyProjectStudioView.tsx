@@ -26,6 +26,7 @@ import { agencyStepClientActivityLine } from "@/lib/agency-step-client-activity"
 import { buildClientConversationStripData } from "@/lib/portal-conversation-strip";
 import { clientHasFullPortalAccess } from "@/lib/portal-client-full-access";
 import { normalizePortalKind, portalKindLabel, visiblePortalSections } from "@/lib/portal-project-kind";
+import { formatUkMediumDateShortTime } from "@/lib/uk-datetime";
 import type { WorkflowStepRow } from "@/lib/portal-workflow";
 import {
   buildBrandingStepRows,
@@ -503,10 +504,7 @@ export async function AgencyProjectStudioView({
                         <>
                           {" "}
                           ·{" "}
-                          {project.user.clientInviteSentAt.toLocaleString("en-GB", {
-                            dateStyle: "medium",
-                            timeStyle: "short",
-                          })}
+                          {formatUkMediumDateShortTime(project.user.clientInviteSentAt)}
                         </>
                       ) : null}
                     </p>
@@ -516,10 +514,7 @@ export async function AgencyProjectStudioView({
                     {project.user.clientInviteExpiresAt ? (
                       <p className="mt-2 m-0 font-body text-[12px] text-burgundy/55">
                         {project.user.clientInviteExpiresAt.getTime() > Date.now()
-                          ? `Registration link valid until ${project.user.clientInviteExpiresAt.toLocaleString("en-GB", {
-                              dateStyle: "medium",
-                              timeStyle: "short",
-                            })}.`
+                          ? `Registration link valid until ${formatUkMediumDateShortTime(project.user.clientInviteExpiresAt)}.`
                           : "Registration link has expired — resend a fresh invite below."}
                       </p>
                     ) : null}
@@ -534,10 +529,7 @@ export async function AgencyProjectStudioView({
                   <p className="mt-3 m-0 font-body text-[13px] text-burgundy/70">
                     <span className="font-medium text-burgundy">Registered</span>
                     {project.user.clientRegisteredAt
-                      ? ` · ${project.user.clientRegisteredAt.toLocaleString("en-GB", {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                        })}`
+                      ? ` · ${formatUkMediumDateShortTime(project.user.clientRegisteredAt)}`
                       : null}
                   </p>
                 ) : null}
@@ -645,10 +637,7 @@ export async function AgencyProjectStudioView({
                     In portal:{" "}
                     <strong className="font-medium text-burgundy">{project.contractSignedTypedName}</strong>
                     <br />
-                    {project.clientContractSignedAt.toLocaleString(undefined, {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
+                    {formatUkMediumDateShortTime(project.clientContractSignedAt)}
                     {project.contractSignedIp ? (
                       <>
                         <br />
@@ -775,10 +764,7 @@ export async function AgencyProjectStudioView({
             internalNotes.map((n) => (
               <li key={n.id} className="rounded-lg border border-zinc-200 bg-white px-4 py-3 shadow-sm">
                 <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-zinc-500">
-                  {n.createdAt.toLocaleString(undefined, {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  })}{" "}
+                  {formatUkMediumDateShortTime(n.createdAt)}{" "}
                   · {n.author.name?.trim() || n.author.email}
                 </p>
                 <p className="mt-2 whitespace-pre-wrap font-body text-sm text-zinc-800">{n.body}</p>
@@ -799,7 +785,7 @@ export async function AgencyProjectStudioView({
           ) : (
             <p className="font-body text-sm text-burgundy/70">
               Marked complete{" "}
-              {project.studioMarkedCompleteAt.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}.
+              {formatUkMediumDateShortTime(project.studioMarkedCompleteAt)}.
             </p>
           )}
           <div className="rounded-xl border border-zinc-200/90 bg-white p-5 shadow-sm">
@@ -815,10 +801,7 @@ export async function AgencyProjectStudioView({
                 <p className="font-body text-sm text-burgundy/80">
                   Client confirmed final payment{" "}
                   <span className="tabular-nums">
-                    {project.clientAcknowledgedFinalPaymentAt.toLocaleString(undefined, {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
+                    {formatUkMediumDateShortTime(project.clientAcknowledgedFinalPaymentAt)}
                   </span>
                 </p>
                 <AgencyResetFinalPaymentForm projectId={project.id} />

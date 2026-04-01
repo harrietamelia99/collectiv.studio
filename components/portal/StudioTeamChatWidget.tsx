@@ -11,6 +11,7 @@ import {
 } from "react";
 import Link from "next/link";
 import { EmojiPickerButton } from "@/components/ui/EmojiPickerButton";
+import { formatUkTeamChatTimestamp } from "@/lib/uk-datetime";
 
 type MentionCandidateDto = {
   handle: string;
@@ -239,12 +240,7 @@ export function StudioTeamChatWidget() {
           ) : (
             messages.map((msg) => {
               const isSelf = currentUserId != null && msg.authorUserId === currentUserId;
-              const time = new Date(msg.createdAt).toLocaleString(undefined, {
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              });
+              const time = formatUkTeamChatTimestamp(msg.createdAt);
               return (
                 <div
                   key={msg.id}
@@ -339,6 +335,7 @@ export function StudioTeamChatWidget() {
               <div className="absolute right-1.5 top-2 z-10">
                 <EmojiPickerButton
                   inputRef={bodyRef}
+                  openAbove
                   controlled={{
                     value: input,
                     setValue: (next) => {
