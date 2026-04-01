@@ -101,7 +101,7 @@ export const portfolioProjects: PortfolioProject[] = [
     slug: "o-beach-ibiza",
     title: "O Beach Ibiza",
     type: "Social Media",
-    image: "/images/portfolio-obeach.png",
+    image: "/images/portfolio-obeach-gallery-suite.png",
     tagline:
       "Bold, Instagram-ready promotional graphics for the Ibiza Spray event series at one of the island's most iconic beach clubs.",
     year: "2022",
@@ -151,7 +151,7 @@ export const portfolioProjects: PortfolioProject[] = [
     slug: "core-focus-pilates",
     title: "Core Focus Pilates",
     type: "Branding",
-    image: "/images/portfolio-corefocus.png",
+    image: "/images/portfolio-corefocus-gallery-guidelines.png",
     tagline:
       "Full brand identity for an Ireland-based Pilates studio—sage green, calm, and intentional from logo suite to guidelines.",
     year: "2025",
@@ -197,7 +197,7 @@ export const portfolioProjects: PortfolioProject[] = [
     slug: "bath-arms",
     title: "Bath Arms",
     type: "Social Media Marketing",
-    image: "/images/portfolio-batharms.png",
+    image: "/images/portfolio-batharms-gallery-suite.png",
     tagline:
       "Graphics for Instagram, Facebook and LinkedIn—cosy Cheddar pub charm, consistent online, from menus to feed.",
     year: "2025",
