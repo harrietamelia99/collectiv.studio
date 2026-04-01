@@ -20,10 +20,10 @@ const PACKAGE_IMAGES: Record<
     imageObjectPosition: "50% 44%",
   },
   "03": {
-    imageSrc: "/images/website-the-expansion-build.png",
+    imageSrc: "/images/branding-print-services.png",
     imageAlt:
-      "Velvet armchair corner with laptop and coffee, strong window light — sophisticated workspace mood.",
-    imageObjectPosition: "48% 45%",
+      "Stack of textured cream business cards for Core Focus Pilates, sage green typography, on a cool grey stone-like surface — premium print finish.",
+    imageObjectPosition: "50% 46%",
   },
   "04": {
     imageSrc: "/images/branding-signage-services.png",
