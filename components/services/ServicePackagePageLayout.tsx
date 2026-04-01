@@ -30,6 +30,8 @@ type Props = {
   bottomCta?: false | ServicePageCtaCopy;
   /** Journey steps after package detail; omit to hide. */
   whatToExpect?: WhatToExpectContent;
+  /** Extra classes on the burgundy packages band (e.g. more bottom padding). */
+  packagesBandClassName?: string;
 };
 
 const defaultBottomCta: ServicePageCtaCopy = {
@@ -52,6 +54,7 @@ export function ServicePackagePageLayout({
   afterHero,
   bottomCta = defaultBottomCta,
   whatToExpect,
+  packagesBandClassName = "",
 }: Props) {
   const multiPackages = packages.length > 1;
   const packagesEyebrowResolved =
@@ -75,7 +78,7 @@ export function ServicePackagePageLayout({
       {afterHero}
 
       <section
-        className="cc-service-packages-stack bg-burgundy px-4 pb-8 pt-10 sm:px-5 sm:pb-9 sm:pt-11 md:px-6 md:pb-8 md:pt-12 lg:px-8 lg:pb-10 lg:pt-14"
+        className={`cc-service-packages-stack bg-burgundy px-4 pb-8 pt-10 sm:px-5 sm:pb-9 sm:pt-11 md:px-6 md:pb-8 md:pt-12 lg:px-8 lg:pb-10 lg:pt-14 ${packagesBandClassName}`.trim()}
         aria-label="Service packages"
       >
         <header className="mx-auto mb-4 max-w-2xl text-center md:mb-5">

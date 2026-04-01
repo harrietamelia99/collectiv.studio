@@ -49,7 +49,7 @@ type Props = {
   pkg: ServicePackageBlock;
   /** Multiple packages on the page — use expand/collapse; single package shows everything open. */
   collapsibleDetails: boolean;
-  /** Single-package pages: shorter image, side-by-side layout on md+ so the block doesn’t read as one tall column. */
+  /** Single-package pages: stacked card with a full-width hero image (no narrow side column). */
   solo?: boolean;
 };
 
@@ -84,7 +84,8 @@ export function ServicePackageCard({ pkg, collapsibleDetails, solo = false }: Pr
       id={pkg.id}
       className={`flex overflow-hidden border-cc border-solid border-burgundy/10 bg-cream shadow-soft transition-[box-shadow,border-color] duration-300 ease-smooth ${
         solo
-          ? "w-full max-w-lg flex-col sm:max-w-xl md:max-w-4xl md:flex-row md:items-start lg:max-w-[56rem]"
+          ? /* Stacked layout: full-width image avoids tight side-column crops on square / flat-lay photos */
+            "w-full max-w-lg flex-col sm:max-w-xl md:max-w-3xl lg:max-w-[56rem]"
           : `flex-col ${collapsibleDetails ? "min-w-0" : "md:col-span-2 md:max-w-2xl md:justify-self-center"} ${
               carouselMobile
                 ? "mx-auto w-full max-w-[17.5rem] sm:max-w-xs md:mx-0 md:max-w-none"
@@ -92,35 +93,37 @@ export function ServicePackageCard({ pkg, collapsibleDetails, solo = false }: Pr
             }`
       }`.trim()}
     >
-      <div
-        className={`relative w-full shrink-0 overflow-hidden bg-burgundy/[0.06] ${
-          solo
-            ? "h-36 shrink-0 sm:h-40 md:aspect-[4/5] md:h-auto md:w-[min(100%,17.5rem)] lg:w-72"
-            : carouselMobile
-              ? /* 4:3 matches typical photography better than 16:9 — avoids cropping laptop / desk tops */
-                "aspect-[4/3] w-full"
-              : "aspect-[16/9]"
-        }`}
-      >
-        {pkg.imageSrc ? (
-          <Image
-            src={pkg.imageSrc}
-            alt={pkg.imageAlt ?? ""}
-            fill
-            className={pkg.imageObjectFit === "contain" ? "object-contain" : "object-cover"}
-            style={pkg.imageObjectPosition ? { objectPosition: pkg.imageObjectPosition } : undefined}
-            sizes={
-              solo
-                ? "(max-width: 767px) 100vw, 288px"
-                : carouselMobile
-                  ? "(max-width: 767px) 280px, (max-width: 1200px) 48vw, 400px"
-                  : "(max-width: 767px) 100vw, (max-width: 1200px) 48vw, 400px"
-            }
-          />
-        ) : (
-          <ImagePlaceholderFill tone="cream" />
-        )}
-      </div>
+      {!pkg.hideImage ? (
+        <div
+          className={`relative w-full shrink-0 overflow-hidden bg-burgundy/[0.06] ${
+            solo
+              ? "aspect-[4/3] w-full"
+              : carouselMobile
+                ? /* 4:3 matches typical photography better than 16:9 — avoids cropping laptop / desk tops */
+                  "aspect-[4/3] w-full"
+                : "aspect-[16/9]"
+          }`}
+        >
+          {pkg.imageSrc ? (
+            <Image
+              src={pkg.imageSrc}
+              alt={pkg.imageAlt ?? ""}
+              fill
+              className={pkg.imageObjectFit === "contain" ? "object-contain" : "object-cover"}
+              style={pkg.imageObjectPosition ? { objectPosition: pkg.imageObjectPosition } : undefined}
+              sizes={
+                solo
+                  ? "(max-width: 767px) 100vw, (max-width: 1200px) 90vw, 896px"
+                  : carouselMobile
+                    ? "(max-width: 767px) 280px, (max-width: 1200px) 48vw, 400px"
+                    : "(max-width: 767px) 100vw, (max-width: 1200px) 48vw, 400px"
+              }
+            />
+          ) : (
+            <ImagePlaceholderFill tone="cream" />
+          )}
+        </div>
+      ) : null}
 
       <div className={`flex min-w-0 flex-col text-left ${solo ? "md:flex-1" : ""}`}>
         <div className="shrink-0 px-4 pt-3 sm:px-5 sm:pt-4">
@@ -183,7 +186,11 @@ export function ServicePackageCard({ pkg, collapsibleDetails, solo = false }: Pr
 
         <div
           className={`shrink-0 border-t border-solid border-burgundy/10 px-4 pt-3.5 sm:px-5 sm:pt-4 ${
-            solo ? "pb-6 sm:pb-7 md:pb-7" : "pb-8 sm:pb-9 md:pb-10"
+            solo
+              ? pkg.hideImage
+                ? "pb-11 sm:pb-12 md:pb-14"
+                : "pb-8 sm:pb-9 md:pb-10"
+              : "pb-8 sm:pb-9 md:pb-10"
           }`}
         >
           <ButtonLink

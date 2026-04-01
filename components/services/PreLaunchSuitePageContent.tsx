@@ -15,6 +15,7 @@ export function PreLaunchSuitePageContent() {
         packagesSectionEyebrow="[ Pre-launch ]"
         packagesSectionTitle={<>The suite, in full</>}
         packagesSectionSubtitle="Everything in your launch foundation — expand for timelines, inclusions, and common questions."
+        packagesBandClassName="!pb-14 sm:!pb-16 md:!pb-16 lg:!pb-[5.25rem]"
         heroClassName="!py-12 sm:!py-14 md:!py-[clamp(3rem,7vh,4.5rem)] lg:!min-h-[min(48vh,520px)] lg:!py-[clamp(4rem,9.5vh,6rem)]"
         afterHero={<PreLaunchSuiteFlowSection />}
         bottomCta={false}
@@ -32,10 +33,7 @@ export function PreLaunchSuitePageContent() {
             index: "01",
             name: "The Pre-Launch Suite",
             timeline: "4–6 weeks",
-            imageSrc: "/images/service-launch.png",
-            imageAlt:
-              "Top-down terrazzo surface with headphones, tablet, and latte — full launch flat lay.",
-            imageObjectPosition: "58% 50%",
+            hideImage: true,
             body: (
               <>
                 {preLaunchSuiteParagraphs.map((p) => (

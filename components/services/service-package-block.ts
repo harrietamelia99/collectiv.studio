@@ -14,4 +14,6 @@ export type ServicePackageBlock = {
   imageObjectPosition?: string;
   /** Use `contain` for tall portraits so the subject isn’t cropped by object-cover. */
   imageObjectFit?: "cover" | "contain";
+  /** No image or placeholder row (e.g. Pre-Launch Suite solo card). */
+  hideImage?: boolean;
 };
