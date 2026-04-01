@@ -81,8 +81,8 @@ export default function CookiesPolicyPage() {
               Privacy policy
             </Link>
             . To contact us:{" "}
-            <a className={a} href="mailto:hello@collectivstudio.uk">
-              hello@collectivstudio.uk
+            <a className={a} href="mailto:isabella@collectivstudio.uk">
+              isabella@collectivstudio.uk
             </a>
             .
           </p>
