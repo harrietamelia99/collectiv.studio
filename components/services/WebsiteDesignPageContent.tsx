@@ -23,13 +23,13 @@ const PACKAGE_IMAGES: Record<
     imageSrc: "/images/website-the-elevate-build.png",
     imageAlt:
       "Open ring binder and stationery on a round table with calla lily and soft daylight — strategic planning mood.",
-    imageObjectPosition: "50% 45%",
+    imageObjectPosition: "50% 50%",
   },
   "04": {
     imageSrc: "/images/website-the-signature-site.png",
     imageAlt:
       "Flat lay with phone, notebook, and soft natural light on textured cream — tactile, premium detail.",
-    imageObjectPosition: "50% 48%",
+    imageObjectPosition: "50% 50%",
   },
   "05": {
     imageSrc: "/images/service-launch.png",
