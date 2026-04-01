@@ -16,7 +16,6 @@ import {
   stringifyWorkflowReopenJson,
   type WorkflowStream,
 } from "@/lib/portal-workflow-reopen";
-import { notifyStudioTeamMention } from "@/lib/studio-inbox-notify";
 import { type PortalFormFlash, portalFlashErr, portalFlashOk } from "@/lib/portal-form-flash";
 import {
   AGENCY_INBOX_DISMISS_CALENDAR,
@@ -27,7 +26,7 @@ import {
   studioInboxCalendarDismissReadOk,
   studioInboxThreadDismissReadOk,
 } from "@/lib/studio-agency-inbox-dismiss";
-import { parseMentionHandles, resolveMentionHandlesToUserIds, type MentionMember } from "@/lib/studio-team-mentions";
+import { postStudioTeamChatMessageCore } from "@/lib/studio-team-chat-server";
 
 function parseYmd(s: string): Date | null {
   const t = s.trim();
@@ -217,53 +216,8 @@ export async function postStudioTeamChatMessage(formData: FormData): Promise<Por
     return portalFlashErr("Couldn’t send message. Try again.");
   }
 
-  const author = await prisma.studioTeamMember.findUnique({
-    where: { userId: session.user.id },
-    include: { user: { select: { name: true, email: true } } },
-  });
-  if (!author) {
-    return portalFlashErr("Couldn’t send message. Try again.");
-  }
-
-  const body = String(formData.get("body") ?? "").trim();
-  if (!body || body.length > 4000) {
-    return portalFlashErr("Message is empty or too long.");
-  }
-
-  const membersRaw = await prisma.studioTeamMember.findMany({
-    include: { user: { select: { name: true, email: true } } },
-  });
-  const members: MentionMember[] = membersRaw.map((m) => ({
-    userId: m.userId,
-    personaSlug: m.personaSlug,
-    studioRole: m.studioRole,
-    welcomeName: m.welcomeName,
-    user: m.user,
-  }));
-
-  const handles = parseMentionHandles(body);
-  const mentionedUserIds = resolveMentionHandlesToUserIds(handles, members, session.user.id);
-
-  await prisma.studioTeamChatMessage.create({
-    data: {
-      authorUserId: session.user.id,
-      body,
-      mentionedUserIds: JSON.stringify(mentionedUserIds),
-    },
-  });
-
-  const authorDisplay =
-    author.welcomeName?.trim() ||
-    author.user.name?.trim().split(/\s+/)[0] ||
-    author.user.email.split("@")[0] ||
-    "Teammate";
-
-  if (mentionedUserIds.length > 0) {
-    await notifyStudioTeamMention(mentionedUserIds, authorDisplay, body, session.user.id);
-  }
-
-  revalidatePath("/portal");
-  return portalFlashOk("Message sent ✓");
+  const body = String(formData.get("body") ?? "");
+  return postStudioTeamChatMessageCore(session.user.id, body);
 }
 
 export async function markStudioNotificationRead(notificationId: string): Promise<void> {

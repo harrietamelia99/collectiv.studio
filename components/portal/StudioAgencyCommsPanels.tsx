@@ -4,15 +4,12 @@ import {
   markAllStudioNotificationsRead,
   markStudioNotificationRead,
 } from "@/app/portal/agency-actions";
-import { StudioTeamChatComposer } from "@/components/portal/StudioTeamChatComposer";
 import {
   StudioAgencyClientInboxSections,
   type CalendarInboxRowUi,
   type ThreadInboxRowUi,
 } from "@/components/portal/StudioAgencyClientInboxSections";
 import { DashIconBell, DashIconInbox, StudioSectionIcon } from "@/components/portal/StudioDashboardIcons";
-import type { PersonaSlug } from "@/lib/studio-team-config";
-import { PERSONA_WELCOME_NAME } from "@/lib/studio-team-config";
 
 function utcYmd(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -33,23 +30,6 @@ function NotificationRemoveIcon() {
   );
 }
 
-function formatChatBody(body: string, bubble: "self" | "other"): React.ReactNode {
-  const mentionClass =
-    bubble === "self"
-      ? "rounded bg-cream/25 px-1 font-body text-[12px] font-semibold text-cream"
-      : "rounded bg-burgundy/15 px-1 font-body text-[12px] font-semibold text-burgundy";
-  const parts = body.split(/(@[\w.-]+)/gi);
-  return parts.map((part, i) =>
-    /^@[\w.-]+$/i.test(part) ? (
-      <span key={i} className={mentionClass}>
-        {part}
-      </span>
-    ) : (
-      <span key={i}>{part}</span>
-    ),
-  );
-}
-
 type NotificationRow = {
   id: string;
   kind: string;
@@ -59,35 +39,6 @@ type NotificationRow = {
   readAt: Date | null;
   createdAt: Date;
 };
-
-type ChatRow = {
-  id: string;
-  body: string;
-  createdAt: Date;
-  authorUserId: string;
-  author: {
-    name: string | null;
-    email: string;
-    studioTeamProfile: { welcomeName: string | null; personaSlug: string; photoUrl: string | null } | null;
-  };
-};
-
-type TeamMemberHint = {
-  userId: string;
-  personaSlug: string;
-  welcomeName: string | null;
-  user: { name: string | null; email: string };
-};
-
-function chatAuthorLabel(msg: ChatRow): string {
-  const p = msg.author.studioTeamProfile;
-  return (
-    p?.welcomeName?.trim() ||
-    msg.author.name?.trim().split(/\s+/)[0] ||
-    msg.author.email.split("@")[0] ||
-    "Teammate"
-  );
-}
 
 function kindLabel(kind: string): string {
   switch (kind) {
@@ -112,26 +63,12 @@ export function StudioAgencyCommsPanels({
   notifications,
   threadInboxRows,
   calendarInboxRows,
-  teamChatMessages,
-  teamMembersForHints,
-  currentUserId,
 }: {
   notifications: NotificationRow[];
   threadInboxRows: ThreadInboxRowUi[];
   calendarInboxRows: CalendarInboxRowUi[];
-  teamChatMessages: ChatRow[];
-  teamMembersForHints: TeamMemberHint[];
-  currentUserId: string;
 }) {
   const unreadCount = notifications.filter((n) => !n.readAt).length;
-
-  const mentionHint = teamMembersForHints
-    .map((m) => {
-      const slug = m.personaSlug as PersonaSlug;
-      const nick = slug in PERSONA_WELCOME_NAME ? PERSONA_WELCOME_NAME[slug] : m.personaSlug;
-      return `@${nick}`;
-    })
-    .join(" · ");
 
   return (
     <section
@@ -144,12 +81,13 @@ export function StudioAgencyCommsPanels({
           <StudioSectionIcon Icon={DashIconInbox} className="max-sm:mt-0.5" />
           <div className="min-w-0">
             <h2 id="comms-heading" className="font-display text-xl tracking-[-0.02em] text-burgundy md:text-2xl">
-              Inbox &amp; team
+              Inbox &amp; updates
             </h2>
             <p className="mt-2 max-w-3xl font-body text-sm leading-relaxed text-burgundy/62">
-              Notifications, threads that need your reply, calendar feedback when it applies to your projects, and
-              team-only chat. Use <strong className="font-medium text-burgundy">@mentions</strong> — tagged people get an
-              email.
+              Notifications, client threads that need your reply, and calendar feedback when it applies to your projects.
+              Studio-only team chat lives in the{" "}
+              <span className="font-medium text-burgundy">message bubble (bottom-left)</span> on any portal page —{" "}
+              <strong className="font-medium text-burgundy">@mentions</strong> email tagged teammates.
             </p>
           </div>
         </div>
@@ -245,81 +183,8 @@ export function StudioAgencyCommsPanels({
         )}
       </div>
 
-      <div className="grid gap-10 lg:grid-cols-2 lg:gap-12">
-        <div id="studio-client-inbox" className="scroll-mt-28">
-          <StudioAgencyClientInboxSections threadRows={threadInboxRows} calendarRows={calendarInboxRows} />
-        </div>
-
-        <div
-          id="studio-team-chat"
-          className="scroll-mt-28 flex min-h-0 flex-col overflow-hidden rounded-cc-card border border-burgundy/18 bg-cream shadow-nav"
-          aria-labelledby="studio-team-chat-title"
-        >
-          <div className="border-b border-burgundy/10 bg-burgundy/[0.06] px-4 py-4">
-            <h3
-              id="studio-team-chat-title"
-              className="m-0 font-display text-lg leading-tight tracking-[-0.03em] text-burgundy sm:text-xl"
-            >
-              Team chat
-            </h3>
-            <p className="mt-1.5 font-body text-[10px] uppercase tracking-[0.08em] text-burgundy/50 sm:text-[11px]">
-              Studio-only ·{" "}
-              {mentionHint
-                ? `e.g. ${mentionHint} — tagged people get an email`
-                : "Use @names to ping someone"}
-            </p>
-          </div>
-          <div
-            className="max-h-[min(52dvh,22rem)] flex-1 space-y-3 overflow-y-auto px-3 py-3"
-            role="log"
-            aria-relevant="additions"
-            aria-label="Team chat messages"
-          >
-            {teamChatMessages.length === 0 ? (
-              <p className="px-1 font-body text-[13px] leading-relaxed text-burgundy/55">
-                Say hi — first message starts the thread.
-              </p>
-            ) : (
-              teamChatMessages.map((msg) => {
-                const isSelf = msg.authorUserId === currentUserId;
-                const time = msg.createdAt.toLocaleString(undefined, {
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                });
-                return (
-                  <div
-                    key={msg.id}
-                    className={`flex flex-col gap-1 ${isSelf ? "items-end" : "items-start"}`}
-                  >
-                    {!isSelf ? (
-                      <span className="font-body text-[10px] uppercase tracking-[0.08em] text-burgundy/45">
-                        {chatAuthorLabel(msg)} · {time}
-                      </span>
-                    ) : (
-                      <span className="font-body text-[10px] uppercase tracking-[0.08em] text-burgundy/45">
-                        You · {time}
-                      </span>
-                    )}
-                    <div
-                      className={`max-w-[min(100%,18rem)] rounded-cc-card px-3 py-2 font-body text-[13px] leading-relaxed sm:max-w-[min(100%,20rem)] ${
-                        isSelf
-                          ? "bg-burgundy text-cream"
-                          : "border border-burgundy/10 bg-white text-burgundy/90"
-                      }`}
-                    >
-                      <span className="whitespace-pre-wrap break-words">
-                        {formatChatBody(msg.body, isSelf ? "self" : "other")}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-          <StudioTeamChatComposer />
-        </div>
+      <div id="studio-client-inbox" className="scroll-mt-28">
+        <StudioAgencyClientInboxSections threadRows={threadInboxRows} calendarRows={calendarInboxRows} />
       </div>
     </section>
   );

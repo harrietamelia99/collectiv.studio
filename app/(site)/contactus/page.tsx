@@ -20,7 +20,6 @@ type FormValues = {
   basedIn: string;
   industry: string;
   aboutBusiness: string;
-  excitedAbout: string;
   servicesInterested: string;
   budget: string;
   timeline: string;
@@ -148,7 +147,6 @@ export default function ContactPage() {
         basedIn: "",
         industry: "",
         aboutBusiness: "",
-        excitedAbout: "",
         servicesInterested: "",
         budget: "",
         timeline: "",
@@ -196,7 +194,6 @@ export default function ContactPage() {
           basedIn: data.basedIn.trim() || undefined,
           industry: data.industry.trim() || undefined,
           aboutBusiness: data.aboutBusiness.trim() || undefined,
-          excitedAbout: data.excitedAbout.trim() || undefined,
           servicesInterested: data.servicesInterested.trim(),
           budget: data.budget,
           timeline: data.timeline,
@@ -229,7 +226,6 @@ export default function ContactPage() {
           basedIn: "",
           industry: "",
           aboutBusiness: "",
-          excitedAbout: "",
           servicesInterested: "",
           budget: "",
           timeline: "",
@@ -390,12 +386,6 @@ export default function ContactPage() {
                   label="Tell us about your business - what do you do / sell?"
                 >
                   <input id="aboutBusiness" className={lineInput} {...register("aboutBusiness")} />
-                </UnderlineField>
-                <UnderlineField
-                  id="excitedAbout"
-                  label="What makes you excited to work with Collectiv.?"
-                >
-                  <input id="excitedAbout" className={lineInput} {...register("excitedAbout")} />
                 </UnderlineField>
                 <UnderlineField
                   id="servicesInterested"

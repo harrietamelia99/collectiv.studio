@@ -20,7 +20,6 @@ export type ContactApiFullBody = {
   basedIn?: string;
   industry?: string;
   aboutBusiness?: string;
-  excitedAbout?: string;
   servicesInterested: string;
   budget: string;
   timeline: string;
@@ -111,7 +110,6 @@ export function parseContactApiJson(body: unknown): ContactApiParsed {
       basedIn: str(o.basedIn).trim() || undefined,
       industry: str(o.industry).trim() || undefined,
       aboutBusiness: str(o.aboutBusiness).trim() || undefined,
-      excitedAbout: str(o.excitedAbout).trim() || undefined,
       servicesInterested,
       budget,
       timeline,
@@ -135,7 +133,6 @@ export function fullContactToStudioRows(d: ContactApiFullBody): { label: string;
     { label: "Based in", value: d.basedIn ?? "" },
     { label: "Industry", value: d.industry ?? "" },
     { label: "About the business", value: d.aboutBusiness ?? "" },
-    { label: "Excited about", value: d.excitedAbout ?? "" },
     { label: "Services interested in", value: d.servicesInterested },
     { label: "Budget", value: d.budget },
     { label: "Timeline", value: d.timeline },

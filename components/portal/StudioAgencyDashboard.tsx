@@ -193,7 +193,6 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
     projectsRaw,
     calendarPosts,
     studioNotifications,
-    teamChatRaw,
     teamMembersForHints,
     projectsForReplyCheck,
     calendarFeedbackRaw,
@@ -243,24 +242,6 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
       where: { userId },
       orderBy: { createdAt: "desc" },
       take: 40,
-    }),
-    prisma.studioTeamChatMessage.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 80,
-      select: {
-        id: true,
-        body: true,
-        createdAt: true,
-        authorUserId: true,
-        mentionedUserIds: true,
-        author: {
-          select: {
-            name: true,
-            email: true,
-            studioTeamProfile: { select: { welcomeName: true, personaSlug: true, photoUrl: true } },
-          },
-        },
-      },
     }),
     prisma.studioTeamMember.findMany({
       select: {
@@ -440,9 +421,6 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
           take: 40,
         })
       : [];
-
-  const teamChatChronological = [...teamChatRaw].reverse();
-  const teamChatForUi = teamChatChronological;
 
   const ongoing = projectsRaw.filter((p) => !p.studioMarkedCompleteAt);
   const completed = projectsRaw.filter((p) => p.studioMarkedCompleteAt);
@@ -773,9 +751,6 @@ export async function StudioAgencyDashboard({ userId, createdBanner = null, dele
         notifications={notificationsForUi}
         threadInboxRows={threadInboxRows}
         calendarInboxRows={calendarInboxRows}
-        teamChatMessages={teamChatForUi}
-        teamMembersForHints={teamMembersForHints}
-        currentUserId={userId}
       />
 
       <section

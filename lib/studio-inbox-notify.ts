@@ -14,6 +14,7 @@ import {
   resolveIssyContractNotificationEmails,
 } from "@/lib/email-notifications";
 import { normalizePortalKind } from "@/lib/portal-project-kind";
+import { resolveTeamChatMentionNotifyEmail } from "@/lib/studio-team-mention-notify-email";
 
 const PREVIEW = 240;
 
@@ -305,12 +306,22 @@ export async function notifyStudioTeamMention(
 
   const recipients = await prisma.user.findMany({
     where: { id: { in: unique } },
-    select: { id: true, email: true },
+    select: {
+      id: true,
+      email: true,
+      studioTeamProfile: { select: { personaSlug: true, studioRole: true } },
+    },
   });
 
+  const emailed = new Set<string>();
   for (const r of recipients) {
-    const to = r.email?.trim().toLowerCase();
-    if (!to) continue;
+    const to = resolveTeamChatMentionNotifyEmail({
+      email: r.email,
+      personaSlug: r.studioTeamProfile?.personaSlug,
+      studioRole: r.studioTeamProfile?.studioRole,
+    });
+    if (!to || emailed.has(to)) continue;
+    emailed.add(to);
     await emailNotifyTeamMemberTaggedInChat({
       to,
       authorDisplay,

@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getPortalDatabaseAvailable } from "@/lib/portal-db-status";
 import { isAgencyPortalSession } from "@/lib/portal-access";
 import { PortalBottomSpacer } from "@/components/portal/PortalBottomSpacer";
+import { StudioTeamChatWidget } from "@/components/portal/StudioTeamChatWidget";
 import { PortalChrome } from "@/components/portal/PortalChrome";
 import { PortalSmoothScroll } from "@/components/portal/PortalSmoothScroll";
 import { PORTAL_AUTH_SHELL_HEADER } from "@/lib/portal-auth-shell-header";
@@ -90,6 +91,7 @@ export default async function PortalLayout({ children }: { children: React.React
           </div>
           <PortalBottomSpacer showStudio={studio} showClientMobileNav={!studio && !!session?.user?.id} />
         </div>
+        {studio ? <StudioTeamChatWidget /> : null}
       </div>
     </PortalProviders>
   );
