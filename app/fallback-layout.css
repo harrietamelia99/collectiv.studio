@@ -355,8 +355,7 @@
   background-color: var(--cc-burgundy);
 }
 
-:where(.cc-hero-bg-video),
-:where(.cc-hero-poster-still) {
+:where(.cc-hero-bg-video) {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -372,8 +371,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :where(.cc-hero-bg-video) {
-    display: none !important;
+  :where(.cc-hero-video-wrap) {
+    display: none;
   }
 }
 
