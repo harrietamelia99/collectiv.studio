@@ -20,7 +20,7 @@ export const websiteDesignWhatToExpect: WhatToExpectContent = {
     {
       title: "Enquiry form",
       description:
-        "Tell us about your business, audience, goals and any sites you admire—we’ll reply with fit and next steps.",
+        "Tell us about your business, audience, goals and any sites you admire.",
     },
     {
       title: "Discovery call",
@@ -30,7 +30,7 @@ export const websiteDesignWhatToExpect: WhatToExpectContent = {
     {
       title: "Client portal",
       description:
-        "You get a private portal to track progress, sign off rounds, upload website kit assets, and message us — one place for everything as the build moves forward.",
+        "You'll have access to a private portal to track progress, sign off rounds, upload website kit assets, with a messaging function built in - one place for everything as the build moves forward.",
     },
     {
       title: "Proposal & deposit",
@@ -40,7 +40,7 @@ export const websiteDesignWhatToExpect: WhatToExpectContent = {
     {
       title: "Design & build",
       description:
-        "Wireframes and visual design, then build, content integration, SEO basics and testing—with rounds of feedback.",
+        "We design your site visually, then bring it to life - adding your content, making sure it looks great on mobile, and refining everything based on your feedback before we go anywhere near launch.",
     },
     {
       title: "Launch & handover",
@@ -65,17 +65,17 @@ export const brandingWhatToExpect: WhatToExpectContent = {
     {
       title: "Discovery call",
       description:
-        "We dig into positioning, personality, practical touchpoints and what “done” looks like for you.",
+        "We dig into positioning, personality, practical touchpoints and what the finished brand needs to do for you.",
     },
     {
       title: "Client portal",
       description:
-        "Review identity rounds, approve deliverables and download files through your portal — clear sign-off and a full paper trail without inbox chaos.",
+        "Review identity rounds, approve deliverables and download files through your portal - clear sign-off and a full paper trail without inbox chaos.",
     },
     {
       title: "Strategy & concepts",
       description:
-        "Direction, mood and initial creative routes—then we refine with your feedback into a single clear path.",
+        "Direction, mood and initial creative routes - refined with your feedback until we land on one clear path.",
     },
     {
       title: "Refinement & guidelines",
@@ -85,7 +85,7 @@ export const brandingWhatToExpect: WhatToExpectContent = {
     {
       title: "Handover",
       description:
-        "Export-ready files plus guidance for web, print and social—optional support for rollout.",
+        "Export-ready files plus guidance for web, print and social, with optional support for rollout.",
     },
   ],
 };
@@ -100,12 +100,12 @@ export const socialMediaWhatToExpect: WhatToExpectContent = {
     {
       title: "Enquiry form",
       description:
-        "Your platforms, tone of voice, capacity for approvals and what success looks like in 90 days.",
+        "Your platforms, tone of voice, capacity for approvals and what good looks like from the start.",
     },
     {
       title: "Discovery call",
       description:
-        "We align on audiences, pillars, cadence, brand guardrails and how you like to review work.",
+        "We align on audiences, pillars, cadence, brand direction and how you like to review work.",
     },
     {
       title: "Client portal",
@@ -115,17 +115,17 @@ export const socialMediaWhatToExpect: WhatToExpectContent = {
     {
       title: "Onboarding",
       description:
-        "Access, assets, key dates and a content calendar skeleton so nothing is improvised last minute.",
+        "Access, assets, key dates and a content plan built before we begin - so nothing gets left to the last minute.",
     },
     {
       title: "Create & review",
       description:
-        "Drafts, captions and visuals for sign-off—scheduled once you’re happy, with room for campaigns.",
+        "Drafts, captions and visuals for sign-off - scheduled once you're happy and built around key dates and campaigns.",
     },
     {
       title: "Optimise",
       description:
-        "Light reporting, what’s working and quarterly tweaks so the feed stays intentional—not noisy.",
+        "Light reporting, what's working and quarterly tweaks so the feed stays intentional, not noisy.",
     },
   ],
 };
@@ -145,22 +145,22 @@ export const preLaunchSuiteWhatToExpect: WhatToExpectContent = {
     {
       title: "Discovery call",
       description:
-        "A single detailed session to prioritise identity, website and launch social so nothing fights for attention.",
+        "A single detailed session to prioritise identity, website and social media so nothing fights for attention.",
     },
     {
       title: "Client portal",
       description:
-        "Track all three workstreams in one hub — branding sign-offs, website kit progress, and social calendar — with direct messaging to the studio.",
+        "Track all three workstreams in one hub - branding sign-offs, website kit progress, and social calendar - with direct messaging to the studio.",
     },
     {
       title: "Suite plan",
       description:
-        "A coordinated timeline across workstreams—when you see brand, when the site follows, when social locks in.",
+        "A clear timeline that maps out when your brand lands, when the site follows, and when social is ready to go.",
     },
     {
       title: "Build sprints",
       description:
-        "Parallel sprints with clear sign-off points: identity, site build, profiles and launch graphics together.",
+        "Everything moves forward together with clear sign-off points along the way - identity, site build, profiles and launch graphics.",
     },
     {
       title: "Launch & handover",

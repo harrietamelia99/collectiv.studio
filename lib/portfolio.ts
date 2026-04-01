@@ -24,7 +24,7 @@ export const portfolioProjects: PortfolioProject[] = [
     slug: "petite-social-club",
     title: "Petite Social Club",
     type: "Branding & Website",
-    image: "/images/portfolio-petite.png",
+    image: "/images/portfolio-petite-gallery-desktop.png",
     imageObjectPosition: "center 56%",
     tagline: "A warm, confident identity for a members’ club designed around little ones and their grown-ups.",
     year: "2026",
