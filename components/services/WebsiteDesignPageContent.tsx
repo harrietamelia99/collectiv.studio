@@ -29,7 +29,8 @@ const PACKAGE_IMAGES: Record<
     imageSrc: "/images/website-the-signature-site.png",
     imageAlt:
       "Laptop on a bright desk with workspace details — premium web build mood.",
-    imageObjectPosition: "50% 22%",
+    /* Subject sits low in frame (wall above); anchor crop toward bottom so the laptop isn’t clipped */
+    imageObjectPosition: "50% 78%",
   },
   "05": {
     imageSrc: "/images/service-launch.png",

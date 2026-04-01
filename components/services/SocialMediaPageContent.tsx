@@ -11,7 +11,7 @@ const PACKAGE_IMAGES: Record<
     imageSrc: "/images/website-the-signature-site.png",
     imageAlt:
       "Phone and earbuds on cool marble — minimal, on-the-go social and content vibe.",
-    imageObjectPosition: "50% 22%",
+    imageObjectPosition: "50% 78%",
   },
   "02": {
     imageSrc: "/images/service-social.png",
