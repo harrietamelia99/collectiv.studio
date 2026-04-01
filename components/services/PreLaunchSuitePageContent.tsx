@@ -35,7 +35,7 @@ export function PreLaunchSuitePageContent() {
             imageSrc: "/images/service-launch.png",
             imageAlt:
               "Top-down terrazzo surface with headphones, tablet, and latte — full launch flat lay.",
-            imageObjectPosition: "50% 45%",
+            imageObjectPosition: "58% 50%",
             body: (
               <>
                 {preLaunchSuiteParagraphs.map((p) => (
