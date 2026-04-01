@@ -47,7 +47,7 @@ export default function PrivacyPolicyPage() {
             <br />
             <strong className="font-medium text-burgundy">Contact:</strong>{" "}
             <a className={a} href="mailto:isabella@collectivstudio.uk">
-              Isabella@collectivstudio.uk
+              isabella@collectivstudio.uk
             </a>
             <br />
             <strong className="font-medium text-burgundy">Data controller:</strong> Harriet Pearce
@@ -55,7 +55,7 @@ export default function PrivacyPolicyPage() {
           <p>
             For data protection questions, contact us at{" "}
             <a className={a} href="mailto:isabella@collectivstudio.uk">
-              Isabella@collectivstudio.uk
+              isabella@collectivstudio.uk
             </a>
             .
           </p>
@@ -214,7 +214,7 @@ export default function PrivacyPolicyPage() {
           <p>
             To exercise any of these rights, email{" "}
             <a className={a} href="mailto:isabella@collectivstudio.uk">
-              Isabella@collectivstudio.uk
+              isabella@collectivstudio.uk
             </a>
             . We will respond within one month in most cases (we may extend in complex cases as the law allows).
           </p>
@@ -246,7 +246,7 @@ export default function PrivacyPolicyPage() {
           <p className="pt-4 text-burgundy/75">
             Questions?{" "}
             <a className={a} href="mailto:isabella@collectivstudio.uk">
-              Isabella@collectivstudio.uk
+              isabella@collectivstudio.uk
             </a>
           </p>
         </div>
