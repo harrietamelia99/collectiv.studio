@@ -152,18 +152,23 @@ export const portfolioProjects: PortfolioProject[] = [
     title: "Core Focus Pilates",
     type: "Branding",
     image: "/images/portfolio-corefocus.png",
-    tagline: "Precision-led visual identity for a clinical-meets-boutique reformer practice.",
-    year: "2024",
+    tagline:
+      "Full brand identity for an Ireland-based Pilates studio—sage green, calm, and intentional from logo suite to guidelines.",
+    year: "2025",
     overview:
-      "Core Focus sits between physio-adjacent precision and boutique studio warmth. The branding had to signal expertise first - without feeling cold or medical in a way that would put hobbyists off.",
+      "Core Focus Pilates is an Ireland-based studio offering a focused, supportive environment for mindful movement. We developed a full brand identity built around beautiful sage green tones - calm, grounding, and deeply aligned with the studio's ethos of strength, balance, and clarity.",
     challenge:
-      "The founder’s audience spans injury rehab clients and fitness enthusiasts. Any visual direction that leaned too far either way would alienate part of the room.",
+      "Pilates branding can quickly feel generic - all soft neutrals and sans-serifs with nothing to distinguish one studio from the next. The brief was to create something fresh and modern that still felt considered and rooted in the practice, with a colour story that did the heavy lifting.",
     approach:
-      "We anchored on a deep, grounding palette, crisp typographic hierarchy and abstract line motifs inspired by alignment and breath. Photography direction favours honest studio light and real bodies over stock smiles.",
+      "We built the identity around a sage green palette, developing a full logo suite, brand guidelines and on-brand imagery direction that worked together as a cohesive system. Every decision was made to reflect the studio's values - nothing decorative for the sake of it, everything intentional.",
     outcome:
-      "A guidelines PDF the team uses for everything from studio vinyl to instructor press kits. Partnership enquiries now land with a clearer sense of positioning.",
+      "A fresh, elegant brand that gives Core Focus Pilates a clear and confident presence from day one. The guidelines ensure every future touchpoint, from social to signage, stays true to the identity as the studio grows.",
     services: ["Brand strategy", "Visual identity", "Brand guidelines"],
-    galleryCaptions: ["Guidelines - colour and type", "Pattern and merchandise applications"],
+    galleryCaptions: ["Brand guidelines and visual system", "Business cards and print"],
+    galleryImages: [
+      "/images/portfolio-corefocus-gallery-guidelines.png",
+      "/images/portfolio-corefocus-gallery-cards.png",
+    ],
   },
   {
     slug: "malow-london",
