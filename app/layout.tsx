@@ -30,6 +30,11 @@ export const metadata: Metadata = {
   title: "Collectiv. Studio - Brand, Web & Social Media Agency | Bristol",
   description:
     "Collectiv. Studio is a boutique creative agency offering brand strategy, website design and social media management. Based in Bristol, working with businesses across the UK.",
+  icons: {
+    icon: [{ url: "/icon", type: "image/png", sizes: "48x48" }],
+    apple: [{ url: "/apple-icon", type: "image/png", sizes: "180x180" }],
+    shortcut: "/icon",
+  },
   openGraph: {
     siteName: "Collectiv. Studio",
     locale: "en_GB",

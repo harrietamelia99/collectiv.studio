@@ -35,6 +35,10 @@ if (process.env.NODE_ENV === "production") {
 }
 
 const nextConfig = {
+  // Chrome still requests /favicon.ico by default; map to generated app icon.
+  async rewrites() {
+    return [{ source: "/favicon.ico", destination: "/icon" }];
+  },
   // Repo has pre-existing ESLint issues; blocking the build takes the site offline.
   // Run `npm run lint` locally and fix incrementally.
   eslint: { ignoreDuringBuilds: true },
