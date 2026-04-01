@@ -16,8 +16,8 @@ const PACKAGE_IMAGES: Record<
     imageSrc: "/images/website-the-launch-page.png",
     imageAlt:
       "Close-up of hands typing on a silver laptop, cream loungewear, gold watch and rings, soft bright background — calm professional mood.",
-    imageObjectFit: "contain",
-    imageObjectPosition: "50% 48%",
+    /* Portrait in a 4:3 card: cover fills the frame; bias lower-right so laptop + hands stay in view */
+    imageObjectPosition: "56% 68%",
   },
   "02": {
     imageSrc: "/images/service-website.png",
@@ -42,8 +42,8 @@ const PACKAGE_IMAGES: Record<
     imageSrc: "/images/website-the-expansion-build.png",
     imageAlt:
       "High-angle workspace with laptop on stone counter, white shirt and hands typing, croissant and coffee on a tray — bright café-style morning.",
-    imageObjectFit: "contain",
-    imageObjectPosition: "50% 46%",
+    /* Portrait in 4:3: cover fills width; centre slightly low for laptop + breakfast tray */
+    imageObjectPosition: "50% 54%",
   },
 };
 
