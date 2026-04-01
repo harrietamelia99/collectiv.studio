@@ -115,18 +115,23 @@ export const portfolioProjects: PortfolioProject[] = [
     title: "Powerhouse Pilates",
     type: "Branding & Website",
     image: "/images/portfolio-powerhouse.png",
-    tagline: "Strength-forward branding for a reformer studio with a loyal local following.",
-    year: "2023",
+    tagline:
+      "Visual identity and Squarespace site for a calm Berkshire studio—quiet strength, considered design, online and in the room.",
+    year: "2025",
     overview:
-      "Powerhouse wanted to graduate from a logo they’d outgrown into a full studio identity - then carry it through a site that could handle timetables, intro offers and instructor profiles without feeling like a generic gym template.",
+      "Powerhouse Pilates is a Berkshire-based studio offering a calm, welcoming space for movement and exercise. Starting from a clean slate, we built a full visual identity and Squarespace site that reflects the studio's ethos - quiet strength, considered design, and a space that feels as good online as it does in person.",
     challenge:
-      "Pilates studios often look interchangeable. The owner needed a mark and language that communicated athletic rigour while staying inclusive for beginners walking in off the street.",
+      "The founder had a clear vision but needed someone to translate it into a brand system. The design had to feel calming without feeling flat - neutral and refined, but with enough structure to communicate credibility and attract a loyal, local client base.",
     approach:
-      "Custom logotype exploration led to a bold, slightly condensed wordmark paired with a secondary monogram for social avatars and kit. The site maps the in-studio experience online: class types, first-visit FAQs and a prominent trial path.",
+      "We developed a clean, neutral palette rooted in the studio's environment, pairing it with considered typography to balance softness with strength. Once the brand identity landed, the founder chose to extend the project into a full Squarespace build, bringing the visual system to life across every page.",
     outcome:
-      "Intro-class bookings became easier to track and staff spend less time answering the same questions on DMs. Merch and studio signage finally match the digital experience.",
-    services: ["Branding", "Web design", "Launch assets"],
-    galleryCaptions: ["Brand mark and studio signage", "Timetable and intro-offer UX"],
+      "A cohesive brand and website that works as hard in the studio as it does online. The identity is flexible enough to carry across signage, social and print, giving Powerhouse Pilates a foundation built for long-term growth.",
+    services: ["Visual identity", "Squarespace build", "Web design"],
+    galleryCaptions: ["Brand identity and visual system", "Site - studio and booking"],
+    galleryImages: [
+      "/images/portfolio-powerhouse-gallery-identity.png",
+      "/images/portfolio-powerhouse-gallery-site.png",
+    ],
     quote: {
       text: "Members say the studio finally looks as strong as it feels.",
       attribution: "Owner, Powerhouse Pilates",
@@ -155,18 +160,23 @@ export const portfolioProjects: PortfolioProject[] = [
     title: "Malow London",
     type: "Branding",
     image: "/images/portfolio-malows.png",
-    tagline: "Soft minimalism for an independent London label.",
-    year: "2023",
+    tagline:
+      "Full brand identity for comfort-led heels—feminine and pink, grounded in quiet luxury.",
+    year: "2026",
     overview:
-      "Malow makes small-run pieces with an emphasis on fabric and cut. They needed a mark, packaging language and digital-first assets that could scale as stockists came on board.",
+      "Malow London is an e-commerce brand creating heels designed for comfort without compromising on style. We developed a full brand identity that captures their vision exactly - feminine and pink, yet grounded in a quiet luxury, neutral aesthetic.",
     challenge:
-      "Fast fashion noise on social makes quiet craft hard to read at thumbnail size. The identity had to survive Instagram, Not On The High Street and in-boutique swing tags.",
+      "The brief sat in a tricky space: pink and feminine, but not loud or trend-led. The identity needed to feel elevated enough to sit alongside premium footwear brands, while still being warm and accessible to their customer.",
     approach:
-      "A single refined wordmark with optional sub-mark for woven labels. Packaging uses one ink and deboss texture rather than loud colour. Digital templates keep crops consistent so textile detail stays legible.",
+      "We worked closely with the team to refine the visual direction, building a palette and identity system that balanced softness with sophistication. Every element, from the primary logo to the submarks, was designed to work across packaging, digital and social as the brand scales.",
     outcome:
-      "Wholesale one-sheets and packaging finally match the product price point. The founder reports fewer requests for ‘just the logo’ in random formats.",
-    services: ["Logo & wordmark", "Packaging design", "Digital brand kit"],
-    galleryCaptions: ["Packaging and swing tags", "Social product crops"],
+      "A brand the founders are genuinely proud of. The submarks in particular landed exactly where they wanted, and with a website currently in the works, the identity is already doing its job before the full platform is even live.",
+    services: ["Visual identity", "Logo suite & submarks", "Packaging & digital"],
+    galleryCaptions: ["Brand identity and logo suite", "Submarks and brand application"],
+    galleryImages: [
+      "/images/portfolio-malow-gallery-brand.png",
+      "/images/portfolio-malow-gallery-application.png",
+    ],
   },
   {
     slug: "bath-arms",
