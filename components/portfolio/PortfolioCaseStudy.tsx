@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { PortfolioProject } from "@/lib/portfolio";
 import { ImagePlaceholderFill } from "@/components/ui/ImagePlaceholder";
@@ -45,14 +46,6 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
         </div>
       </section>
 
-      <section className="bg-cream px-6 pb-12 pt-10 md:pb-16 md:pt-12">
-        <div className="mx-auto max-w-6xl">
-          <div className="relative aspect-[16/9] w-full overflow-hidden md:aspect-[2.2/1]">
-            <ImagePlaceholderFill />
-          </div>
-        </div>
-      </section>
-
       <section className="bg-cream px-6 py-14 md:py-20">
         <div className="mx-auto max-w-3xl">
           <SectionLabel className="mb-4">[ overview ]</SectionLabel>
@@ -93,14 +86,26 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
 
       <section className="bg-cream px-6 py-14 md:py-20">
         <div className="mx-auto max-w-6xl">
-          <SectionLabel className="mb-10 md:mb-12">[ project gallery ]</SectionLabel>
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-10">
-            {project.galleryCaptions.map((caption, i) => (
-              <figure key={i} className="m-0">
-                <div className="relative aspect-[4/3] w-full overflow-hidden">
-                  <ImagePlaceholderFill />
+          <SectionLabel className="mb-6 md:mb-8">[ project gallery ]</SectionLabel>
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-6 md:gap-8">
+            {project.galleryCaptions.slice(0, 2).map((caption, i) => (
+              <figure key={i} className="m-0 flex flex-col">
+                <div className="relative aspect-[4/3] w-full min-w-0 overflow-hidden bg-burgundy/[0.06]">
+                  {project.galleryImages?.[i] ? (
+                    <Image
+                      src={project.galleryImages[i]}
+                      alt={`${project.title} — ${caption}`}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 100vw, 50vw"
+                    />
+                  ) : (
+                    <ImagePlaceholderFill />
+                  )}
                 </div>
-                <figcaption className="cc-caption mt-4">{caption}</figcaption>
+                <figcaption className="cc-caption mt-4 uppercase tracking-[0.12em] text-burgundy/70">
+                  {caption}
+                </figcaption>
               </figure>
             ))}
           </div>

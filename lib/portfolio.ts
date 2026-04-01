@@ -12,8 +12,10 @@ export type PortfolioProject = {
   approach: string;
   outcome: string;
   services: readonly string[];
-  /** Captions for secondary visual blocks (placeholders until assets ship). */
+  /** Captions under gallery images (uppercase in UI). */
   galleryCaptions: readonly string[];
+  /** When set (same length as captions used), gallery shows these instead of placeholders. */
+  galleryImages?: readonly string[];
   quote?: { text: string; attribution: string };
 };
 
@@ -25,17 +27,21 @@ export const portfolioProjects: PortfolioProject[] = [
     image: "/images/portfolio-petite.png",
     imageObjectPosition: "center 56%",
     tagline: "A warm, confident identity for a members’ club designed around little ones and their grown-ups.",
-    year: "2024",
+    year: "2026",
     overview:
-      "Petite Social Club needed a brand that felt premium without feeling precious - somewhere parents would be proud to book and children would feel at home. We shaped a full visual system, tone of voice and a calm, editorial site that carries the story from first glance to membership enquiry.",
+      "Petite Social Club needed a brand that felt premium without feeling precious - somewhere parents would be proud to book and children would feel at home. We shaped a full visual system, tone of voice and a Squarespace site that carries the story from first glance to enquiry.",
     challenge:
       "The category skews either overly corporate or cartoonish. The founder wanted a refined middle ground: credible for parents, inviting for families, and flexible enough to work across events, merchandise and digital comms.",
     approach:
-      "We started with positioning and naming touchpoints, then moved into a restrained palette, custom wordmark direction and photography rules that favour natural light and real moments. The website mirrors that restraint - generous whitespace, clear membership pathways and modular blocks for seasonal programming.",
+      "We started with brand positioning, then moved into a restrained palette, custom wordmark direction and photography rules that favour natural light and real moments. The Squarespace build mirrors that restraint - generous whitespace, clear membership pathways and modular blocks for seasonal programming.",
     outcome:
-      "A cohesive launch that reads boutique rather than bulk: membership enquiries picked up early traction and the team can swap campaign modules without breaking layout. The system is documented so future collateral stays on-brand.",
-    services: ["Brand strategy", "Visual identity", "Web design", "UI build support"],
+      "A cohesive launch that reads boutique rather than bulk. The team can swap campaign modules without breaking layout, and the system is documented so every future touchpoint stays on-brand.",
+    services: ["Brand strategy", "Visual identity", "Web design", "Squarespace build"],
     galleryCaptions: ["Identity in use across club spaces", "Site - membership and events"],
+    galleryImages: [
+      "/images/portfolio-petite-gallery-desktop.png",
+      "/images/portfolio-petite-gallery-mobile.png",
+    ],
     quote: {
       text: "Collectiv understood the emotional side of our brand, not just the visuals. Parents tell us it finally feels like us.",
       attribution: "Founder, Petite Social Club",
