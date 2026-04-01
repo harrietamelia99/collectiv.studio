@@ -32,6 +32,8 @@ type Props = {
   whatToExpect?: WhatToExpectContent;
   /** Extra classes on the burgundy packages band (e.g. more bottom padding). */
   packagesBandClassName?: string;
+  /** Hero-style faded video + scrim behind the packages band only (e.g. Pre-Launch Suite). */
+  packagesBandVideoBackdrop?: boolean;
 };
 
 const defaultBottomCta: ServicePageCtaCopy = {
@@ -55,6 +57,7 @@ export function ServicePackagePageLayout({
   bottomCta = defaultBottomCta,
   whatToExpect,
   packagesBandClassName = "",
+  packagesBandVideoBackdrop = false,
 }: Props) {
   const multiPackages = packages.length > 1;
   const packagesEyebrowResolved =
@@ -78,32 +81,56 @@ export function ServicePackagePageLayout({
       {afterHero}
 
       <section
-        className={`cc-service-packages-stack bg-burgundy px-4 pb-8 pt-10 sm:px-5 sm:pb-9 sm:pt-11 md:px-6 md:pb-8 md:pt-12 lg:px-8 lg:pb-10 lg:pt-14 ${packagesBandClassName}`.trim()}
+        className={`cc-service-packages-stack relative overflow-hidden bg-burgundy px-4 pb-8 pt-10 sm:px-5 sm:pb-9 sm:pt-11 md:px-6 md:pb-8 md:pt-12 lg:px-8 lg:pb-10 lg:pt-14 ${packagesBandClassName}`.trim()}
         aria-label="Service packages"
       >
-        <header className="mx-auto mb-4 max-w-2xl text-center md:mb-5">
-          {packagesEyebrowResolved != null ? (
-            <SectionLabel light className="mb-2 md:mb-2.5">
-              {packagesEyebrowResolved}
-            </SectionLabel>
-          ) : null}
-          <h2 className="cc-no-heading-hover font-display text-2xl font-normal leading-[1.12] tracking-[-0.02em] text-cream md:text-3xl md:leading-[1.1]">
-            {packagesSectionTitle}
-          </h2>
-          <p className="cc-copy mx-auto mt-2.5 max-w-xl text-[12px] leading-relaxed text-cream/78 md:mt-3 md:text-[13px]">
-            {resolvedPackagesSubtitle}
-          </p>
-        </header>
-
-        {multiPackages ? (
-          <ServicePackagesCarousel packages={packages} />
-        ) : (
-          <div className="mx-auto flex w-full justify-center px-1 sm:px-2">
-            {packages.map((pkg) => (
-              <ServicePackageCard key={pkg.id} pkg={pkg} collapsibleDetails={false} solo />
-            ))}
+        {packagesBandVideoBackdrop ? (
+          <div
+            className="cc-hero-video-wrap pointer-events-none absolute inset-0 z-0 overflow-hidden"
+            aria-hidden
+          >
+            <video
+              className="cc-hero-bg-video"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+            >
+              <source src="/videos/hero-background.mp4" type="video/mp4" />
+            </video>
+            <div
+              className="absolute inset-0 bg-gradient-to-b from-burgundy/70 via-burgundy/55 to-burgundy/58"
+              aria-hidden
+            />
           </div>
-        )}
+        ) : null}
+
+        <div className="relative z-10">
+          <header className="mx-auto mb-4 max-w-2xl text-center md:mb-5">
+            {packagesEyebrowResolved != null ? (
+              <SectionLabel light className="mb-2 md:mb-2.5">
+                {packagesEyebrowResolved}
+              </SectionLabel>
+            ) : null}
+            <h2 className="cc-no-heading-hover font-display text-2xl font-normal leading-[1.12] tracking-[-0.02em] text-cream md:text-3xl md:leading-[1.1]">
+              {packagesSectionTitle}
+            </h2>
+            <p className="cc-copy mx-auto mt-2.5 max-w-xl text-[12px] leading-relaxed text-cream/78 md:mt-3 md:text-[13px]">
+              {resolvedPackagesSubtitle}
+            </p>
+          </header>
+
+          {multiPackages ? (
+            <ServicePackagesCarousel packages={packages} />
+          ) : (
+            <div className="mx-auto flex w-full justify-center px-1 sm:px-2">
+              {packages.map((pkg) => (
+                <ServicePackageCard key={pkg.id} pkg={pkg} collapsibleDetails={false} solo />
+              ))}
+            </div>
+          )}
+        </div>
       </section>
 
       {whatToExpect ? (
