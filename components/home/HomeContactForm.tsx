@@ -1,24 +1,76 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { ctaButtonClasses, FormSubmitButton } from "@/components/ui/Button";
+import { ctaButtonClasses } from "@/components/ui/Button";
+import { CONTACT_EMAIL_PATTERN } from "@/lib/marketing-contact-body";
 
 const HOME_EMAIL_KEY = "cc-home-contact-email";
 
 type Values = {
   email: string;
+  trap: string;
 };
 
 export function HomeContactForm() {
   const [sent, setSent] = useState(false);
+  const [banner, setBanner] = useState<"none" | "error">("none");
+  const [buttonSuccessFlash, setButtonSuccessFlash] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<Values>();
+  } = useForm<Values>({ defaultValues: { email: "", trap: "" } });
+
+  const onSubmit = async (data: Values) => {
+    setBanner("none");
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          source: "home",
+          email: data.email.trim(),
+          honeypot: data.trap,
+        }),
+      });
+      const payload = (await res.json().catch(() => ({}))) as { ok?: boolean };
+
+      if (res.ok && payload.ok) {
+        try {
+          sessionStorage.setItem(HOME_EMAIL_KEY, data.email.trim());
+        } catch {
+          /* private mode */
+        }
+        reset({ email: "", trap: "" });
+        setSent(true);
+        setButtonSuccessFlash(true);
+        if (successTimerRef.current) clearTimeout(successTimerRef.current);
+        successTimerRef.current = setTimeout(() => setButtonSuccessFlash(false), 3000);
+        setIsSubmitting(false);
+        return;
+      }
+
+      setBanner("error");
+      setIsSubmitting(false);
+    } catch {
+      setBanner("error");
+      setIsSubmitting(false);
+    }
+  };
+
+  const buttonDisabled = isSubmitting || buttonSuccessFlash;
+  const miniButtonLabel = isSubmitting
+    ? "Sending..."
+    : buttonSuccessFlash
+      ? "Message sent ✓"
+      : "Submit";
 
   return (
     <section className="relative bg-cream px-6 py-[clamp(1.35rem,3.5vw,2.25rem)] md:px-10 md:py-9">
@@ -40,8 +92,9 @@ export function HomeContactForm() {
               Thank you
             </p>
             <p className="cc-copy-muted mt-3">
-              Your email is saved for this session. Continue to the full enquiry and we&apos;ll
-              have you mostly set up.
+              Thanks for reaching out - we&apos;ll be in touch within 1 to 2 working days. Continue
+              to the full enquiry when you&apos;re ready and we&apos;ll have your email on file for
+              this session.
             </p>
             <Link
               href="/contactus"
@@ -56,24 +109,27 @@ export function HomeContactForm() {
           </div>
         ) : (
           <form
-            className="mx-auto mt-5 w-full max-w-[min(100%,360px)] text-center md:mt-6"
-            onSubmit={handleSubmit((data) => {
-              try {
-                sessionStorage.setItem(HOME_EMAIL_KEY, data.email.trim());
-              } catch {
-                /* private mode */
-              }
-              setSent(true);
-              reset();
-            })}
+            className="relative mx-auto mt-5 w-full max-w-[min(100%,360px)] text-center md:mt-6"
+            onSubmit={handleSubmit(onSubmit)}
             noValidate
           >
+            <div
+              className="pointer-events-none absolute -left-[9999px] h-px w-px overflow-hidden opacity-0"
+              aria-hidden="true"
+            >
+              <label htmlFor="home-trap">Title</label>
+              <input id="home-trap" tabIndex={-1} autoComplete="off" {...register("trap")} />
+            </div>
+
             <div className="mx-auto w-full max-w-[min(100%,280px)]">
               <label
                 htmlFor="home-contact-email"
                 className="cc-section-label mb-1.5 block w-full text-center"
               >
-                Email <span className="font-normal normal-case tracking-normal text-burgundy/50">(required)</span>
+                Email{" "}
+                <span className="font-normal normal-case tracking-normal text-burgundy/50">
+                  (required)
+                </span>
               </label>
               <input
                 id="home-contact-email"
@@ -85,22 +141,33 @@ export function HomeContactForm() {
                 {...register("email", {
                   required: "Please add your email",
                   pattern: {
-                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: "Enter a valid email",
+                    value: CONTACT_EMAIL_PATTERN,
+                    message: "Enter a valid email address",
                   },
                 })}
               />
               {errors.email ? (
-                <p className="cc-copy-sm mt-2.5 text-center text-burgundy/75" role="alert">
+                <p className="cc-copy-sm mt-2.5 text-center text-rose-800/90" role="alert">
                   {errors.email.message}
                 </p>
               ) : null}
             </div>
 
             <div className="mt-4 flex flex-col items-center gap-2 md:mt-5">
-              <FormSubmitButton className="min-w-[9.5rem] tracking-[0.2em] md:min-w-[10.5rem]">
-                Submit
-              </FormSubmitButton>
+              <button
+                type="submit"
+                disabled={buttonDisabled}
+                className={ctaButtonClasses({
+                  variant: buttonSuccessFlash ? "outline" : "burgundy",
+                  size: "md",
+                  isSubmit: true,
+                  className: `min-w-[9.5rem] tracking-[0.2em] md:min-w-[10.5rem] ${
+                    buttonSuccessFlash ? "!border-burgundy !bg-cream !text-burgundy !shadow-none" : ""
+                  }`,
+                })}
+              >
+                {miniButtonLabel}
+              </button>
               <Link
                 href="/contactus"
                 className="cc-caption text-burgundy/60 underline decoration-burgundy/25 underline-offset-4 transition-colors hover:text-burgundy hover:decoration-burgundy/50"
@@ -108,6 +175,21 @@ export function HomeContactForm() {
                 Skip to full form
               </Link>
             </div>
+
+            {banner === "error" ? (
+              <div className="mx-auto mt-5 max-w-sm space-y-2 text-center">
+                <p className="cc-copy-sm text-rose-800/90" role="alert">
+                  Something went wrong - please try again.
+                </p>
+                <p className="cc-caption text-rose-800/75">
+                  If the problem persists please email{" "}
+                  <a href="mailto:hello@collectivstudio.uk" className="underline underline-offset-2">
+                    hello@collectivstudio.uk
+                  </a>
+                  .
+                </p>
+              </div>
+            ) : null}
           </form>
         )}
       </div>

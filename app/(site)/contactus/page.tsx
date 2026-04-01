@@ -1,16 +1,18 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm, type UseFormRegister } from "react-hook-form";
 import { HOME_EMAIL_KEY } from "@/components/home/HomeContactForm";
-import { FormSubmitButton } from "@/components/ui/Button";
+import { ctaButtonClasses } from "@/components/ui/Button";
 import { MotionSection } from "@/components/ui/SectionReveal";
 import { SectionLabel } from "@/components/ui/SectionLabel";
+import { CONTACT_EMAIL_PATTERN } from "@/lib/marketing-contact-body";
 
 type FormValues = {
   firstName: string;
   lastName: string;
   email: string;
+  phone: string;
   businessName: string;
   businessWebsite: string;
   socialHandle: string;
@@ -24,6 +26,7 @@ type FormValues = {
   howHeard: string;
   wordOfMouthThanks: string;
   additionalQuestions: string;
+  trap: string;
 };
 
 const BUDGET_OPTIONS = [
@@ -40,15 +43,26 @@ const TIMELINE_OPTIONS = [
   "Just gathering info right now",
 ] as const;
 
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <p className="mt-1.5 font-body text-[12px] text-rose-800/90 md:text-[13px]" role="alert">
+      {message}
+    </p>
+  );
+}
+
 function UnderlineField({
   id,
   label,
   requiredMark,
+  error,
   children,
 }: {
   id: string;
   label: string;
   requiredMark?: boolean;
+  error?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -60,6 +74,7 @@ function UnderlineField({
         ) : null}
       </label>
       {children}
+      <FieldError message={error} />
     </div>
   );
 }
@@ -70,12 +85,14 @@ function ChoiceGroup({
   options,
   register,
   required,
+  error,
 }: {
   legend: string;
   name: keyof FormValues;
   options: readonly string[];
   register: UseFormRegister<FormValues>;
   required?: boolean;
+  error?: string;
 }) {
   return (
     <fieldset className="border-0 p-0 pt-2">
@@ -85,15 +102,12 @@ function ChoiceGroup({
       </legend>
       <div className="flex flex-wrap gap-2">
         {options.map((opt) => (
-          <label
-            key={opt}
-            className="inline-flex cursor-pointer items-center"
-          >
+          <label key={opt} className="inline-flex cursor-pointer items-center">
             <input
               type="radio"
               value={opt}
               className="peer sr-only"
-              {...register(name, { required })}
+              {...register(name, { required: required ? "Please choose an option" : false })}
             />
             <span className="cc-caption rounded-md border border-burgundy/20 bg-transparent px-3 py-2.5 text-burgundy transition-colors peer-checked:border-burgundy peer-checked:bg-burgundy peer-checked:text-cream hover:border-burgundy/40">
               {opt}
@@ -101,6 +115,7 @@ function ChoiceGroup({
           </label>
         ))}
       </div>
+      <FieldError message={error} />
     </fieldset>
   );
 }
@@ -112,7 +127,34 @@ const lineTextarea =
   "cc-copy w-full min-h-[100px] resize-y border-0 border-b-cc border-solid border-burgundy bg-transparent py-2.5 placeholder:text-burgundy/40 focus:border-burgundy focus:outline-none focus:ring-0";
 
 export default function ContactPage() {
-  const { register, handleSubmit, reset, setValue } = useForm<FormValues>();
+  const [banner, setBanner] = useState<"none" | "success" | "error">("none");
+  const [buttonSuccessFlash, setButtonSuccessFlash] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const { register, handleSubmit, reset, setValue, setError, formState: { errors } } =
+    useForm<FormValues>({
+      defaultValues: {
+        trap: "",
+        phone: "",
+        firstName: "",
+        lastName: "",
+        email: "",
+        businessName: "",
+        businessWebsite: "",
+        socialHandle: "",
+        basedIn: "",
+        industry: "",
+        aboutBusiness: "",
+        excitedAbout: "",
+        servicesInterested: "",
+        budget: "",
+        timeline: "",
+        howHeard: "",
+        wordOfMouthThanks: "",
+        additionalQuestions: "",
+      },
+    });
 
   useEffect(() => {
     try {
@@ -125,6 +167,98 @@ export default function ContactPage() {
       /* ignore */
     }
   }, [setValue]);
+
+  useEffect(() => {
+    return () => {
+      if (successTimerRef.current) clearTimeout(successTimerRef.current);
+    };
+  }, []);
+
+  const onSubmit = async (data: FormValues) => {
+    setBanner("none");
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          source: "contact",
+          firstName: data.firstName.trim(),
+          lastName: data.lastName.trim(),
+          email: data.email.trim(),
+          phone: data.phone.trim() || undefined,
+          businessName: data.businessName.trim() || undefined,
+          businessWebsite: data.businessWebsite.trim() || undefined,
+          socialHandle: data.socialHandle.trim() || undefined,
+          basedIn: data.basedIn.trim() || undefined,
+          industry: data.industry.trim() || undefined,
+          aboutBusiness: data.aboutBusiness.trim() || undefined,
+          excitedAbout: data.excitedAbout.trim() || undefined,
+          servicesInterested: data.servicesInterested.trim(),
+          budget: data.budget,
+          timeline: data.timeline,
+          howHeard: data.howHeard.trim() || undefined,
+          wordOfMouthThanks: data.wordOfMouthThanks.trim() || undefined,
+          additionalQuestions: data.additionalQuestions.trim() || undefined,
+          honeypot: data.trap,
+        }),
+      });
+
+      const payload = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        fieldErrors?: Record<string, string>;
+        error?: string;
+      };
+
+      if (res.ok && payload.ok) {
+        // eslint-disable-next-line no-console
+        console.log("[contact-form] client: submission OK");
+        reset({
+          trap: "",
+          phone: "",
+          firstName: "",
+          lastName: "",
+          email: "",
+          businessName: "",
+          businessWebsite: "",
+          socialHandle: "",
+          basedIn: "",
+          industry: "",
+          aboutBusiness: "",
+          excitedAbout: "",
+          servicesInterested: "",
+          budget: "",
+          timeline: "",
+          howHeard: "",
+          wordOfMouthThanks: "",
+          additionalQuestions: "",
+        });
+        setBanner("success");
+        setButtonSuccessFlash(true);
+        if (successTimerRef.current) clearTimeout(successTimerRef.current);
+        successTimerRef.current = setTimeout(() => setButtonSuccessFlash(false), 3000);
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (payload.fieldErrors && typeof payload.fieldErrors === "object") {
+        for (const [key, msg] of Object.entries(payload.fieldErrors)) {
+          if (msg && key in data) {
+            setError(key as keyof FormValues, { type: "server", message: msg });
+          }
+        }
+      }
+
+      setBanner("error");
+      setIsSubmitting(false);
+    } catch {
+      setBanner("error");
+      setIsSubmitting(false);
+    }
+  };
+
+  const buttonDisabled = isSubmitting || buttonSuccessFlash;
+  const buttonLabel = isSubmitting ? "Sending..." : buttonSuccessFlash ? "Message sent ✓" : "Send";
 
   return (
     <MotionSection className="cc-rule-t-burgundy bg-cream px-6 py-16 md:py-24">
@@ -139,40 +273,72 @@ export default function ContactPage() {
         </p>
 
         <form
-          onSubmit={handleSubmit(() => {
-            reset();
-          })}
-          className="mt-10 border-0 bg-transparent p-0 md:mt-12"
+          onSubmit={handleSubmit(onSubmit)}
+          className="relative mt-10 border-0 bg-transparent p-0 md:mt-12"
+          noValidate
         >
+          <div
+            className="pointer-events-none absolute -left-[9999px] h-px w-px overflow-hidden opacity-0"
+            aria-hidden="true"
+          >
+            <label htmlFor="contact-trap">Company website</label>
+            <input id="contact-trap" tabIndex={-1} autoComplete="off" {...register("trap")} />
+          </div>
+
           <div className="space-y-10 md:space-y-12">
             <div>
               <h2 className="cc-section-label mb-6 text-burgundy/55">Contact</h2>
               <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-10">
-                <UnderlineField id="firstName" label="First name" requiredMark>
+                <UnderlineField
+                  id="firstName"
+                  label="First name"
+                  requiredMark
+                  error={errors.firstName?.message}
+                >
                   <input
                     id="firstName"
                     autoComplete="given-name"
                     className={lineInput}
-                    {...register("firstName", { required: true })}
+                    {...register("firstName", { required: "This field is required" })}
                   />
                 </UnderlineField>
-                <UnderlineField id="lastName" label="Last name" requiredMark>
+                <UnderlineField
+                  id="lastName"
+                  label="Last name"
+                  requiredMark
+                  error={errors.lastName?.message}
+                >
                   <input
                     id="lastName"
                     autoComplete="family-name"
                     className={lineInput}
-                    {...register("lastName", { required: true })}
+                    {...register("lastName", { required: "This field is required" })}
                   />
                 </UnderlineField>
               </div>
-              <div className="mt-8">
-                <UnderlineField id="email" label="Email" requiredMark>
+              <div className="mt-8 space-y-8">
+                <UnderlineField id="email" label="Email" requiredMark error={errors.email?.message}>
                   <input
                     id="email"
                     type="email"
                     autoComplete="email"
                     className={lineInput}
-                    {...register("email", { required: true })}
+                    {...register("email", {
+                      required: "This field is required",
+                      pattern: {
+                        value: CONTACT_EMAIL_PATTERN,
+                        message: "Enter a valid email address",
+                      },
+                    })}
+                  />
+                </UnderlineField>
+                <UnderlineField id="phone" label="Phone (optional)" error={errors.phone?.message}>
+                  <input
+                    id="phone"
+                    type="tel"
+                    autoComplete="tel"
+                    className={lineInput}
+                    {...register("phone")}
                   />
                 </UnderlineField>
               </div>
@@ -230,12 +396,13 @@ export default function ContactPage() {
                   id="servicesInterested"
                   label="Describe which service(s) you're interested in"
                   requiredMark
+                  error={errors.servicesInterested?.message}
                 >
                   <textarea
                     id="servicesInterested"
                     className={lineTextarea}
                     rows={4}
-                    {...register("servicesInterested", { required: true })}
+                    {...register("servicesInterested", { required: "This field is required" })}
                   />
                 </UnderlineField>
               </div>
@@ -247,6 +414,7 @@ export default function ContactPage() {
               options={BUDGET_OPTIONS}
               register={register}
               required
+              error={errors.budget?.message}
             />
 
             <ChoiceGroup
@@ -255,6 +423,7 @@ export default function ContactPage() {
               options={TIMELINE_OPTIONS}
               register={register}
               required
+              error={errors.timeline?.message}
             />
 
             <div className="space-y-8">
@@ -281,10 +450,41 @@ export default function ContactPage() {
             </div>
           </div>
 
-          <div className="mt-12 flex justify-start border-t-cc border-solid border-[var(--cc-border)] pt-10">
-            <FormSubmitButton className="px-10 py-3.5 text-xs tracking-[0.08em]">
-              Send
-            </FormSubmitButton>
+          <div className="mt-12 flex flex-col gap-4 border-t-cc border-solid border-[var(--cc-border)] pt-10">
+            <button
+              type="submit"
+              disabled={buttonDisabled}
+              className={ctaButtonClasses({
+                variant: buttonSuccessFlash ? "outline" : "burgundy",
+                size: "md",
+                isSubmit: true,
+                className: `px-10 py-3.5 text-xs tracking-[0.08em] self-start ${
+                  buttonSuccessFlash ? "!border-burgundy !bg-cream !text-burgundy !shadow-none" : ""
+                }`,
+              })}
+            >
+              {buttonLabel}
+            </button>
+
+            {banner === "success" ? (
+              <p className="cc-copy max-w-xl text-burgundy" role="status">
+                Thanks for reaching out - we&apos;ll be in touch within 1 to 2 working days.
+              </p>
+            ) : null}
+            {banner === "error" ? (
+              <div className="max-w-xl space-y-2">
+                <p className="cc-copy text-rose-800/90" role="alert">
+                  Something went wrong - please try again.
+                </p>
+                <p className="cc-copy-sm text-rose-800/75">
+                  If the problem persists please email us directly at{" "}
+                  <a href="mailto:hello@collectivstudio.uk" className="underline underline-offset-2">
+                    hello@collectivstudio.uk
+                  </a>
+                  .
+                </p>
+              </div>
+            ) : null}
           </div>
         </form>
       </div>

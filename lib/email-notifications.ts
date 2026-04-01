@@ -34,6 +34,9 @@ export function collectivEmailShell(opts: {
   detailHtml?: string | null;
   cta?: { href: string; label: string };
   footerLine?: string | null;
+  /** Defaults keep existing portal transactional emails unchanged. */
+  shellEyebrow?: string;
+  shellTitle?: string;
 }): string {
   const detail = opts.detailHtml
     ? `<div style="margin:20px 0;padding:18px 20px;background:#ffffff;border:1px solid #e5ddd8;border-radius:8px;color:${COLLECTIV_BURGUNDY};font-size:14px;line-height:1.6;">${opts.detailHtml}</div>`
@@ -52,10 +55,12 @@ export function collectivEmailShell(opts: {
   const foot = opts.footerLine
     ? `<p style="margin:24px 0 0;font-size:12px;color:#6b5a5e;">${opts.footerLine}</p>`
     : "";
+  const shellEyebrow = opts.shellEyebrow ?? "Collectiv. Studio";
+  const shellTitle = opts.shellTitle ?? "Client portal";
   return `<!DOCTYPE html><html><head><meta charset="utf-8"/></head><body style="margin:0;padding:28px 24px;font-family:Georgia,'Times New Roman',serif;background:${COLLECTIV_CREAM};color:${COLLECTIV_BURGUNDY};">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;margin:0 auto;"><tr><td>
-<p style="margin:0 0 6px;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#6b5a5e;">Collectiv. Studio</p>
-<p style="margin:0 0 20px;font-size:17px;font-weight:600;color:${COLLECTIV_BURGUNDY};">Client portal</p>
+<p style="margin:0 0 6px;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#6b5a5e;">${escapeHtml(shellEyebrow)}</p>
+<p style="margin:0 0 20px;font-size:17px;font-weight:600;color:${COLLECTIV_BURGUNDY};">${escapeHtml(shellTitle)}</p>
 ${opts.greetingHtml}
 ${paras}
 ${detail}
@@ -70,7 +75,7 @@ export async function sendBrandedTransactional(params: {
   subject: string;
   html: string;
   logTag: string;
-}): Promise<void> {
+}): Promise<boolean> {
   const resend = getResend();
   const from = getResendFromEmail();
   const toList = (Array.isArray(params.to) ? params.to : [params.to])
@@ -79,7 +84,7 @@ export async function sendBrandedTransactional(params: {
   if (toList.length === 0) {
     // eslint-disable-next-line no-console
     console.warn(`[email:${params.logTag}] skipped: no recipients`, { subject: params.subject });
-    return;
+    return false;
   }
 
   if (!resend) {
@@ -89,7 +94,7 @@ export async function sendBrandedTransactional(params: {
       subject: params.subject,
       from,
     });
-    return;
+    return false;
   }
 
   try {
@@ -106,7 +111,7 @@ export async function sendBrandedTransactional(params: {
           : String(error);
       // eslint-disable-next-line no-console
       console.error(`[email:${params.logTag}] Resend API error`, detail);
-      return;
+      return false;
     }
     // eslint-disable-next-line no-console
     console.log(`[email:${params.logTag}] sent OK`, {
@@ -115,10 +120,12 @@ export async function sendBrandedTransactional(params: {
       from,
       id: data?.id ?? null,
     });
+    return true;
   } catch (e) {
     const detail = e instanceof Error ? `${e.name}: ${e.message}\n${e.stack ?? ""}` : String(e);
     // eslint-disable-next-line no-console
     console.error(`[email:${params.logTag}] send failed`, detail);
+    return false;
   }
 }
 
@@ -683,6 +690,94 @@ export async function resolveRecipientEmailsForReviewAssetSignoff(
     if (i) ids.push(i.userId);
   }
   return emailsForUserIds(ids);
+}
+
+// --- Marketing site: /contactus + home “Get in touch” (Resend) ---
+
+const CONTACT_FORM_STUDIO_INBOX = "isabella@collectivstudio.uk";
+
+export function htmlContactFormFieldTable(
+  rows: { label: string; value: string }[],
+  submittedAtFormatted: string,
+): string {
+  const body = rows
+    .map((r) => {
+      const raw = r.value.trim();
+      const cell = raw
+        ? escapeHtml(raw).replace(/\n/g, "<br/>")
+        : `<span style="color:#9a8a8d;">—</span>`;
+      return `<tr><td style="padding:8px 14px 8px 0;vertical-align:top;font-weight:600;color:${COLLECTIV_BURGUNDY};white-space:nowrap;">${escapeHtml(
+        r.label,
+      )}</td><td style="padding:8px 0;color:#3d2a2f;">${cell}</td></tr>`;
+    })
+    .join("");
+  return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">${body}<tr><td style="padding:8px 14px 8px 0;vertical-align:top;font-weight:600;">Submitted</td><td style="padding:8px 0;">${escapeHtml(
+    submittedAtFormatted,
+  )}</td></tr></table>`;
+}
+
+export async function sendMarketingContactEmails(opts: {
+  source: "contact" | "home";
+  submitterEmail: string;
+  submitterFirstName?: string;
+  studioRows: { label: string; value: string }[];
+}): Promise<{ studioSent: boolean; autoReplySent: boolean }> {
+  const submittedAt = new Date().toLocaleString("en-GB", {
+    dateStyle: "full",
+    timeStyle: "short",
+    timeZone: "Europe/London",
+  });
+
+  let studioSubject: string;
+  if (opts.source === "home") {
+    studioSubject = `New enquiry from ${opts.submitterEmail} via collectivstudio.uk`;
+  } else {
+    const fn = opts.studioRows.find((r) => r.label === "First name")?.value?.trim() ?? "";
+    const ln = opts.studioRows.find((r) => r.label === "Last name")?.value?.trim() ?? "";
+    const name = [fn, ln].filter(Boolean).join(" ").trim() || opts.submitterEmail;
+    studioSubject = `New enquiry from ${name} via collectivstudio.uk`;
+  }
+
+  const studioHtml = collectivEmailShell({
+    shellEyebrow: "Collectiv. Studio",
+    shellTitle: "Website enquiry",
+    greetingHtml: `<p style="margin:0 0 16px;font-size:15px;">You have a new message from the marketing site.</p>`,
+    bodyParagraphsHtml: [
+      opts.source === "home"
+        ? "Someone left their email on the home page “Get in touch” block."
+        : "Someone submitted the full discovery enquiry form on the contact page.",
+    ],
+    detailHtml: htmlContactFormFieldTable(opts.studioRows, submittedAt),
+    footerLine: `Reply directly to ${escapeHtml(opts.submitterEmail)}`,
+  });
+
+  const studioSent = await sendBrandedTransactional({
+    to: CONTACT_FORM_STUDIO_INBOX,
+    subject: studioSubject,
+    html: studioHtml,
+    logTag: "contact-form-studio",
+  });
+
+  const first = (opts.submitterFirstName ?? "").trim() || "there";
+  const autoHtml = collectivEmailShell({
+    shellEyebrow: "Collectiv. Studio",
+    shellTitle: "Thank you",
+    greetingHtml: `<p style="margin:0 0 16px;font-size:15px;">Hi ${escapeHtml(first)},</p>`,
+    bodyParagraphsHtml: [
+      "Thank you for getting in touch with Collectiv. Studio.",
+      "We’ve received your enquiry and the team will be back to you within 1 to 2 working days.",
+    ],
+    footerLine: null,
+  });
+
+  const autoReplySent = await sendBrandedTransactional({
+    to: opts.submitterEmail,
+    subject: "Thanks for getting in touch - Collectiv. Studio",
+    html: autoHtml,
+    logTag: "contact-form-autoreply",
+  });
+
+  return { studioSent, autoReplySent };
 }
 
 export { emailsForUserIds };
