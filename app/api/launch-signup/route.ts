@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { notifyIssyOfLaunchListSignup } from "@/lib/contact-form-studio-notification";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
 import { isSafeWebhookUrl } from "@/lib/webhook-url";
 
@@ -60,6 +61,13 @@ export async function POST(req: Request) {
     } catch {
       return NextResponse.json({ error: "Could not save your signup. Try again shortly." }, { status: 502 });
     }
+  }
+
+  try {
+    await notifyIssyOfLaunchListSignup(email);
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error("[launch-signup] portal notification failed", e);
   }
 
   return NextResponse.json({ ok: true });

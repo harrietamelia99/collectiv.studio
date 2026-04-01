@@ -1,8 +1,18 @@
 import { prisma } from "@/lib/prisma";
 import type { ContactApiFullBody, ContactApiHomeBody } from "@/lib/marketing-contact-body";
 
-const NOTIFICATION_KIND = "CONTACT_FORM_ENQUIRY";
 const NOTIFICATION_HREF = "/portal#studio-notifications";
+
+/** Issy / operations — portal bell + inbox row on the agency dashboard. */
+async function issyUserId(): Promise<string | null> {
+  const row = await prisma.studioTeamMember.findFirst({
+    where: {
+      OR: [{ personaSlug: "isabella" }, { studioRole: "ISSY" }],
+    },
+    select: { userId: true },
+  });
+  return row?.userId ?? null;
+}
 
 function buildNotificationCopy(data: ContactApiHomeBody | ContactApiFullBody): { title: string; body: string } {
   if (data.source === "home") {
@@ -21,18 +31,13 @@ function buildNotificationCopy(data: ContactApiHomeBody | ContactApiFullBody): {
 }
 
 /**
- * In-portal bell notification for Issy after a marketing contact form succeeds.
+ * In-portal notification for Issy after a marketing `/api/contact` submission succeeds
+ * (home strip or full discovery form).
  * Does not throw — callers should still wrap in try/catch and log.
  */
 export async function notifyIssyOfMarketingContact(data: ContactApiHomeBody | ContactApiFullBody): Promise<void> {
-  const issy = await prisma.studioTeamMember.findFirst({
-    where: {
-      OR: [{ personaSlug: "isabella" }, { studioRole: "ISSY" }],
-    },
-    select: { userId: true },
-  });
-
-  if (!issy) {
+  const userId = await issyUserId();
+  if (!userId) {
     // eslint-disable-next-line no-console
     console.warn("[contact-form] Issy studio member not found — skipping portal notification");
     return;
@@ -42,10 +47,32 @@ export async function notifyIssyOfMarketingContact(data: ContactApiHomeBody | Co
 
   await prisma.studioNotification.create({
     data: {
-      userId: issy.userId,
-      kind: NOTIFICATION_KIND,
+      userId,
+      kind: "CONTACT_FORM_ENQUIRY",
       title,
       body,
+      href: NOTIFICATION_HREF,
+    },
+  });
+}
+
+/**
+ * Same Issy recipient as contact forms — homepage launch-list modal (`/api/launch-signup`).
+ */
+export async function notifyIssyOfLaunchListSignup(email: string): Promise<void> {
+  const userId = await issyUserId();
+  if (!userId) {
+    // eslint-disable-next-line no-console
+    console.warn("[launch-signup] Issy studio member not found — skipping portal notification");
+    return;
+  }
+
+  await prisma.studioNotification.create({
+    data: {
+      userId,
+      kind: "LAUNCH_LIST_SIGNUP",
+      title: `Launch list signup: ${email}`,
+      body: "Someone joined the mailing list from the homepage launch modal.",
       href: NOTIFICATION_HREF,
     },
   });

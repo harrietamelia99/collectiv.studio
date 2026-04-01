@@ -101,6 +101,8 @@ function kindLabel(kind: string): string {
       return "Mention";
     case "CONTACT_FORM_ENQUIRY":
       return "Enquiry";
+    case "LAUNCH_LIST_SIGNUP":
+      return "Launch list";
     default:
       return "Update";
   }
