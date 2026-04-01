@@ -6,7 +6,7 @@ export const siteFaqsStatic = [
   },
   {
     q: "How do I get started?",
-    a: "Enquire via the contact form. Discovery call. Proposal and contract. 50% deposit. Project begins.",
+    a: "Fill in the contact form, we'll book a discovery call, send over a proposal and get the project moving once you're ready to go.",
   },
   {
     q: "Do you offer payment plans?",

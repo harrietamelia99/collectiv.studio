@@ -180,7 +180,7 @@ export const aboutPageWhatToExpect: WhatToExpectContent = {
     {
       title: "Enquiry form",
       description:
-        "Reach out via the contact form with a short brief—goals, timeline and the services you’re curious about.",
+        "Fill in the contact form with a short brief covering your goals, timeline and the services you're interested in.",
     },
     {
       title: "Discovery call",
@@ -190,12 +190,12 @@ export const aboutPageWhatToExpect: WhatToExpectContent = {
     {
       title: "Client portal",
       description:
-        "Once you’re onboarded, the portal keeps you oriented — milestones, approvals, file handovers and a single message thread with the team.",
+        "Once you're onboarded, the portal keeps everything in one place - milestones, approvals, file handovers and a direct message thread with the team.",
     },
     {
       title: "Proposal",
       description:
-        "Clear deliverables, investment and milestones. Adjust until it feels right, then we lock the plan.",
+        "We'll put together a clear breakdown of deliverables, investment and milestones. We refine it until it feels right, then lock the plan in.",
     },
     {
       title: "Kickoff",
@@ -205,7 +205,7 @@ export const aboutPageWhatToExpect: WhatToExpectContent = {
     {
       title: "Delivery",
       description:
-        "Checkpoints, reviews and refinements through to launch—and support so you’re not left guessing after.",
+        "Checkpoints, reviews and refinements all the way through to launch, with continued support so you always know where things stand.",
     },
   ],
 };
