@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Instrument_Serif, Space_Mono } from "next/font/google";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { MARKETING_SITE_URL } from "@/lib/marketing-seo";
@@ -35,6 +35,13 @@ export const metadata: Metadata = {
     locale: "en_GB",
     type: "website",
   },
+};
+
+/** Edge-to-edge on notched iPhones so safe-area + header chrome sit over the hero, not body cream. */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 /** Dev-only: if `/_next/static` CSS fails (stale .next, wrong port, preview race), stay readable. :where() = 0 specificity so Tailwind always wins when loaded. */

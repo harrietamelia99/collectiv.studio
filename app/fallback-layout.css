@@ -25,14 +25,15 @@
   position: fixed;
   left: 0;
   right: 0;
-  top: 14px;
+  top: 0;
+  padding-top: max(14px, env(safe-area-inset-top, 0px));
   z-index: 10030;
   pointer-events: none;
 }
 
 @media (min-width: 1024px) {
   :where(.cc-site-header) {
-    top: 24px;
+    padding-top: 1.5rem;
   }
 }
 
