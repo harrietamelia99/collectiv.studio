@@ -107,7 +107,7 @@ export function ServicePackageCard({ pkg, collapsibleDetails, solo = false }: Pr
             src={pkg.imageSrc}
             alt={pkg.imageAlt ?? ""}
             fill
-            className="object-cover"
+            className={pkg.imageObjectFit === "contain" ? "object-contain" : "object-cover"}
             style={pkg.imageObjectPosition ? { objectPosition: pkg.imageObjectPosition } : undefined}
             sizes={
               solo

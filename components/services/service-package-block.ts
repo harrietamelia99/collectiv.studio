@@ -12,4 +12,6 @@ export type ServicePackageBlock = {
   imageSrc?: string;
   imageAlt?: string;
   imageObjectPosition?: string;
+  /** Use `contain` for tall portraits so the subject isn’t cropped by object-cover. */
+  imageObjectFit?: "cover" | "contain";
 };

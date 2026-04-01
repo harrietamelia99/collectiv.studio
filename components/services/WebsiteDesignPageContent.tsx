@@ -5,13 +5,19 @@ import { websiteDesignWhatToExpect } from "@/lib/service-what-to-expect";
 /** Stock imagery aligned with the home services grid (armchair scene, terrazzo launch flat lay, desk details, social-style lifestyle). */
 const PACKAGE_IMAGES: Record<
   string,
-  { imageSrc: string; imageAlt: string; imageObjectPosition?: string }
+  {
+    imageSrc: string;
+    imageAlt: string;
+    imageObjectPosition?: string;
+    imageObjectFit?: "cover" | "contain";
+  }
 > = {
   "01": {
     imageSrc: "/images/website-the-launch-page.png",
     imageAlt:
-      "Minimal desk with open laptop, glass of water, notebooks, and pen — bright, focused workspace.",
-    imageObjectPosition: "50% 42%",
+      "Close-up of hands typing on a silver laptop, cream loungewear, gold watch and rings, soft bright background — calm professional mood.",
+    imageObjectFit: "contain",
+    imageObjectPosition: "50% 48%",
   },
   "02": {
     imageSrc: "/images/service-website.png",
@@ -22,8 +28,8 @@ const PACKAGE_IMAGES: Record<
   "03": {
     imageSrc: "/images/website-the-elevate-build.png",
     imageAlt:
-      "Gold MacBook on linen-bound books on a marble side table, iPhone nearby, soft natural light and blurred grey sofa in the background.",
-    imageObjectPosition: "50% 48%",
+      "Top-down view of a silver MacBook Air on an off-white desk, light wood tray with candle and ceramic vase, open interior-design magazine — calm, minimal workspace.",
+    imageObjectPosition: "48% 46%",
   },
   "04": {
     imageSrc: "/images/website-the-signature-site.png",
@@ -33,10 +39,11 @@ const PACKAGE_IMAGES: Record<
     imageObjectPosition: "50% 78%",
   },
   "05": {
-    imageSrc: "/images/service-launch.png",
+    imageSrc: "/images/website-the-expansion-build.png",
     imageAlt:
-      "Top-down terrazzo surface with headphones, tablet, and latte — polished launch-day flat lay.",
-    imageObjectPosition: "50% 45%",
+      "High-angle workspace with laptop on stone counter, white shirt and hands typing, croissant and coffee on a tray — bright café-style morning.",
+    imageObjectFit: "contain",
+    imageObjectPosition: "50% 46%",
   },
 };
 
