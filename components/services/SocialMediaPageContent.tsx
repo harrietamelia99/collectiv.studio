@@ -11,25 +11,25 @@ const PACKAGE_IMAGES: Record<
     imageSrc: "/images/website-the-signature-site.png",
     imageAlt:
       "Phone and earbuds on cool marble — minimal, on-the-go social and content vibe.",
-    imageObjectPosition: "50% 48%",
+    imageObjectPosition: "50% 50%",
   },
   "02": {
     imageSrc: "/images/service-social.png",
     imageAlt:
       "Warm desk scene with laptop and coffee — everyday social management mood.",
-    imageObjectPosition: "50% 45%",
+    imageObjectPosition: "50% 50%",
   },
   "03": {
     imageSrc: "/images/social-the-signature-presence.png",
     imageAlt:
       "Bouclé chair in soft light with a palm-leaf shadow on the wall — refined, editorial interior mood.",
-    imageObjectPosition: "48% 42%",
+    imageObjectPosition: "50% 50%",
   },
   "04": {
     imageSrc: "/images/service-content-days.png",
     imageAlt:
       "Two people collaborating over a laptop at a table — content day and campaign energy.",
-    imageObjectPosition: "50% 42%",
+    imageObjectPosition: "50% 50%",
   },
 };
 
