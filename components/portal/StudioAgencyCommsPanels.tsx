@@ -114,6 +114,8 @@ function kindLabel(kind: string): string {
       return "Calendar";
     case "TEAM_MENTION":
       return "Mention";
+    case "CONTACT_FORM_ENQUIRY":
+      return "Enquiry";
     default:
       return "Update";
   }

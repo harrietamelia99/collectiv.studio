@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { contactRateLimitAllow } from "@/lib/contact-rate-limit";
+import { notifyIssyOfMarketingContact } from "@/lib/contact-form-studio-notification";
 import { sendMarketingContactEmails } from "@/lib/email-notifications";
 import { fullContactToStudioRows, parseContactApiJson } from "@/lib/marketing-contact-body";
 
@@ -69,6 +70,12 @@ export async function POST(request: Request) {
         console.error("[contact-form] send failed (home)", { studioSent, autoReplySent, ip });
         return NextResponse.json({ ok: false, error: "send_failed" }, { status: 502 });
       }
+      try {
+        await notifyIssyOfMarketingContact(parsed.data);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error("[contact-form] studio notification failed (home)", e);
+      }
       // eslint-disable-next-line no-console
       console.log("[contact-form] success (home)", { ip, email: parsed.data.email });
       return NextResponse.json({ ok: true });
@@ -88,6 +95,12 @@ export async function POST(request: Request) {
       // eslint-disable-next-line no-console
       console.error("[contact-form] send failed (contact)", { studioSent, autoReplySent, ip });
       return NextResponse.json({ ok: false, error: "send_failed" }, { status: 502 });
+    }
+    try {
+      await notifyIssyOfMarketingContact(parsed.data);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error("[contact-form] studio notification failed (contact)", e);
     }
     // eslint-disable-next-line no-console
     console.log("[contact-form] success (contact)", { ip, email: parsed.data.email });
