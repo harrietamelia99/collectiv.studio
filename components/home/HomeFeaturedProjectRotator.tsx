@@ -27,7 +27,7 @@ function FeaturedProjectCard({
       <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-burgundy/8">
         <Image
           src={project.image}
-          alt=""
+          alt={`${project.title} — ${project.type} case study preview, Collectiv. Studio portfolio`}
           fill
           className="object-cover transition-transform duration-500 ease-smooth group-hover:scale-[1.05]"
           style={

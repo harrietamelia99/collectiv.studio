@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { IMAGE_BLUR_DATA_URL } from "@/lib/blur-placeholder";
 import { FaqSection } from "@/components/about/FaqSection";
 import { prisma } from "@/lib/prisma";
@@ -12,6 +14,14 @@ import { aboutPageWhatToExpect } from "@/lib/service-what-to-expect";
 import { teamBioHarriet, teamBioIsabella, teamBioMay } from "@/lib/team-bios";
 import { TEAM_HEADSHOT_PUBLIC_PATH } from "@/lib/team-headshots";
 import { TeamCard, TeamCardGroup } from "@/components/ui/TeamCard";
+import { marketingMetadata } from "@/lib/marketing-seo";
+
+export const metadata: Metadata = marketingMetadata({
+  title: "About Us - Collectiv. Studio | Bristol Creative Agency",
+  description:
+    "Meet the team behind Collectiv. Studio. We are a boutique brand and web design agency based in Bristol, helping businesses build distinctive brands and websites.",
+  path: "/about",
+});
 
 export default async function AboutPage() {
   let dynamicFaqs: { id: string; question: string; answer: string }[] = [];
@@ -64,6 +74,33 @@ export default async function AboutPage() {
               Collectiv is a UK-based boutique studio, partnering with ambitious
               founders to create cohesive digital ecosystems that work as
               beautifully as they look.
+            </p>
+            <p className="cc-copy-light mt-5 max-w-xl text-[13px] leading-relaxed text-cream/85 md:mt-6">
+              Explore our{" "}
+              <Link href="/packages/websitedesign" className="underline decoration-cream/40 underline-offset-2 hover:decoration-cream">
+                website design
+              </Link>
+              ,{" "}
+              <Link href="/branding" className="underline decoration-cream/40 underline-offset-2 hover:decoration-cream">
+                branding
+              </Link>
+              ,{" "}
+              <Link href="/social-media-management" className="underline decoration-cream/40 underline-offset-2 hover:decoration-cream">
+                social media
+              </Link>{" "}
+              and{" "}
+              <Link href="/the-pre-launch-suite" className="underline decoration-cream/40 underline-offset-2 hover:decoration-cream">
+                Pre-Launch Suite
+              </Link>
+              , browse the{" "}
+              <Link href="/portfolio" className="underline decoration-cream/40 underline-offset-2 hover:decoration-cream">
+                portfolio
+              </Link>
+              , or{" "}
+              <Link href="/contactus" className="underline decoration-cream/40 underline-offset-2 hover:decoration-cream">
+                get in touch
+              </Link>
+              .
             </p>
             <ButtonLink
               href="/contactus"

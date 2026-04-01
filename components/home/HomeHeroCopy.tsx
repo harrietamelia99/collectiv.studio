@@ -98,9 +98,9 @@ export function HomeHeroCopy() {
               <p className="cc-hero-tag font-body text-[9px] font-normal uppercase leading-none tracking-[0.09em] text-white/88 sm:text-[10px] md:text-[11px] md:tracking-[0.09em]">
                 {slide.tag}
               </p>
-              <h1 className="cc-no-heading-hover w-full max-w-full text-[clamp(1.65rem,6.9vw,2.55rem)] font-normal leading-[1.02] tracking-[-0.04em] text-white sm:max-w-[min(100%,34rem)] sm:text-[clamp(1.85rem,5.8vw,3.2rem)] sm:leading-[0.99] sm:tracking-[-0.045em] md:max-w-[min(100%,42rem)] md:text-[clamp(2.35rem,5.2vw,4.2rem)] md:leading-[0.96] md:tracking-[-0.052em] lg:max-w-[min(100%,46rem)] lg:text-[clamp(2.5rem,4.6vw,4.65rem)] lg:leading-[0.95] lg:tracking-[-0.056em]">
+              <h2 className="cc-no-heading-hover w-full max-w-full text-[clamp(1.65rem,6.9vw,2.55rem)] font-normal leading-[1.02] tracking-[-0.04em] text-white sm:max-w-[min(100%,34rem)] sm:text-[clamp(1.85rem,5.8vw,3.2rem)] sm:leading-[0.99] sm:tracking-[-0.045em] md:max-w-[min(100%,42rem)] md:text-[clamp(2.35rem,5.2vw,4.2rem)] md:leading-[0.96] md:tracking-[-0.052em] lg:max-w-[min(100%,46rem)] lg:text-[clamp(2.5rem,4.6vw,4.65rem)] lg:leading-[0.95] lg:tracking-[-0.056em]">
                 {slide.title}
-              </h1>
+              </h2>
               {slide.sub != null ? (
                 <p className="cc-hero-sub mx-auto max-w-[min(32ch,100%)] text-pretty font-body text-[12px] font-normal lowercase leading-[1.65] tracking-[0.01em] text-white/90 sm:max-w-[min(36ch,100%)] sm:text-[12.5px] sm:leading-[1.68] md:max-w-[min(38ch,100%)] md:text-[13px] md:leading-[1.7]">
                   {slide.sub}

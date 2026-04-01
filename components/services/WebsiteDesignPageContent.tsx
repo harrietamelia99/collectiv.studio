@@ -1,3 +1,4 @@
+import { ServicePageRelatedLinks } from "@/components/marketing/ServicePageRelatedLinks";
 import { ServicePackagePageLayout } from "@/components/services/ServicePackagePageLayout";
 import { websiteDesignPackages } from "@/lib/website-design-packages";
 import { websiteDesignWhatToExpect } from "@/lib/service-what-to-expect";
@@ -49,6 +50,7 @@ const PACKAGE_IMAGES: Record<
 
 export function WebsiteDesignPageContent() {
   return (
+    <>
     <ServicePackagePageLayout
       heroEyebrow="[ Website Design Packages ]"
       packagesSectionEyebrow="[ Website design packages ]"
@@ -82,5 +84,7 @@ export function WebsiteDesignPageContent() {
         };
       })}
     />
+    <ServicePageRelatedLinks omit="website" />
+    </>
   );
 }

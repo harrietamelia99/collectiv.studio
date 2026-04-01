@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MotionSection } from "@/components/ui/SectionReveal";
+import { marketingMetadata } from "@/lib/marketing-seo";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy - Collectiv. Studio",
-  description:
-    "How Collectiv. Studio collects, uses and stores personal data for website enquiries and the client portal, in line with UK GDPR.",
+  ...marketingMetadata({
+    title: "Privacy Policy - Collectiv. Studio",
+    description:
+      "How Collectiv. Studio collects, uses and stores personal data for website enquiries and the client portal, in line with UK GDPR.",
+    path: "/privacy-policy",
+  }),
   robots: { index: false, follow: true },
 };
 

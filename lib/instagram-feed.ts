@@ -3,6 +3,8 @@ export type InstagramFeedItem = {
   permalink: string;
   imageSrc: string;
   mediaType: string;
+  /** Post caption from Graph API when available — used for image alt text. */
+  caption?: string;
 };
 
 type GraphMediaNode = {
@@ -131,11 +133,13 @@ async function fetchMediaOnce(
       const imageSrc = displayUrl(node);
       const permalink = node.permalink;
       if (!imageSrc || !permalink) continue;
+      const cap = node.caption?.replace(/\s+/g, " ").trim();
       out.push({
         id: node.id,
         permalink,
         imageSrc,
         mediaType: node.media_type || "UNKNOWN",
+        ...(cap ? { caption: cap } : {}),
       });
       if (out.length >= capped) break;
     }

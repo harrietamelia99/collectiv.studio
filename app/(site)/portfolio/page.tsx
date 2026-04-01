@@ -1,6 +1,16 @@
+import type { Metadata } from "next";
+import Link from "next/link";
 import { PortfolioCard } from "@/components/ui/PortfolioCard";
 import { SectionLabel } from "@/components/ui/SectionLabel";
+import { marketingMetadata } from "@/lib/marketing-seo";
 import { portfolioProjects } from "@/lib/portfolio";
+
+export const metadata: Metadata = marketingMetadata({
+  title: "Our Work - Collectiv. Studio | Brand & Web Design Portfolio",
+  description:
+    "Browse our portfolio of brand identity, website design and social media projects. See how we have helped businesses across the UK build distinctive brands.",
+  path: "/portfolio",
+});
 
 export default function PortfolioPage() {
   const count = portfolioProjects.length;
@@ -11,11 +21,15 @@ export default function PortfolioPage() {
         <div className="mx-auto flex min-h-[min(34vh,260px)] w-full max-w-[42rem] flex-col items-center justify-center px-6 py-10 text-center sm:min-h-[min(36vh,300px)] md:max-w-[48rem] md:min-h-[min(28vh,320px)] md:py-[clamp(2.5rem,6vh,3.75rem)] lg:min-h-[min(44vh,480px)] lg:py-[clamp(3.25rem,8vh,5rem)]">
           <SectionLabel className="mb-6 text-burgundy/85">[ Portfolio ]</SectionLabel>
           <h1 className="cc-no-heading-hover text-burgundy">
-            Past <em className="font-normal italic">projects</em>
+            Our brand &amp; web design <em className="font-normal italic">portfolio</em>
           </h1>
           <p className="cc-copy-muted mx-auto mt-6 max-w-2xl text-pretty md:mt-7">
             A curated set of recent collaborations - brand, web and social, built for founders who care
-            how they show up online.
+            how they show up online. Planning something similar?{" "}
+            <Link href="/contactus" className="font-medium text-burgundy underline decoration-burgundy/35 underline-offset-2">
+              Tell us about your project
+            </Link>
+            .
           </p>
           <p className="cc-caption-light mt-5 tabular-nums tracking-[0.18em] text-burgundy/55 md:mt-6">
             {String(count).padStart(2, "0")} projects

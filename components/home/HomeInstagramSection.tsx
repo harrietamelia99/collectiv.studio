@@ -105,7 +105,7 @@ export async function HomeInstagramSection() {
         </div>
 
         <ul className="mt-10 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3 md:gap-4">
-          {posts.map((p) => (
+          {posts.map((p, i) => (
             <li key={p.id} className="min-w-0">
               <a
                 href={p.permalink}
@@ -115,7 +115,13 @@ export async function HomeInstagramSection() {
               >
                 <Image
                   src={p.imageSrc}
-                  alt=""
+                  alt={
+                    p.caption
+                      ? p.caption.length > 120
+                        ? `${p.caption.slice(0, 117)}…`
+                        : p.caption
+                      : `Instagram post ${i + 1} from Collectiv. Studio (${handle}) — opens in Instagram`
+                  }
                   fill
                   className="object-cover object-center transition-transform duration-500 ease-smooth group-hover:scale-[1.04]"
                   sizes="(max-width: 639px) 50vw, 25vw"

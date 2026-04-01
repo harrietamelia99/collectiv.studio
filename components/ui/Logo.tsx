@@ -40,11 +40,10 @@ export function Logo({ variant = "nav", className = "", onNavigate, light }: Pro
       href="/"
       onClick={onNavigate}
       className={`inline-flex shrink-0 items-center ${variant === "nav" ? "translate-y-[3px]" : ""} ${className}`.trim()}
-      aria-label="Collectiv. Studio home"
     >
       <Image
         src="/images/logo-wordmark.svg"
-        alt=""
+        alt="Collectiv. Studio"
         width={imgW}
         height={imgH}
         priority={variant === "nav"}

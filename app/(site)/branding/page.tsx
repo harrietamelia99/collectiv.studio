@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { BrandingPageContent } from "@/components/services/BrandingPageContent";
+import { marketingMetadata } from "@/lib/marketing-seo";
 
-export const metadata: Metadata = {
-  title: "Branding - Collectiv. Studio",
+export const metadata: Metadata = marketingMetadata({
+  title: "Branding - Collectiv. Studio | Brand Identity Design Bristol",
   description:
-    "Full branding, logo design, print and signage - packages, timelines and what’s included for Bristol and UK businesses.",
-};
+    "Strategic brand identity design for ambitious businesses. Logos, colour systems, typography and brand guidelines. Based in Bristol, working across the UK.",
+  path: "/branding",
+});
 
 export default function BrandingPage() {
   return <BrandingPageContent />;

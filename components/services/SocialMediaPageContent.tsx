@@ -1,3 +1,4 @@
+import { ServicePageRelatedLinks } from "@/components/marketing/ServicePageRelatedLinks";
 import { ServicePackagePageLayout } from "@/components/services/ServicePackagePageLayout";
 import { socialMediaPackages } from "@/lib/social-media-packages";
 import { socialMediaWhatToExpect } from "@/lib/service-what-to-expect";
@@ -35,6 +36,7 @@ const PACKAGE_IMAGES: Record<
 
 export function SocialMediaPageContent() {
   return (
+    <>
     <ServicePackagePageLayout
       heroEyebrow="[ Social Media Management Packages ]"
       packagesSectionEyebrow="[ Social packages ]"
@@ -74,5 +76,7 @@ export function SocialMediaPageContent() {
         };
       })}
     />
+    <ServicePageRelatedLinks omit="social" />
+    </>
   );
 }

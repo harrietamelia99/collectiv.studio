@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Fragment } from "react";
 import type { PortfolioProject } from "@/lib/portfolio";
+import { portfolioServiceLinks } from "@/lib/marketing-seo";
 import { ImagePlaceholderFill } from "@/components/ui/ImagePlaceholder";
 import { IMAGE_BLUR_DATA_URL } from "@/lib/blur-placeholder";
 import { SectionLabel } from "@/components/ui/SectionLabel";
@@ -11,7 +13,11 @@ type Props = {
   next: PortfolioProject;
 };
 
+const sectionLabelClass = "cc-section-label";
+
 export function PortfolioCaseStudy({ project, prev, next }: Props) {
+  const serviceLinks = portfolioServiceLinks(project);
+
   return (
     <>
       <section className="bg-cream px-6 pb-10 pt-4 md:pb-14 md:pt-5">
@@ -25,6 +31,10 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
           <SectionLabel className="mb-3 md:mb-4">[ case study ]</SectionLabel>
           <h1 className="cc-no-heading-hover max-w-[22rem] text-balance text-burgundy sm:max-w-2xl md:max-w-4xl">
             {project.title}
+            <span className="sr-only">
+              {" "}
+              — {project.type} portfolio case study by Collectiv. Studio, Bristol
+            </span>
           </h1>
           <p className="cc-copy-muted mt-5 max-w-2xl md:mt-6">{project.tagline}</p>
           <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-3 border-t-cc border-solid border-burgundy pt-8 md:mt-10 md:gap-x-6 md:pt-10">
@@ -49,7 +59,7 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
 
       <section className="bg-cream px-6 py-10 md:py-14">
         <div className="mx-auto max-w-6xl">
-          <SectionLabel className="mb-6 md:mb-8">[ project gallery ]</SectionLabel>
+          <h2 className={`${sectionLabelClass} mb-6 md:mb-8`}>[ project gallery ]</h2>
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-6 md:gap-8">
             {project.galleryCaptions.slice(0, 2).map((caption, i) => (
               <figure key={i} className="m-0 flex flex-col">
@@ -57,7 +67,7 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
                   {project.galleryImages?.[i] ? (
                     <Image
                       src={project.galleryImages[i]}
-                      alt={`${project.title} — ${caption}`}
+                      alt={`${project.title} project — ${caption}`}
                       fill
                       className="object-cover"
                       sizes="(max-width: 640px) 100vw, 50vw"
@@ -80,7 +90,7 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
 
       <section className="bg-cream px-6 py-14 md:py-20">
         <div className="mx-auto max-w-3xl">
-          <SectionLabel className="mb-4">[ overview ]</SectionLabel>
+          <h2 className={`${sectionLabelClass} mb-4`}>[ overview ]</h2>
           <p className="cc-copy">{project.overview}</p>
         </div>
       </section>
@@ -88,11 +98,11 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
       <section className="bg-cream px-6 py-14 md:py-20">
         <div className="mx-auto grid max-w-6xl gap-12 md:grid-cols-2 md:gap-16 lg:gap-20">
           <div>
-            <SectionLabel className="mb-4">[ challenge ]</SectionLabel>
+            <h2 className={`${sectionLabelClass} mb-4`}>[ challenge ]</h2>
             <p className="cc-copy">{project.challenge}</p>
           </div>
           <div className="border-t-cc border-solid border-burgundy pt-10 md:border-t-0 md:border-l-cc md:pl-16 md:pt-0 lg:pl-20">
-            <SectionLabel className="mb-4">[ approach ]</SectionLabel>
+            <h2 className={`${sectionLabelClass} mb-4`}>[ approach ]</h2>
             <p className="cc-copy">{project.approach}</p>
           </div>
         </div>
@@ -100,8 +110,43 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
 
       <section className="bg-cream px-6 py-14 md:py-20">
         <div className="mx-auto max-w-3xl">
-          <SectionLabel className="mb-4">[ outcome ]</SectionLabel>
+          <h2 className={`${sectionLabelClass} mb-4`}>[ outcome ]</h2>
           <p className="cc-copy">{project.outcome}</p>
+        </div>
+      </section>
+
+      <section className="bg-cream px-6 py-14 md:py-20">
+        <div className="mx-auto max-w-3xl">
+          <h2 className={`${sectionLabelClass} mb-4`}>[ related services ]</h2>
+          <p className="cc-copy">
+            Looking for similar work? Explore our{" "}
+            {serviceLinks.map((l, i) => (
+              <Fragment key={l.href}>
+                {i > 0 && (i === serviceLinks.length - 1 ? " and " : ", ")}
+                <Link
+                  href={l.href}
+                  className="font-medium text-burgundy underline decoration-burgundy/35 underline-offset-2 transition-colors hover:decoration-burgundy"
+                >
+                  {l.label}
+                </Link>
+              </Fragment>
+            ))}
+            , browse the full{" "}
+            <Link
+              href="/portfolio"
+              className="font-medium text-burgundy underline decoration-burgundy/35 underline-offset-2 transition-colors hover:decoration-burgundy"
+            >
+              portfolio
+            </Link>
+            , or{" "}
+            <Link
+              href="/contactus"
+              className="font-medium text-burgundy underline decoration-burgundy/35 underline-offset-2 transition-colors hover:decoration-burgundy"
+            >
+              contact us
+            </Link>{" "}
+            to start a project.
+          </p>
         </div>
       </section>
 
@@ -118,7 +163,7 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
 
       <section className="bg-cream px-6 py-16 md:py-24">
         <div className="mx-auto max-w-6xl">
-          <SectionLabel className="mb-8 md:mb-10">[ more work ]</SectionLabel>
+          <h2 className={`${sectionLabelClass} mb-8 md:mb-10`}>[ more work ]</h2>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
             <Link
               href={`/portfolio/${prev.slug}`}

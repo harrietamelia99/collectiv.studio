@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
+import { LocalBusinessJsonLd } from "@/components/marketing/LocalBusinessJsonLd";
 import { ButtonLink } from "@/components/ui/Button";
+import { marketingMetadata } from "@/lib/marketing-seo";
 import { LogoMarquee } from "@/components/ui/LogoMarquee";
 import {
   MotionSection,
@@ -21,6 +24,13 @@ import {
   HomeInstagramSection,
   HomeInstagramSectionFallback,
 } from "@/components/home/HomeInstagramSection";
+
+export const metadata: Metadata = marketingMetadata({
+  title: "Collectiv. Studio - Brand, Web & Social Media Agency | Bristol",
+  description:
+    "Collectiv. Studio is a boutique creative agency offering brand strategy, website design and social media management. Based in Bristol, working with businesses across the UK.",
+  path: "/",
+});
 
 /** Home shell is static; testimonials use cached DB reads; Instagram streams in Suspense. */
 export const revalidate = 300;
@@ -103,7 +113,7 @@ const services = [
     title: "Signage + Print",
     description: "From shopfronts to business cards, print that makes an impact.",
     image: "/images/home-service-signage.png",
-    href: "/branding",
+    href: "/signage-print",
   },
   {
     title: "Content Days",
@@ -122,6 +132,10 @@ const homeStats = [
 export default function HomePage() {
   return (
     <>
+      <LocalBusinessJsonLd />
+      <h1 className="sr-only">
+        Collectiv. Studio — boutique brand, website and social media creative agency in Bristol, UK
+      </h1>
       <MotionSection className="cc-hero-home relative -mt-[92px] flex min-h-svh flex-col overflow-hidden bg-burgundy text-center lg:-mt-[100px] lg:min-h-[88dvh]">
         <div
           className="cc-hero-video-wrap pointer-events-none absolute inset-0 z-0 overflow-hidden"

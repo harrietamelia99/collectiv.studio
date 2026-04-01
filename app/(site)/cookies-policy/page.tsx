@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MotionSection } from "@/components/ui/SectionReveal";
+import { marketingMetadata } from "@/lib/marketing-seo";
 
 export const metadata: Metadata = {
-  title: "Cookies Policy - Collectiv. Studio",
-  description:
-    "How Collectiv. Studio uses cookies on collectivstudio.uk and the client portal, in line with UK PECR and UK GDPR.",
+  ...marketingMetadata({
+    title: "Cookies Policy - Collectiv. Studio",
+    description:
+      "How Collectiv. Studio uses cookies on collectivstudio.uk and the client portal, in line with UK PECR and UK GDPR.",
+    path: "/cookies-policy",
+  }),
   robots: { index: false, follow: true },
 };
 

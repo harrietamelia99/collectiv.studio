@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { SocialMediaPageContent } from "@/components/services/SocialMediaPageContent";
+import { marketingMetadata } from "@/lib/marketing-seo";
 
-export const metadata: Metadata = {
-  title: "Social Media Management - Collectiv. Studio",
+export const metadata: Metadata = marketingMetadata({
+  title: "Social Media Management - Collectiv. Studio | UK Agency",
   description:
-    "Social packages from the Foundation Edit to Content Days - strategy, content, community and filming days for growing brands.",
-};
+    "Done-for-you social media management for businesses who want to show up consistently online. Content creation, scheduling and strategy. Based in Bristol.",
+  path: "/social-media-management",
+});
 
 export default function SocialMediaPage() {
   return <SocialMediaPageContent />;

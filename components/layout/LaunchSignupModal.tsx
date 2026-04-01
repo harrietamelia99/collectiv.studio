@@ -147,7 +147,7 @@ export function LaunchSignupModal() {
         <div className="relative h-[min(48vw,280px)] w-full shrink-0 md:h-auto md:min-h-[min(58vh,520px)] md:w-[46%] md:max-w-none">
           <Image
             src={MODAL_IMAGE}
-            alt=""
+            alt="Collectiv. Studio brand and web design work — featured project imagery beside the studio mailing list signup"
             fill
             className="object-cover"
             style={{ objectPosition: "center 56%" }}

@@ -107,20 +107,34 @@ export function Footer() {
                 <FooterLink href="/">Home</FooterLink>
                 <FooterLink href="/portfolio">Portfolio</FooterLink>
                 <FooterLink href="/about">About</FooterLink>
+                <FooterLink href="/contactus">Contact</FooterLink>
+              </Column>
+              <Column
+                title="Services"
+                className="border-t border-solid border-[var(--cc-hairline-on-burgundy)] pt-10 sm:border-l sm:border-t-0 sm:pl-8 sm:pt-0 md:pl-10 lg:pl-12"
+              >
+                <FooterLink href="/packages/websitedesign">Website design</FooterLink>
+                <FooterLink href="/branding">Branding</FooterLink>
+                <FooterLink href="/social-media-management">Social media</FooterLink>
+                <FooterLink href="/signage-print">Signage &amp; print</FooterLink>
+                <FooterLink href="/the-pre-launch-suite">Pre-launch suite</FooterLink>
               </Column>
               <Column
                 title="Connect"
                 className="border-t border-solid border-[var(--cc-hairline-on-burgundy)] pt-10 sm:border-l sm:border-t-0 sm:pl-8 sm:pt-0 md:pl-10 lg:pl-12"
               >
-                <FooterLink href="/portal/login">Client Portal</FooterLink>
-                <FooterLink href="/contactus">Enquire</FooterLink>
+                <FooterLink href="mailto:hello@collectivstudio.uk">hello@collectivstudio.uk</FooterLink>
+                <p className="font-display text-[15px] font-normal tracking-[-0.01em] text-cream/80">
+                  Bristol, UK
+                </p>
+                <FooterLink href="/portal/login">Client portal</FooterLink>
               </Column>
               <Column
                 title="Policies"
                 className="border-t border-solid border-[var(--cc-hairline-on-burgundy)] pt-10 sm:border-l sm:border-t-0 sm:pl-8 sm:pt-0 md:pl-10 lg:pl-12"
               >
-                <FooterLink href="/privacy-policy">Privacy Policy</FooterLink>
-                <FooterLink href="/cookies-policy">Cookies Policy</FooterLink>
+                <FooterLink href="/privacy-policy">Privacy policy</FooterLink>
+                <FooterLink href="/cookies-policy">Cookies policy</FooterLink>
               </Column>
             </div>
           </div>

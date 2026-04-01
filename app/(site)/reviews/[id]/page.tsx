@@ -1,8 +1,28 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { marketingMetadata } from "@/lib/marketing-seo";
 import { prisma } from "@/lib/prisma";
 
 type Props = { params: { id: string } };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const review = await prisma.publishedClientReview.findUnique({
+    where: { id: params.id },
+    select: { reviewerName: true },
+  });
+  if (!review) {
+    return { title: "Review | Collectiv. Studio" };
+  }
+  return {
+    ...marketingMetadata({
+      title: `Client review — ${review.reviewerName} | Collectiv. Studio`,
+      description: `Five-star client feedback for Collectiv. Studio, Bristol creative agency.`,
+      path: `/reviews/${params.id}`,
+    }),
+    robots: { index: false, follow: true },
+  };
+}
 
 export default async function FullReviewPage({ params }: Props) {
   const review = await prisma.publishedClientReview.findUnique({

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Instrument_Serif, Space_Mono } from "next/font/google";
 import { SmoothScroll } from "@/components/SmoothScroll";
+import { MARKETING_SITE_URL } from "@/lib/marketing-seo";
 import "./fallback-layout.css";
 import "./globals.css";
 
@@ -25,9 +26,15 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Collectiv. Studio | Boutique Brand & Web Design - Bristol, UK",
+  metadataBase: new URL(MARKETING_SITE_URL),
+  title: "Collectiv. Studio - Brand, Web & Social Media Agency | Bristol",
   description:
-    "Strategic brand, web and social design for ambitious businesses. Bristol-based boutique studio.",
+    "Collectiv. Studio is a boutique creative agency offering brand strategy, website design and social media management. Based in Bristol, working with businesses across the UK.",
+  openGraph: {
+    siteName: "Collectiv. Studio",
+    locale: "en_GB",
+    type: "website",
+  },
 };
 
 /** Dev-only: if `/_next/static` CSS fails (stale .next, wrong port, preview race), stay readable. :where() = 0 specificity so Tailwind always wins when loaded. */

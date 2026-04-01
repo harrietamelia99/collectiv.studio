@@ -1,3 +1,4 @@
+import { ServicePageRelatedLinks } from "@/components/marketing/ServicePageRelatedLinks";
 import { ServicePackagePageLayout } from "@/components/services/ServicePackagePageLayout";
 import { brandingPackages } from "@/lib/branding-packages";
 import { brandingWhatToExpect } from "@/lib/service-what-to-expect";
@@ -35,6 +36,7 @@ const PACKAGE_IMAGES: Record<
 
 export function BrandingPageContent() {
   return (
+    <>
     <ServicePackagePageLayout
       heroEyebrow="[ Branding Packages ]"
       packagesSectionEyebrow="[ Branding packages ]"
@@ -74,5 +76,7 @@ export function BrandingPageContent() {
         };
       })}
     />
+    <ServicePageRelatedLinks omit="branding" />
+    </>
   );
 }

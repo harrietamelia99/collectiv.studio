@@ -22,7 +22,7 @@ export function ServiceCard({ title, description, imageSrc, href }: Props) {
       <div className="relative block aspect-[16/10] shrink-0 overflow-hidden rounded-none bg-burgundy/[0.06] sm:aspect-[3/2] lg:aspect-[4/3]">
         <Image
           src={imageSrc}
-          alt=""
+          alt={`${titleLabel} — Collectiv. Studio service preview`}
           fill
           className="object-cover transition-[transform,filter] duration-500 ease-smooth group-hover:scale-[1.07] group-hover:brightness-[1.04]"
           sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
