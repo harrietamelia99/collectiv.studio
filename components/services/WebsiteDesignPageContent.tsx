@@ -17,7 +17,7 @@ const PACKAGE_IMAGES: Record<
     imageSrc: "/images/service-website.png",
     imageAlt:
       "Velvet armchair and side table with laptop and coffee, strong diagonal window light — calm, high-contrast interior.",
-    imageObjectPosition: "48% 45%",
+    imageObjectPosition: "78% 72%",
   },
   "03": {
     imageSrc: "/images/website-the-elevate-build.png",
