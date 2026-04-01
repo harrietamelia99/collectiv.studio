@@ -102,18 +102,23 @@ export const portfolioProjects: PortfolioProject[] = [
     title: "O Beach Ibiza",
     type: "Social Media",
     image: "/images/portfolio-obeach.png",
-    tagline: "High-summer energy and premium poolside storytelling for an iconic Ibiza venue.",
+    tagline:
+      "Bold, Instagram-ready promotional graphics for the Ibiza Spray event series at one of the island's most iconic beach clubs.",
     year: "2022",
     overview:
-      "O Beach blends day-to-night hospitality with headline events. Our remit was to keep feeds feeling luxe and legible in a market that moves fast - new DJs, sponsors and table packages every week.",
+      "O Beach Ibiza is one of the island's most iconic beach clubs, known for world-class events and a vibrant, high-energy atmosphere. Over a few months, we supported the team with promotional social media graphics for their Ibiza Spray event series.",
     challenge:
-      "Volume and speed. The in-house team needed guardrails that still allowed on-the-day capture - without every post looking like a different brand.",
+      "O Beach has a strong existing identity and a highly visual audience. The graphics needed to match the energy of the events themselves - bold, colourful, and attention-grabbing - while staying consistent with the brand and cutting through a saturated social feed.",
     approach:
-      "We built a flexible grid system: hero tiles for headliners, repeating patterns for table sales and typographic locks for time-critical announcements. Colour pulls from seasonal art direction so takeovers stay cohesive.",
+      "We designed a suite of promotional graphics tailored to the Ibiza Spray event, building a visual language that captured the colour, movement, and excitement of the experience. Each asset was created with Instagram in mind, optimised to drive awareness and pull people into the world of the event.",
     outcome:
-      "Smoother handover between agency and internal team during peak season, with fewer last-minute design bottlenecks. Sponsored content sat naturally next to organic moments.",
-    services: ["Social systems", "Campaign templates", "Event creative support"],
-    galleryCaptions: ["Event announcement system", "Sponsored partner layouts"],
+      "A run of event graphics that felt native to the brand and the platform. The visuals gave the Ibiza Spray series a cohesive social presence across its run, supporting awareness and keeping the audience engaged throughout the season.",
+    services: ["Promotional graphics", "Event campaigns", "Instagram creative"],
+    galleryCaptions: ["Ibiza Spray — campaign graphics", "Social suite and feed-ready assets"],
+    galleryImages: [
+      "/images/portfolio-obeach-gallery-suite.png",
+      "/images/portfolio-obeach-gallery-lineup.png",
+    ],
   },
   {
     slug: "powerhouse-pilates",
