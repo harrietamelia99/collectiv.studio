@@ -97,7 +97,8 @@ export function ServicePackageCard({ pkg, collapsibleDetails, solo = false }: Pr
           solo
             ? "h-36 shrink-0 sm:h-40 md:aspect-[4/5] md:h-auto md:w-[min(100%,17.5rem)] lg:w-72"
             : carouselMobile
-              ? "h-36 w-full sm:aspect-[16/9] sm:h-auto sm:min-h-[9.5rem] md:aspect-[16/9]"
+              ? /* 4:3 matches typical photography better than 16:9 — avoids cropping laptop / desk tops */
+                "aspect-[4/3] w-full"
               : "aspect-[16/9]"
         }`}
       >
