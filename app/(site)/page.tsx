@@ -3,7 +3,11 @@ import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import { LocalBusinessJsonLd } from "@/components/marketing/LocalBusinessJsonLd";
 import { ButtonLink } from "@/components/ui/Button";
-import { marketingMetadata } from "@/lib/marketing-seo";
+import {
+  DEFAULT_SITE_DESCRIPTION,
+  DEFAULT_SITE_TITLE,
+  marketingMetadata,
+} from "@/lib/marketing-seo";
 import { LogoMarquee } from "@/components/ui/LogoMarquee";
 import {
   MotionSection,
@@ -26,9 +30,8 @@ import {
 } from "@/components/home/HomeInstagramSection";
 
 export const metadata: Metadata = marketingMetadata({
-  title: "Collectiv. Studio - Brand, Web & Social Media Agency | Bristol",
-  description:
-    "Collectiv. Studio is a boutique creative agency offering brand strategy, website design and social media management. Based in Bristol, working with businesses across the UK.",
+  title: DEFAULT_SITE_TITLE,
+  description: DEFAULT_SITE_DESCRIPTION,
   path: "/",
 });
 

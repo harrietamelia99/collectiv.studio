@@ -4,8 +4,16 @@ import type { PortfolioProject } from "@/lib/portfolio";
 /** Canonical marketing origin (www). */
 export const MARKETING_SITE_URL = "https://www.collectivstudio.uk";
 
-/** Default Open Graph / Twitter image (1200×630). */
+/** Default Open Graph / Twitter image (1200×630). Regenerate: `npm run og:generate`. */
 export const OG_IMAGE_PATH = "/og-collectiv-studio.png";
+
+/** Default `<title>` / `og:title` / LinkedIn headline (homepage + root metadata fallback). */
+export const DEFAULT_SITE_TITLE =
+  "Collectiv. Studio - Brand, Web & Social Media Agency | Bristol";
+
+/** Default meta description / `og:description` for social previews. */
+export const DEFAULT_SITE_DESCRIPTION =
+  "Collectiv. Studio is a boutique creative agency offering brand strategy, website design and social media management. Based in Bristol, working with businesses across the UK.";
 
 export function absoluteMarketingUrl(path: string): string {
   const normalized = path.startsWith("/") ? path : `/${path}`;

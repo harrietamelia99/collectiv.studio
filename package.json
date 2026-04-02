@@ -23,7 +23,8 @@
     "db:seed": "prisma db seed",
     "seed": "prisma db seed",
     "check:vercel-env": "node scripts/check-vercel-env.mjs",
-    "favicon:generate": "node scripts/generate-favicons.mjs"
+    "favicon:generate": "node scripts/generate-favicons.mjs",
+    "og:generate": "node scripts/generate-og-image.mjs"
   },
   "prisma": {
     "seed": "node prisma/seed.cjs"

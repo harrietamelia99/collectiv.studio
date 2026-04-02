@@ -1,7 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Instrument_Serif, Space_Mono } from "next/font/google";
 import { SmoothScroll } from "@/components/SmoothScroll";
-import { MARKETING_SITE_URL } from "@/lib/marketing-seo";
+import {
+  DEFAULT_SITE_DESCRIPTION,
+  DEFAULT_SITE_TITLE,
+  MARKETING_SITE_URL,
+  OG_IMAGE_PATH,
+} from "@/lib/marketing-seo";
 import "./fallback-layout.css";
 import "./globals.css";
 
@@ -40,9 +45,26 @@ export const metadata: Metadata = {
     shortcut: "/favicon-48.png",
   },
   openGraph: {
+    title: DEFAULT_SITE_TITLE,
+    description: DEFAULT_SITE_DESCRIPTION,
+    url: MARKETING_SITE_URL,
     siteName: "Collectiv. Studio",
     locale: "en_GB",
     type: "website",
+    images: [
+      {
+        url: OG_IMAGE_PATH,
+        width: 1200,
+        height: 630,
+        alt: "Collectiv. Studio — brand, web and social creative agency, Bristol",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: DEFAULT_SITE_TITLE,
+    description: DEFAULT_SITE_DESCRIPTION,
+    images: [OG_IMAGE_PATH],
   },
 };
 
