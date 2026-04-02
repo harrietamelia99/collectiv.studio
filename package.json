@@ -22,7 +22,8 @@
     "db:studio": "prisma studio",
     "db:seed": "prisma db seed",
     "seed": "prisma db seed",
-    "check:vercel-env": "node scripts/check-vercel-env.mjs"
+    "check:vercel-env": "node scripts/check-vercel-env.mjs",
+    "favicon:generate": "node scripts/generate-favicons.mjs"
   },
   "prisma": {
     "seed": "node prisma/seed.cjs"
