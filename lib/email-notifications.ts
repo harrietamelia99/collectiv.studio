@@ -781,4 +781,33 @@ export async function sendMarketingContactEmails(opts: {
   return { studioSent, autoReplySent };
 }
 
+/** Homepage “Taking bookings” modal — same studio inbox as marketing contact forms. */
+export async function sendLaunchListSignupStudioEmail(email: string): Promise<boolean> {
+  const submittedAt = new Date().toLocaleString("en-GB", {
+    dateStyle: "full",
+    timeStyle: "short",
+    timeZone: UK_PORTAL_TIMEZONE,
+  });
+  const html = collectivEmailShell({
+    shellEyebrow: "Collectiv. Studio",
+    shellTitle: "Launch list signup",
+    greetingHtml: `<p style="margin:0 0 16px;font-size:15px;">Someone joined the mailing list from the homepage launch modal.</p>`,
+    bodyParagraphsHtml: [],
+    detailHtml: htmlContactFormFieldTable(
+      [
+        { label: "Email", value: email },
+        { label: "Source", value: "Homepage launch modal (May 2026 bookings)" },
+      ],
+      submittedAt,
+    ),
+    footerLine: `Add to your list: ${escapeHtml(email)}`,
+  });
+  return sendBrandedTransactional({
+    to: CONTACT_FORM_STUDIO_INBOX,
+    subject: `Launch list signup: ${email}`,
+    html,
+    logTag: "launch-list-signup",
+  });
+}
+
 export { emailsForUserIds };

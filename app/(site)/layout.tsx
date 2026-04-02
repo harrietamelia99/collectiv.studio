@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Footer } from "@/components/layout/Footer";
 import { LaunchSignupModal } from "@/components/layout/LaunchSignupModal";
 import { Navbar } from "@/components/layout/Navbar";
@@ -26,7 +27,9 @@ export default function SiteLayout({
         {children}
       </main>
       <Footer />
-      <LaunchSignupModal />
+      <Suspense fallback={null}>
+        <LaunchSignupModal />
+      </Suspense>
       <SiteChatWidget />
     </SiteSessionProvider>
   );

@@ -57,7 +57,8 @@ export async function notifyIssyOfMarketingContact(data: ContactApiHomeBody | Co
 }
 
 /**
- * Same Issy recipient as contact forms — homepage launch-list modal (`/api/launch-signup`).
+ * In-portal bell notification for Issy when someone uses the homepage launch modal.
+ * Email to isabella@collectivstudio.uk is sent separately via `sendLaunchListSignupStudioEmail`.
  */
 export async function notifyIssyOfLaunchListSignup(email: string): Promise<void> {
   const userId = await issyUserId();

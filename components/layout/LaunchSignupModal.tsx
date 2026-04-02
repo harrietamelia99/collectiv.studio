@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useReducedMotion } from "framer-motion";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { ctaButtonClasses } from "@/components/ui/Button";
 
@@ -11,6 +11,7 @@ const MODAL_IMAGE = "/images/portfolio-petite.png";
 
 export function LaunchSignupModal() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const reduceMotion = useReducedMotion();
   const titleId = useId();
   const [open, setOpen] = useState(false);
@@ -24,15 +25,22 @@ export function LaunchSignupModal() {
     let cancelled = false;
     if (pathname !== "/") return;
 
-    try {
-      if (typeof window !== "undefined" && localStorage.getItem(STORAGE_KEY)) {
+    /** Preview / QA: `/?launchModal=1` or `/?showLaunch=1` bypasses “already dismissed”. */
+    const forceShow =
+      searchParams.get("launchModal") === "1" ||
+      searchParams.get("showLaunch") === "1";
+
+    if (!forceShow) {
+      try {
+        if (typeof window !== "undefined" && localStorage.getItem(STORAGE_KEY)) {
+          return;
+        }
+      } catch {
         return;
       }
-    } catch {
-      return;
     }
 
-    const delay = reduceMotion ? 0 : 700;
+    const delay = forceShow ? 200 : reduceMotion ? 0 : 700;
     const t = window.setTimeout(() => {
       if (!cancelled) setOpen(true);
     }, delay);
@@ -40,7 +48,7 @@ export function LaunchSignupModal() {
       cancelled = true;
       window.clearTimeout(t);
     };
-  }, [pathname, reduceMotion]);
+  }, [pathname, reduceMotion, searchParams]);
 
   const dismiss = useCallback(() => {
     setOpen(false);
@@ -144,19 +152,18 @@ export function LaunchSignupModal() {
           </svg>
         </button>
 
-        <div className="relative h-[min(48vw,280px)] w-full shrink-0 md:h-auto md:min-h-[min(58vh,520px)] md:w-[46%] md:max-w-none">
+        <div className="relative aspect-[16/10] w-full max-h-[min(50vw,260px)] shrink-0 overflow-hidden bg-burgundy sm:aspect-[2/1] sm:max-h-[300px] md:aspect-auto md:h-auto md:max-h-none md:min-h-[min(58vh,520px)] md:w-[46%]">
           <Image
             src={MODAL_IMAGE}
             alt="Collectiv. Studio brand and web design work — featured project imagery beside the studio mailing list signup"
             fill
-            className="object-cover"
-            style={{ objectPosition: "center 56%" }}
-            sizes="(max-width: 768px) 100vw, 400px"
+            className="object-cover object-[center_42%] md:object-center"
+            sizes="(max-width: 768px) 100vw, 420px"
             priority
           />
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col justify-center px-6 pb-8 pt-5 sm:px-8 sm:pb-10 sm:pt-6 md:px-10 md:py-10 lg:px-12 lg:py-12">
+        <div className="flex min-h-0 flex-1 flex-col justify-center px-6 pb-8 pt-6 text-left sm:px-8 sm:pb-10 sm:pt-7 md:px-10 md:py-10 lg:px-12 lg:py-12">
           {thanks ? (
             <p className="font-display text-center text-[clamp(1.35rem,3.5vw,1.85rem)] font-normal leading-snug tracking-[-0.03em] text-burgundy">
               You&apos;re on the list. We&apos;ll be in touch.
@@ -165,19 +172,21 @@ export function LaunchSignupModal() {
             <>
               <h2
                 id={titleId}
-                className="cc-no-heading-hover pr-10 font-display text-[clamp(1.45rem,3.8vw,2.05rem)] font-normal leading-[1.08] tracking-[-0.035em] text-burgundy md:pr-6"
+                className="cc-no-heading-hover pr-10 font-display text-[clamp(1.45rem,3.8vw,2.05rem)] font-normal tracking-[-0.035em] text-burgundy md:pr-6"
               >
-                Taking bookings for
-                <br />
-                April 2026
+                <span className="block leading-snug md:hidden">Taking bookings for May 2026</span>
+                <span className="hidden md:block">
+                  <span className="block leading-[1.28]">Taking bookings for</span>
+                  <span className="mt-2 block leading-[1.15]">May 2026</span>
+                </span>
               </h2>
-              <p className="cc-copy-muted mt-4 max-w-md md:mt-5">
+              <p className="mt-5 max-w-md font-body text-[15px] font-normal leading-relaxed tracking-[0.01em] text-burgundy/72 sm:text-[16px] md:mt-6">
                 Reserve your place before spaces fill, and take the first step towards creating the
                 brand of your dreams.
               </p>
 
               <form
-                className="mt-6 flex flex-col gap-3 sm:mt-7 sm:flex-row sm:items-stretch sm:gap-3"
+                className="mt-6 flex w-full max-w-md flex-col gap-3 sm:mt-7 sm:flex-row sm:items-stretch sm:gap-3"
                 onSubmit={onSubmit}
                 noValidate
               >
@@ -193,7 +202,7 @@ export function LaunchSignupModal() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="min-h-[2.75rem] w-full flex-1 rounded-[var(--cc-pill-radius)] border border-burgundy/20 bg-white px-4 font-body text-sm text-burgundy placeholder:text-burgundy/38 outline-none transition-[border-color,box-shadow] duration-200 focus:border-burgundy/45 focus:ring-2 focus:ring-burgundy/15 sm:min-h-[3rem] sm:px-5"
+                  className="min-h-[2.75rem] w-full flex-1 rounded-[var(--cc-pill-radius)] border border-burgundy/20 bg-white px-4 font-body text-sm text-burgundy placeholder:text-burgundy/38 outline-none transition-[border-color,box-shadow] duration-200 focus:border-burgundy/45 focus:ring-2 focus:ring-burgundy/15 sm:min-h-[3rem] sm:px-5 sm:text-[15px]"
                 />
                 <button
                   type="submit"
@@ -202,7 +211,8 @@ export function LaunchSignupModal() {
                     variant: "burgundy",
                     size: "md",
                     isSubmit: true,
-                    className: "min-h-[2.75rem] w-full shrink-0 sm:w-auto sm:min-h-[3rem] sm:min-w-[9.5rem] sm:px-8",
+                    className:
+                    "min-h-[2.75rem] w-full shrink-0 sm:w-auto sm:min-h-[3rem] sm:min-w-[9.5rem] sm:px-8",
                   })}
                 >
                   {busy ? "…" : "Sign up"}
@@ -213,7 +223,7 @@ export function LaunchSignupModal() {
                   {error}
                 </p>
               ) : null}
-              <p className="mt-4 font-body text-[10px] tracking-[0.04em] text-burgundy/55 sm:mt-5">
+              <p className="mt-4 font-display text-[11px] tracking-[0.03em] text-burgundy/50 sm:mt-5">
                 We respect your privacy.
               </p>
             </>

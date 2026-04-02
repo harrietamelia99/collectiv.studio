@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { notifyIssyOfLaunchListSignup } from "@/lib/contact-form-studio-notification";
+import { sendLaunchListSignupStudioEmail } from "@/lib/email-notifications";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
 import { isSafeWebhookUrl } from "@/lib/webhook-url";
 
@@ -68,6 +69,17 @@ export async function POST(req: Request) {
   } catch (e) {
     // eslint-disable-next-line no-console
     console.error("[launch-signup] portal notification failed", e);
+  }
+
+  try {
+    const emailed = await sendLaunchListSignupStudioEmail(email);
+    if (!emailed) {
+      // eslint-disable-next-line no-console
+      console.warn("[launch-signup] studio email not sent (check RESEND_API_KEY / Resend)", { email });
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error("[launch-signup] studio email failed", e);
   }
 
   return NextResponse.json({ ok: true });
