@@ -70,7 +70,6 @@ export function Navbar() {
   const portfolioActive = pathname === "/portfolio" || pathname.startsWith("/portfolio/");
   const aboutActive = pathname === "/about";
   const portalActive = pathname.startsWith("/portal");
-  const isHome = pathname === "/";
 
   return (
     <>
@@ -78,8 +77,8 @@ export function Navbar() {
       <header
         data-lenis-prevent
         className={`cc-site-header pointer-events-none fixed inset-x-0 top-0 z-[10030] pt-[max(14px,env(safe-area-inset-top,0px))] lg:pt-6 ${
-          isHome ? "bg-burgundy" : ""
-        } ${open ? "cc-header-hidden-when-menu-open max-lg:hidden" : ""}`}
+          open ? "cc-header-hidden-when-menu-open max-lg:hidden" : ""
+        }`}
       >
         <div className="cc-nav-inner-wrap mx-auto w-[calc(100%-32px)] max-w-3xl lg:w-[85%] lg:max-w-[52rem]">
           <div className="cc-nav-pill pointer-events-auto relative grid min-h-[76px] w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 rounded-[var(--cc-pill-radius)] border border-solid border-burgundy bg-cream/95 px-[18px] py-2 shadow-nav backdrop-blur-md supports-[backdrop-filter]:bg-cream/88 lg:min-h-0 lg:h-[70px] lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-x-6 lg:px-8 lg:py-0 lg:shadow-[var(--cc-pill-shadow)] xl:px-10">
