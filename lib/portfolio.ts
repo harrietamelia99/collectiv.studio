@@ -23,7 +23,7 @@ export const portfolioProjects: PortfolioProject[] = [
   {
     slug: "prositeuk",
     title: "PROSITEUK",
-    type: "Social media management",
+    type: "Web design + social media",
     image: "/images/portfolio-prositeuk-gallery-homepage.png",
     tagline:
       "From logo-only to a recognised construction recruitment brand on social, then a Next.js site with a live job board for employers and candidates.",
