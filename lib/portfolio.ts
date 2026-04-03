@@ -23,7 +23,7 @@ export const portfolioProjects: PortfolioProject[] = [
   {
     slug: "prositeuk",
     title: "PROSITEUK",
-    type: "Web design + social media",
+    type: "Website & social media",
     image: "/images/portfolio-prositeuk-gallery-homepage.png",
     tagline:
       "From logo-only to a recognised construction recruitment brand on social, then a Next.js site with a live job board for employers and candidates.",
@@ -46,6 +46,29 @@ export const portfolioProjects: PortfolioProject[] = [
       text: "We decided to bring Harriet on to run our socials and improve our overall engagement. Our turnover up 150%, a coincidence? We don't think so!",
       attribution: "PROSITEUK",
     },
+  },
+  {
+    slug: "gasworld-ltd",
+    title: "GasWorld LTD",
+    type: "Brand identity",
+    image: "/images/portfolio-gasworld-gallery-system.png",
+    tagline:
+      "Full visual system for one of Bristol's most established gas engineering firms—built from their logo into a credible, trust-first identity ready for web.",
+    year: "2026",
+    overview:
+      "GasWorld LTD has been one of Bristol's most established gas engineering firms for over 45 years. The reputation was already there - the brand identity wasn't. They came to us with a logo and nothing else, and needed a visual identity that finally matched the scale and credibility of the business they'd built.",
+    challenge:
+      "A 45-year-old firm carries real weight, but an outdated or inconsistent brand can quietly work against that. GasWorld needed a refresh that respected their history without looking stuck in it - credible and professional for commercial clients, but modern enough to compete in 2026. Starting from a single logo with no supporting system made this a build from scratch.",
+    approach:
+      "We used the existing logo as a foundation and built a full brand identity system around it - colour palette, typography, visual language and brand guidelines that give the business consistency across every touchpoint. The focus throughout was on trust and authority - this is a firm that's been doing serious work for decades, and the brand needed to communicate that from first glance.",
+    outcome:
+      "GasWorld now has a brand identity that reflects where they are as a business - established, credible and ready for the next chapter. A website is currently in development and will carry the new identity into their digital presence for the first time.",
+    services: ["Website coming soon"],
+    galleryCaptions: ["Brand identity — full system", "Logo refresh in application"],
+    galleryImages: [
+      "/images/portfolio-gasworld-gallery-system.png",
+      "/images/portfolio-gasworld-gallery-application.png",
+    ],
   },
   {
     slug: "petite-social-club",
