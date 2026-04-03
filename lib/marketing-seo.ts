@@ -67,14 +67,16 @@ export function marketingMetadata(options: {
 }
 
 /** Service URLs for internal linking from portfolio case studies (deduped). */
-export function portfolioServiceLinks(project: Pick<PortfolioProject, "type">): readonly { href: string; label: string }[] {
-  const t = project.type.toLowerCase();
+export function portfolioServiceLinks(
+  project: Pick<PortfolioProject, "type" | "services">,
+): readonly { href: string; label: string }[] {
+  const t = [project.type, ...project.services].join(" ").toLowerCase();
   const links: { href: string; label: string }[] = [];
   const add = (href: string, label: string) => {
     if (!links.some((l) => l.href === href)) links.push({ href, label });
   };
   if (t.includes("social")) add("/social-media-management", "social media management");
-  if (t.includes("website") || t.includes("squarespace")) add("/packages/websitedesign", "website design");
+  if (t.includes("website") || t.includes("squarespace") || t.includes("next.js")) add("/packages/websitedesign", "website design");
   if (t.includes("branding") || t.includes("brand")) add("/branding", "branding");
   if (t.includes("print") || t.includes("signage")) add("/signage-print", "signage and print");
   if (links.length === 0) add("/branding", "branding");

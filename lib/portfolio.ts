@@ -21,6 +21,33 @@ export type PortfolioProject = {
 
 export const portfolioProjects: PortfolioProject[] = [
   {
+    slug: "prositeuk",
+    title: "PROSITEUK",
+    type: "Social media management",
+    image: "/images/portfolio-prositeuk-gallery-homepage.png",
+    tagline:
+      "From logo-only to a recognised construction recruitment brand on social, then a Next.js site with a live job board for employers and candidates.",
+    year: "2025 – 2026",
+    overview:
+      "PROSITEUK came to us with a logo and not much else. Over the course of our partnership we built their brand presence from the ground up on social media, turning them into a recognisable name in construction recruitment. When the brand had enough weight behind it, the next step was a website that could match - a platform that not only looks the part, but works as a fully functioning job board and base for both employers and candidates.",
+    challenge:
+      "Construction recruitment isn't a sector known for strong brand identity. PROSITEUK needed to stand out, build trust with tier 1 contractors, and attract quality candidates - all without an established visual presence to work from. Social media came first, then the website had to reflect and elevate everything we'd built.",
+    approach:
+      "We started on social - building a consistent visual identity, tone of voice and content strategy that made PROSITEUK recognisable in their space. Once the brand had real recognition behind it, we moved into web. The Next.js site was built to serve two audiences clearly - employers with hiring needs and candidates looking for roles - with a live job board, a structured role taxonomy across blue and white collar, and trust signals woven throughout.",
+    outcome:
+      "A brand that went from a logo to a fully formed identity across social and web. PROSITEUK now has a presence that reflects the quality of the placements they make - and a site built to grow with them as the business scales.",
+    services: ["Website design", "Next.js build"],
+    galleryCaptions: ["Homepage — employer facing", "Role coverage — blue & white collar"],
+    galleryImages: [
+      "/images/portfolio-prositeuk-gallery-homepage.png",
+      "/images/portfolio-prositeuk-gallery-jobs.png",
+    ],
+    quote: {
+      text: "We decided to bring Harriet on to run our socials and improve our overall engagement. Our turnover up 150%, a coincidence? We don't think so!",
+      attribution: "PROSITEUK",
+    },
+  },
+  {
     slug: "petite-social-club",
     title: "Petite Social Club",
     type: "Branding & Website",
