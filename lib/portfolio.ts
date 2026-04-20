@@ -71,6 +71,33 @@ export const portfolioProjects: PortfolioProject[] = [
     ],
   },
   {
+    slug: "flowfirst-plumbing",
+    title: "FlowFirst Plumbing",
+    type: "Next.js website",
+    image: "/images/portfolio-flowfirst-gallery-desktop.png",
+    tagline:
+      "Custom Next.js site for a new Bristol plumbing business—from zero brand to a premium, trust-led presence built to scale.",
+    year: "2026",
+    overview:
+      "FlowFirst Plumbing is a new business founded by an experienced plumber ready to go out on their own. They came to us with no brand at all - no identity, no web presence, nothing to hand a customer. The brief was simple: build something that reflects the quality of work they deliver and gives them a foundation to grow from.",
+    challenge:
+      "Starting from zero is both a clean slate and a pressure. There was no existing brand to build from or refine - everything needed to be created. The goal was to position FlowFirst as a premium, trustworthy choice for domestic customers without coming across as generic. In a crowded trade market, it needed to feel considered and credible from day one.",
+    approach:
+      "We built the site from scratch using Next.js, giving FlowFirst a custom-coded presence that performs and scales properly as the business grows. The design direction was premium and clean - the kind of site that reassures a homeowner before they've even read a word. Every decision, from layout to typography to copy hierarchy, was made with trust and conversion in mind.",
+    outcome:
+      "FlowFirst launched with a website that punches well above where most new trade businesses start. They have a professional digital presence built to grow with them - ready for more pages, more services, and more customers as the business develops.",
+    services: ["Next.js", "Custom full build"],
+    galleryCaptions: ["Site — mobile hero", "Site — desktop homepage"],
+    galleryImages: [
+      "/images/portfolio-flowfirst-gallery-mobile.png",
+      "/images/portfolio-flowfirst-gallery-desktop.png",
+    ],
+    quote: {
+      text: "Harriet did a brilliant job of bringing our website to life. I didn't know much about marketing or how I wanted it to look, so she really didn't have much to go off - but somehow she captured my vision perfectly. We're so pleased with the results, and glad we now have a website that can grow with us as a business.",
+      attribution: "FlowFirst Plumbing",
+    },
+  },
+  {
     slug: "petite-social-club",
     title: "Petite Social Club",
     type: "Branding & Website",
