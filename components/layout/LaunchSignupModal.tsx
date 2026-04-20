@@ -15,6 +15,7 @@ export function LaunchSignupModal() {
   const reduceMotion = useReducedMotion();
   const titleId = useId();
   const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -80,7 +81,7 @@ export function LaunchSignupModal() {
   useEffect(() => {
     if (!open || thanks) return;
     const el = panelRef.current?.querySelector<HTMLElement>(
-      'input[type="email"], button[type="submit"]',
+      "#launch-signup-name, input[type=\"email\"], button[type=\"submit\"]",
     );
     window.setTimeout(() => el?.focus(), reduceMotion ? 0 : 100);
   }, [open, thanks, reduceMotion]);
@@ -93,7 +94,7 @@ export function LaunchSignupModal() {
       const res = await fetch("/api/launch-signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ name: name.trim(), email: email.trim() }),
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
@@ -181,29 +182,54 @@ export function LaunchSignupModal() {
                 </span>
               </h2>
               <p className="mt-5 max-w-md font-body text-[15px] font-normal leading-relaxed tracking-[0.01em] text-burgundy/72 sm:text-[16px] md:mt-6">
-                Reserve your place before spaces fill, and take the first step towards creating the
-                brand of your dreams.
+                Add your name and email to reserve your place before spaces fill, and take the first
+                step towards creating the brand of your dreams.
               </p>
 
               <form
-                className="mt-6 flex w-full max-w-md flex-col gap-3 sm:mt-7 sm:flex-row sm:items-stretch sm:gap-3"
+                className="mt-6 flex w-full max-w-md flex-col gap-4 sm:mt-7"
                 onSubmit={onSubmit}
                 noValidate
               >
-                <label htmlFor="launch-signup-email" className="sr-only">
-                  Email address
-                </label>
-                <input
-                  id="launch-signup-email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="Email Address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="min-h-[2.75rem] w-full flex-1 rounded-[var(--cc-pill-radius)] border border-burgundy/20 bg-white px-4 font-body text-sm text-burgundy placeholder:text-burgundy/38 outline-none transition-[border-color,box-shadow] duration-200 focus:border-burgundy/45 focus:ring-2 focus:ring-burgundy/15 sm:min-h-[3rem] sm:px-5 sm:text-[15px]"
-                />
+                <div className="flex flex-col gap-1.5">
+                  <label
+                    htmlFor="launch-signup-name"
+                    className="font-body text-[10px] font-medium uppercase tracking-[0.14em] text-burgundy/55"
+                  >
+                    Name
+                  </label>
+                  <input
+                    id="launch-signup-name"
+                    name="name"
+                    type="text"
+                    autoComplete="name"
+                    placeholder="Your name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    maxLength={120}
+                    className="min-h-[2.75rem] w-full rounded-[var(--cc-pill-radius)] border border-burgundy/20 bg-white px-4 font-body text-sm text-burgundy placeholder:text-burgundy/38 outline-none transition-[border-color,box-shadow] duration-200 focus:border-burgundy/45 focus:ring-2 focus:ring-burgundy/15 sm:min-h-[3rem] sm:px-5 sm:text-[15px]"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label
+                    htmlFor="launch-signup-email"
+                    className="font-body text-[10px] font-medium uppercase tracking-[0.14em] text-burgundy/55"
+                  >
+                    Email
+                  </label>
+                  <input
+                    id="launch-signup-email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="min-h-[2.75rem] w-full rounded-[var(--cc-pill-radius)] border border-burgundy/20 bg-white px-4 font-body text-sm text-burgundy placeholder:text-burgundy/38 outline-none transition-[border-color,box-shadow] duration-200 focus:border-burgundy/45 focus:ring-2 focus:ring-burgundy/15 sm:min-h-[3rem] sm:px-5 sm:text-[15px]"
+                  />
+                </div>
                 <button
                   type="submit"
                   disabled={busy}
@@ -211,8 +237,7 @@ export function LaunchSignupModal() {
                     variant: "burgundy",
                     size: "md",
                     isSubmit: true,
-                    className:
-                    "min-h-[2.75rem] w-full shrink-0 sm:w-auto sm:min-h-[3rem] sm:min-w-[9.5rem] sm:px-8",
+                    className: "min-h-[2.75rem] w-full shrink-0 sm:min-h-[3rem] sm:w-fit sm:min-w-[9.5rem] sm:px-8",
                   })}
                 >
                   {busy ? "…" : "Sign up"}

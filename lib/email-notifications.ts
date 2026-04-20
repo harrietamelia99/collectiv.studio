@@ -782,7 +782,10 @@ export async function sendMarketingContactEmails(opts: {
 }
 
 /** Homepage “Taking bookings” modal — same studio inbox as marketing contact forms. */
-export async function sendLaunchListSignupStudioEmail(email: string): Promise<boolean> {
+export async function sendLaunchListSignupStudioEmail(opts: {
+  name: string;
+  email: string;
+}): Promise<boolean> {
   const submittedAt = new Date().toLocaleString("en-GB", {
     dateStyle: "full",
     timeStyle: "short",
@@ -795,16 +798,17 @@ export async function sendLaunchListSignupStudioEmail(email: string): Promise<bo
     bodyParagraphsHtml: [],
     detailHtml: htmlContactFormFieldTable(
       [
-        { label: "Email", value: email },
+        { label: "Name", value: opts.name },
+        { label: "Email", value: opts.email },
         { label: "Source", value: "Homepage launch modal (May 2026 bookings)" },
       ],
       submittedAt,
     ),
-    footerLine: `Add to your list: ${escapeHtml(email)}`,
+    footerLine: `Add to your list: ${escapeHtml(opts.name)} — ${escapeHtml(opts.email)}`,
   });
   return sendBrandedTransactional({
     to: CONTACT_FORM_STUDIO_INBOX,
-    subject: `Launch list signup: ${email}`,
+    subject: `Launch list signup: ${opts.name} (${opts.email})`,
     html,
     logTag: "launch-list-signup",
   });

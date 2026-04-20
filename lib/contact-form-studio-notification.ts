@@ -60,7 +60,7 @@ export async function notifyIssyOfMarketingContact(data: ContactApiHomeBody | Co
  * In-portal bell notification for Issy when someone uses the homepage launch modal.
  * Email to isabella@collectivstudio.uk is sent separately via `sendLaunchListSignupStudioEmail`.
  */
-export async function notifyIssyOfLaunchListSignup(email: string): Promise<void> {
+export async function notifyIssyOfLaunchListSignup(opts: { name: string; email: string }): Promise<void> {
   const userId = await issyUserId();
   if (!userId) {
     // eslint-disable-next-line no-console
@@ -72,8 +72,8 @@ export async function notifyIssyOfLaunchListSignup(email: string): Promise<void>
     data: {
       userId,
       kind: "LAUNCH_LIST_SIGNUP",
-      title: `Launch list signup: ${email}`,
-      body: "Someone joined the mailing list from the homepage launch modal.",
+      title: `Launch list signup: ${opts.name} (${opts.email})`,
+      body: `${opts.name} joined the mailing list from the homepage launch modal. Email: ${opts.email}`,
       href: NOTIFICATION_HREF,
     },
   });

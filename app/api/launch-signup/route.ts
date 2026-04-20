@@ -7,6 +7,11 @@ import { isSafeWebhookUrl } from "@/lib/webhook-url";
 const emailOk = (v: string) =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) && v.length <= 254;
 
+const nameOk = (v: string) => {
+  const t = v.trim();
+  return t.length >= 1 && t.length <= 120 && !/[\r\n\0]/.test(t);
+};
+
 const SIGNUP_WINDOW_MS = 60_000;
 const SIGNUP_MAX_PER_WINDOW = 12;
 
@@ -43,6 +48,14 @@ export async function POST(req: Request) {
     typeof body === "object" && body !== null && "email" in body
       ? String((body as { email: unknown }).email).trim()
       : "";
+  const name =
+    typeof body === "object" && body !== null && "name" in body
+      ? String((body as { name: unknown }).name).trim()
+      : "";
+
+  if (!nameOk(name)) {
+    return NextResponse.json({ error: "Please enter your name." }, { status: 400 });
+  }
 
   if (!emailOk(email)) {
     return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
@@ -57,7 +70,7 @@ export async function POST(req: Request) {
       await fetch(webhook, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, source: "launch-modal" }),
+        body: JSON.stringify({ name, email, source: "launch-modal" }),
       });
     } catch {
       return NextResponse.json({ error: "Could not save your signup. Try again shortly." }, { status: 502 });
@@ -65,17 +78,17 @@ export async function POST(req: Request) {
   }
 
   try {
-    await notifyIssyOfLaunchListSignup(email);
+    await notifyIssyOfLaunchListSignup({ name, email });
   } catch (e) {
     // eslint-disable-next-line no-console
     console.error("[launch-signup] portal notification failed", e);
   }
 
   try {
-    const emailed = await sendLaunchListSignupStudioEmail(email);
+    const emailed = await sendLaunchListSignupStudioEmail({ name, email });
     if (!emailed) {
       // eslint-disable-next-line no-console
-      console.warn("[launch-signup] studio email not sent (check RESEND_API_KEY / Resend)", { email });
+      console.warn("[launch-signup] studio email not sent (check RESEND_API_KEY / Resend)", { name, email });
     }
   } catch (e) {
     // eslint-disable-next-line no-console
