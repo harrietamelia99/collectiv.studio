@@ -175,10 +175,10 @@ export function LaunchSignupModal() {
                 id={titleId}
                 className="cc-no-heading-hover pr-10 font-display text-[clamp(1.45rem,3.8vw,2.05rem)] font-normal tracking-[-0.035em] text-burgundy md:pr-6"
               >
-                <span className="block leading-snug md:hidden">Taking bookings for May 2026</span>
+                <span className="block leading-snug md:hidden">Taking bookings for June 2026</span>
                 <span className="hidden md:block">
                   <span className="block leading-[1.28]">Taking bookings for</span>
-                  <span className="mt-2 block leading-[1.15]">May 2026</span>
+                  <span className="mt-2 block leading-[1.15]">June 2026</span>
                 </span>
               </h2>
               <p className="mt-5 max-w-md font-body text-[15px] font-normal leading-relaxed tracking-[0.01em] text-burgundy/72 sm:text-[16px] md:mt-6">
