@@ -4,6 +4,7 @@ import { Fragment } from "react";
 import type { PortfolioProject } from "@/lib/portfolio";
 import { portfolioServiceLinks } from "@/lib/marketing-seo";
 import { ImagePlaceholderFill } from "@/components/ui/ImagePlaceholder";
+import { ctaButtonClasses } from "@/components/ui/Button";
 import { IMAGE_BLUR_DATA_URL } from "@/lib/blur-placeholder";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 
@@ -37,6 +38,20 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
             </span>
           </h1>
           <p className="cc-copy-muted mt-5 max-w-2xl md:mt-6">{project.tagline}</p>
+          {project.liveSiteUrl ? (
+            <a
+              href={project.liveSiteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={ctaButtonClasses({
+                variant: "burgundy",
+                size: "md",
+                className: "mt-6 w-fit md:mt-7",
+              })}
+            >
+              {project.liveSiteButtonLabel ?? "View website here"}
+            </a>
+          ) : null}
           <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-3 border-t-cc border-solid border-burgundy pt-8 md:mt-10 md:gap-x-6 md:pt-10">
             <span className="cc-caption text-burgundy/55">{project.year}</span>
             <span className="hidden text-burgundy/25 md:inline" aria-hidden>

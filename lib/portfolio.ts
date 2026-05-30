@@ -16,10 +16,115 @@ export type PortfolioProject = {
   galleryCaptions: readonly string[];
   /** When set (same length as captions used), gallery shows these instead of placeholders. */
   galleryImages?: readonly string[];
+  /** Optional live client site — case study shows a CTA link. */
+  liveSiteUrl?: string;
+  /** Button label when `liveSiteUrl` is set (default: “View website here”). */
+  liveSiteButtonLabel?: string;
   quote?: { text: string; attribution: string };
 };
 
 export const portfolioProjects: PortfolioProject[] = [
+  {
+    slug: "petite-social-club",
+    title: "Petite Social Club",
+    type: "Branding & Website",
+    image: "/images/portfolio-petite-gallery-desktop.png",
+    imageObjectPosition: "center 56%",
+    tagline: "A warm, confident identity for a members’ club designed around little ones and their grown-ups.",
+    year: "2026",
+    overview:
+      "Petite Social Club needed a brand that felt premium without feeling precious - somewhere parents would be proud to book and children would feel at home. We shaped a full visual system, tone of voice and a Squarespace site that carries the story from first glance to enquiry.",
+    challenge:
+      "The category skews either overly corporate or cartoonish. The founder wanted a refined middle ground: credible for parents, inviting for families, and flexible enough to work across events, merchandise and digital comms.",
+    approach:
+      "We started with brand positioning, then moved into a restrained palette, custom wordmark direction and photography rules that favour natural light and real moments. The Squarespace build mirrors that restraint - generous whitespace, clear membership pathways and modular blocks for seasonal programming.",
+    outcome:
+      "A cohesive launch that reads boutique rather than bulk. The team can swap campaign modules without breaking layout, and the system is documented so every future touchpoint stays on-brand.",
+    services: ["Brand strategy", "Visual identity", "Web design", "Squarespace build"],
+    galleryCaptions: ["Identity in use across club spaces", "Site - membership and events"],
+    galleryImages: [
+      "/images/portfolio-petite-gallery-desktop.png",
+      "/images/portfolio-petite-gallery-mobile.png",
+    ],
+    quote: {
+      text: "Collectiv understood the emotional side of our brand, not just the visuals. Parents tell us it finally feels like us.",
+      attribution: "Founder, Petite Social Club",
+    },
+    liveSiteUrl: "https://www.petitesocialclub.co.uk/",
+    liveSiteButtonLabel: "View here",
+  },
+  {
+    slug: "malow-london",
+    title: "Malow London",
+    type: "Branding",
+    image: "/images/portfolio-malows.png",
+    tagline:
+      "Full brand identity for comfort-led heels—feminine and pink, grounded in quiet luxury.",
+    year: "2026",
+    overview:
+      "Malow London is an e-commerce brand creating heels designed for comfort without compromising on style. We developed a full brand identity that captures their vision exactly - feminine and pink, yet grounded in a quiet luxury, neutral aesthetic.",
+    challenge:
+      "The brief sat in a tricky space: pink and feminine, but not loud or trend-led. The identity needed to feel elevated enough to sit alongside premium footwear brands, while still being warm and accessible to their customer.",
+    approach:
+      "We worked closely with the team to refine the visual direction, building a palette and identity system that balanced softness with sophistication. Every element, from the primary logo to the submarks, was designed to work across packaging, digital and social as the brand scales.",
+    outcome:
+      "A brand the founders are genuinely proud of. The submarks in particular landed exactly where they wanted, and with a website currently in the works, the identity is already doing its job before the full platform is even live.",
+    services: ["Visual identity", "Logo suite & submarks", "Packaging & digital"],
+    galleryCaptions: ["Brand identity and logo suite", "Submarks and brand application"],
+    galleryImages: [
+      "/images/portfolio-malow-gallery-brand.png",
+      "/images/portfolio-malow-gallery-application.png",
+    ],
+    liveSiteUrl: "https://malow-london.myshopify.com/",
+  },
+  {
+    slug: "reset-pilates",
+    title: "Reset.",
+    type: "Branding & Website",
+    image: "/images/portfolio-reset-gallery-desktop.png",
+    tagline:
+      "Mini brand kit, Momence-integrated website and launch email campaigns for a reformer and mat Pilates studio—calm, premium, and ready for opening day.",
+    year: "2026",
+    overview:
+      "Reset. was created to be more than just a workout—a space to step away, slow down, and reconnect with your body. Inspired by the effortless energy of Australian Pilates studios, the brand blends dynamic movement with a modern, considered approach where strength, flow, and feeling good all come together. We built a mini brand kit, a website fully integrated with their Momence account, and on-brand email campaigns to support their launch in Nailsea, North Somerset.",
+    challenge:
+      "Pilates studios can look interchangeable online. Reset. needed to capture that calm, premium feeling—dynamic classes with heat-infused reformer and mat work—without losing the warmth of a founder-led space. Everything had to feel considered from day one: brand, site, booking flow, and launch comms working as one system before the studio opened.",
+    approach:
+      "We developed a minimalist brand kit and website around Reset.'s voice and visual direction—clean, monochrome, and confident. The site connects directly to Momence for class booking, intro bundles and founding memberships, with clear pathways for classes, pricing and pre-launch announcements. Launch email campaigns were designed in the same system so every touchpoint stayed on-brand from first announcement through to opening.",
+    outcome:
+      "Reset. launched with a cohesive brand and a digital presence built for growth—integrated booking, intro offers, and campaign-ready email templates that carry the studio's energy consistently. The site is ready for members to book, explore classes, and feel the brand before they walk through the door.",
+    services: ["Mini brand kit", "Website design", "Momence integration", "Launch email campaigns"],
+    galleryCaptions: ["Site — desktop pre-launch homepage", "Site — mobile intro offer"],
+    galleryImages: [
+      "/images/portfolio-reset-gallery-desktop.png",
+      "/images/portfolio-reset-gallery-mobile.png",
+    ],
+    liveSiteUrl: "https://www.resetpilatesstudio.co.uk/",
+    liveSiteButtonLabel: "View here",
+  },
+  {
+    slug: "beautigel-nails",
+    title: "Beautigel Nails",
+    type: "Coming soon",
+    image: "/images/portfolio-beautigel-gallery-desktop.png",
+    tagline:
+      "Ecommerce gel nail wrap brand by a mother & daughter team—salon-quality nails without the salon, with the site launching soon.",
+    year: "2026",
+    overview:
+      "Beautigel Nails is an ecommerce gel nail wrap brand founded by a mother and daughter team. They came to us to build a digital shop that feels as polished as the product—accessible, confident, and ready for launch.",
+    challenge:
+      "Gel nail wraps sit in a busy direct-to-consumer beauty market. The site needed to communicate salon-quality results at home without feeling cheap or cluttered, and give a new brand instant credibility before the first order shipped.",
+    approach:
+      "We designed and built the store around the founders' story and values—confidence and accessibility at the centre—with a clean, editorial layout, clear shop pathways, and mobile-first pages for mission and product discovery.",
+    outcome:
+      "The site is built and ready for launch—a scalable ecommerce foundation that reflects a considered mother-and-daughter brand and is prepared to grow with the range.",
+    services: ["Ecommerce website"],
+    galleryCaptions: ["Site — desktop homepage", "Site — mobile mission & values"],
+    galleryImages: [
+      "/images/portfolio-beautigel-gallery-desktop.png",
+      "/images/portfolio-beautigel-gallery-mobile.png",
+    ],
+  },
   {
     slug: "prositeuk",
     title: "PROSITEUK",
@@ -95,33 +200,6 @@ export const portfolioProjects: PortfolioProject[] = [
     quote: {
       text: "Harriet did a brilliant job of bringing our website to life. I didn't know much about marketing or how I wanted it to look, so she really didn't have much to go off - but somehow she captured my vision perfectly. We're so pleased with the results, and glad we now have a website that can grow with us as a business.",
       attribution: "FlowFirst Plumbing",
-    },
-  },
-  {
-    slug: "petite-social-club",
-    title: "Petite Social Club",
-    type: "Branding & Website",
-    image: "/images/portfolio-petite-gallery-desktop.png",
-    imageObjectPosition: "center 56%",
-    tagline: "A warm, confident identity for a members’ club designed around little ones and their grown-ups.",
-    year: "2026",
-    overview:
-      "Petite Social Club needed a brand that felt premium without feeling precious - somewhere parents would be proud to book and children would feel at home. We shaped a full visual system, tone of voice and a Squarespace site that carries the story from first glance to enquiry.",
-    challenge:
-      "The category skews either overly corporate or cartoonish. The founder wanted a refined middle ground: credible for parents, inviting for families, and flexible enough to work across events, merchandise and digital comms.",
-    approach:
-      "We started with brand positioning, then moved into a restrained palette, custom wordmark direction and photography rules that favour natural light and real moments. The Squarespace build mirrors that restraint - generous whitespace, clear membership pathways and modular blocks for seasonal programming.",
-    outcome:
-      "A cohesive launch that reads boutique rather than bulk. The team can swap campaign modules without breaking layout, and the system is documented so every future touchpoint stays on-brand.",
-    services: ["Brand strategy", "Visual identity", "Web design", "Squarespace build"],
-    galleryCaptions: ["Identity in use across club spaces", "Site - membership and events"],
-    galleryImages: [
-      "/images/portfolio-petite-gallery-desktop.png",
-      "/images/portfolio-petite-gallery-mobile.png",
-    ],
-    quote: {
-      text: "Collectiv understood the emotional side of our brand, not just the visuals. Parents tell us it finally feels like us.",
-      attribution: "Founder, Petite Social Club",
     },
   },
   {
@@ -241,29 +319,6 @@ export const portfolioProjects: PortfolioProject[] = [
     galleryImages: [
       "/images/portfolio-corefocus-gallery-guidelines.png",
       "/images/portfolio-corefocus-gallery-cards.png",
-    ],
-  },
-  {
-    slug: "malow-london",
-    title: "Malow London",
-    type: "Branding",
-    image: "/images/portfolio-malows.png",
-    tagline:
-      "Full brand identity for comfort-led heels—feminine and pink, grounded in quiet luxury.",
-    year: "2026",
-    overview:
-      "Malow London is an e-commerce brand creating heels designed for comfort without compromising on style. We developed a full brand identity that captures their vision exactly - feminine and pink, yet grounded in a quiet luxury, neutral aesthetic.",
-    challenge:
-      "The brief sat in a tricky space: pink and feminine, but not loud or trend-led. The identity needed to feel elevated enough to sit alongside premium footwear brands, while still being warm and accessible to their customer.",
-    approach:
-      "We worked closely with the team to refine the visual direction, building a palette and identity system that balanced softness with sophistication. Every element, from the primary logo to the submarks, was designed to work across packaging, digital and social as the brand scales.",
-    outcome:
-      "A brand the founders are genuinely proud of. The submarks in particular landed exactly where they wanted, and with a website currently in the works, the identity is already doing its job before the full platform is even live.",
-    services: ["Visual identity", "Logo suite & submarks", "Packaging & digital"],
-    galleryCaptions: ["Brand identity and logo suite", "Submarks and brand application"],
-    galleryImages: [
-      "/images/portfolio-malow-gallery-brand.png",
-      "/images/portfolio-malow-gallery-application.png",
     ],
   },
   {
