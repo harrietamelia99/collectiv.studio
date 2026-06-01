@@ -24,10 +24,6 @@ import { TEAM_HEADSHOT_PUBLIC_PATH } from "@/lib/team-headshots";
 import { TeamCard, TeamCardGroup } from "@/components/ui/TeamCard";
 import { HomeHeroCopy } from "@/components/home/HomeHeroCopy";
 import { HomeTestimonialsSection } from "@/components/home/HomeTestimonialsSection";
-import {
-  HomeInstagramSection,
-  HomeInstagramSectionFallback,
-} from "@/components/home/HomeInstagramSection";
 
 export const metadata: Metadata = marketingMetadata({
   title: DEFAULT_SITE_TITLE,
@@ -35,7 +31,7 @@ export const metadata: Metadata = marketingMetadata({
   path: "/",
 });
 
-/** Home shell is static; testimonials use cached DB reads; Instagram streams in Suspense. */
+/** Home shell is static; testimonials use cached DB reads. */
 export const revalidate = 300;
 
 const HomeContactForm = dynamic(
@@ -198,10 +194,6 @@ export default function HomePage() {
       <MotionSection className="cc-home-stats-strip bg-cream">
         <HomeStatsStrip items={homeStats} />
       </MotionSection>
-
-      <Suspense fallback={<HomeInstagramSectionFallback />}>
-        <HomeInstagramSection />
-      </Suspense>
 
       <HomeContactForm />
 

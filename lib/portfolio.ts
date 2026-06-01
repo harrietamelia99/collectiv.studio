@@ -126,83 +126,6 @@ export const portfolioProjects: PortfolioProject[] = [
     ],
   },
   {
-    slug: "prositeuk",
-    title: "PROSITEUK",
-    type: "Website & social media",
-    image: "/images/portfolio-prositeuk-gallery-homepage.png",
-    tagline:
-      "From logo-only to a recognised construction recruitment brand on social, then a Next.js site with a live job board for employers and candidates.",
-    year: "2025 – 2026",
-    overview:
-      "PROSITEUK came to us with a logo and not much else. Over the course of our partnership we built their brand presence from the ground up on social media, turning them into a recognisable name in construction recruitment. When the brand had enough weight behind it, the next step was a website that could match - a platform that not only looks the part, but works as a fully functioning job board and base for both employers and candidates.",
-    challenge:
-      "Construction recruitment isn't a sector known for strong brand identity. PROSITEUK needed to stand out, build trust with tier 1 contractors, and attract quality candidates - all without an established visual presence to work from. Social media came first, then the website had to reflect and elevate everything we'd built.",
-    approach:
-      "We started on social - building a consistent visual identity, tone of voice and content strategy that made PROSITEUK recognisable in their space. Once the brand had real recognition behind it, we moved into web. The Next.js site was built to serve two audiences clearly - employers with hiring needs and candidates looking for roles - with a live job board, a structured role taxonomy across blue and white collar, and trust signals woven throughout.",
-    outcome:
-      "A brand that went from a logo to a fully formed identity across social and web. PROSITEUK now has a presence that reflects the quality of the placements they make - and a site built to grow with them as the business scales.",
-    services: ["Website design", "Next.js build"],
-    galleryCaptions: ["Homepage — employer facing", "Role coverage — blue & white collar"],
-    galleryImages: [
-      "/images/portfolio-prositeuk-gallery-homepage.png",
-      "/images/portfolio-prositeuk-gallery-jobs.png",
-    ],
-    quote: {
-      text: "We decided to bring Harriet on to run our socials and improve our overall engagement. Our turnover up 150%, a coincidence? We don't think so!",
-      attribution: "PROSITEUK",
-    },
-  },
-  {
-    slug: "gasworld-ltd",
-    title: "GasWorld LTD",
-    type: "Brand identity",
-    image: "/images/portfolio-gasworld-gallery-system.png",
-    tagline:
-      "Full visual system for one of Bristol's most established gas engineering firms—built from their logo into a credible, trust-first identity ready for web.",
-    year: "2026",
-    overview:
-      "GasWorld LTD has been one of Bristol's most established gas engineering firms for over 45 years. The reputation was already there - the brand identity wasn't. They came to us with a logo and nothing else, and needed a visual identity that finally matched the scale and credibility of the business they'd built.",
-    challenge:
-      "A 45-year-old firm carries real weight, but an outdated or inconsistent brand can quietly work against that. GasWorld needed a refresh that respected their history without looking stuck in it - credible and professional for commercial clients, but modern enough to compete in 2026. Starting from a single logo with no supporting system made this a build from scratch.",
-    approach:
-      "We used the existing logo as a foundation and built a full brand identity system around it - colour palette, typography, visual language and brand guidelines that give the business consistency across every touchpoint. The focus throughout was on trust and authority - this is a firm that's been doing serious work for decades, and the brand needed to communicate that from first glance.",
-    outcome:
-      "GasWorld now has a brand identity that reflects where they are as a business - established, credible and ready for the next chapter. A website is currently in development and will carry the new identity into their digital presence for the first time.",
-    services: ["Website coming soon"],
-    galleryCaptions: ["Brand identity — full system", "Logo refresh in application"],
-    galleryImages: [
-      "/images/portfolio-gasworld-gallery-system.png",
-      "/images/portfolio-gasworld-gallery-application.png",
-    ],
-  },
-  {
-    slug: "flowfirst-plumbing",
-    title: "FlowFirst Plumbing",
-    type: "Next.js website",
-    image: "/images/portfolio-flowfirst-gallery-desktop.png",
-    tagline:
-      "Custom Next.js site for a new Bristol plumbing business—from zero brand to a premium, trust-led presence built to scale.",
-    year: "2026",
-    overview:
-      "FlowFirst Plumbing is a new business founded by an experienced plumber ready to go out on their own. They came to us with no brand at all - no identity, no web presence, nothing to hand a customer. The brief was simple: build something that reflects the quality of work they deliver and gives them a foundation to grow from.",
-    challenge:
-      "Starting from zero is both a clean slate and a pressure. There was no existing brand to build from or refine - everything needed to be created. The goal was to position FlowFirst as a premium, trustworthy choice for domestic customers without coming across as generic. In a crowded trade market, it needed to feel considered and credible from day one.",
-    approach:
-      "We built the site from scratch using Next.js, giving FlowFirst a custom-coded presence that performs and scales properly as the business grows. The design direction was premium and clean - the kind of site that reassures a homeowner before they've even read a word. Every decision, from layout to typography to copy hierarchy, was made with trust and conversion in mind.",
-    outcome:
-      "FlowFirst launched with a website that punches well above where most new trade businesses start. They have a professional digital presence built to grow with them - ready for more pages, more services, and more customers as the business develops.",
-    services: ["Next.js", "Custom full build"],
-    galleryCaptions: ["Site — mobile hero", "Site — desktop homepage"],
-    galleryImages: [
-      "/images/portfolio-flowfirst-gallery-mobile.png",
-      "/images/portfolio-flowfirst-gallery-desktop.png",
-    ],
-    quote: {
-      text: "Harriet did a brilliant job of bringing our website to life. I didn't know much about marketing or how I wanted it to look, so she really didn't have much to go off - but somehow she captured my vision perfectly. We're so pleased with the results, and glad we now have a website that can grow with us as a business.",
-      attribution: "FlowFirst Plumbing",
-    },
-  },
-  {
     slug: "ateau",
     title: "Âteau",
     type: "Social Media",
@@ -343,6 +266,83 @@ export const portfolioProjects: PortfolioProject[] = [
       "/images/portfolio-batharms-gallery-menu.png",
       "/images/portfolio-batharms-gallery-suite.png",
     ],
+  },
+  {
+    slug: "prositeuk",
+    title: "PROSITEUK",
+    type: "Website & social media",
+    image: "/images/portfolio-prositeuk-gallery-homepage.png",
+    tagline:
+      "From logo-only to a recognised construction recruitment brand on social, then a Next.js site with a live job board for employers and candidates.",
+    year: "2025 – 2026",
+    overview:
+      "PROSITEUK came to us with a logo and not much else. Over the course of our partnership we built their brand presence from the ground up on social media, turning them into a recognisable name in construction recruitment. When the brand had enough weight behind it, the next step was a website that could match - a platform that not only looks the part, but works as a fully functioning job board and base for both employers and candidates.",
+    challenge:
+      "Construction recruitment isn't a sector known for strong brand identity. PROSITEUK needed to stand out, build trust with tier 1 contractors, and attract quality candidates - all without an established visual presence to work from. Social media came first, then the website had to reflect and elevate everything we'd built.",
+    approach:
+      "We started on social - building a consistent visual identity, tone of voice and content strategy that made PROSITEUK recognisable in their space. Once the brand had real recognition behind it, we moved into web. The Next.js site was built to serve two audiences clearly - employers with hiring needs and candidates looking for roles - with a live job board, a structured role taxonomy across blue and white collar, and trust signals woven throughout.",
+    outcome:
+      "A brand that went from a logo to a fully formed identity across social and web. PROSITEUK now has a presence that reflects the quality of the placements they make - and a site built to grow with them as the business scales.",
+    services: ["Website design", "Next.js build"],
+    galleryCaptions: ["Homepage — employer facing", "Role coverage — blue & white collar"],
+    galleryImages: [
+      "/images/portfolio-prositeuk-gallery-homepage.png",
+      "/images/portfolio-prositeuk-gallery-jobs.png",
+    ],
+    quote: {
+      text: "We decided to bring Harriet on to run our socials and improve our overall engagement. Our turnover up 150%, a coincidence? We don't think so!",
+      attribution: "PROSITEUK",
+    },
+  },
+  {
+    slug: "gasworld-ltd",
+    title: "GasWorld LTD",
+    type: "Brand identity",
+    image: "/images/portfolio-gasworld-gallery-system.png",
+    tagline:
+      "Full visual system for one of Bristol's most established gas engineering firms—built from their logo into a credible, trust-first identity ready for web.",
+    year: "2026",
+    overview:
+      "GasWorld LTD has been one of Bristol's most established gas engineering firms for over 45 years. The reputation was already there - the brand identity wasn't. They came to us with a logo and nothing else, and needed a visual identity that finally matched the scale and credibility of the business they'd built.",
+    challenge:
+      "A 45-year-old firm carries real weight, but an outdated or inconsistent brand can quietly work against that. GasWorld needed a refresh that respected their history without looking stuck in it - credible and professional for commercial clients, but modern enough to compete in 2026. Starting from a single logo with no supporting system made this a build from scratch.",
+    approach:
+      "We used the existing logo as a foundation and built a full brand identity system around it - colour palette, typography, visual language and brand guidelines that give the business consistency across every touchpoint. The focus throughout was on trust and authority - this is a firm that's been doing serious work for decades, and the brand needed to communicate that from first glance.",
+    outcome:
+      "GasWorld now has a brand identity that reflects where they are as a business - established, credible and ready for the next chapter. A website is currently in development and will carry the new identity into their digital presence for the first time.",
+    services: ["Website coming soon"],
+    galleryCaptions: ["Brand identity — full system", "Logo refresh in application"],
+    galleryImages: [
+      "/images/portfolio-gasworld-gallery-system.png",
+      "/images/portfolio-gasworld-gallery-application.png",
+    ],
+  },
+  {
+    slug: "flowfirst-plumbing",
+    title: "FlowFirst Plumbing",
+    type: "Next.js website",
+    image: "/images/portfolio-flowfirst-gallery-desktop.png",
+    tagline:
+      "Custom Next.js site for a new Bristol plumbing business—from zero brand to a premium, trust-led presence built to scale.",
+    year: "2026",
+    overview:
+      "FlowFirst Plumbing is a new business founded by an experienced plumber ready to go out on their own. They came to us with no brand at all - no identity, no web presence, nothing to hand a customer. The brief was simple: build something that reflects the quality of work they deliver and gives them a foundation to grow from.",
+    challenge:
+      "Starting from zero is both a clean slate and a pressure. There was no existing brand to build from or refine - everything needed to be created. The goal was to position FlowFirst as a premium, trustworthy choice for domestic customers without coming across as generic. In a crowded trade market, it needed to feel considered and credible from day one.",
+    approach:
+      "We built the site from scratch using Next.js, giving FlowFirst a custom-coded presence that performs and scales properly as the business grows. The design direction was premium and clean - the kind of site that reassures a homeowner before they've even read a word. Every decision, from layout to typography to copy hierarchy, was made with trust and conversion in mind.",
+    outcome:
+      "FlowFirst launched with a website that punches well above where most new trade businesses start. They have a professional digital presence built to grow with them - ready for more pages, more services, and more customers as the business develops.",
+    services: ["Next.js", "Custom full build"],
+    galleryCaptions: ["Site — mobile hero", "Site — desktop homepage"],
+    galleryImages: [
+      "/images/portfolio-flowfirst-gallery-mobile.png",
+      "/images/portfolio-flowfirst-gallery-desktop.png",
+    ],
+    quote: {
+      text: "Harriet did a brilliant job of bringing our website to life. I didn't know much about marketing or how I wanted it to look, so she really didn't have much to go off - but somehow she captured my vision perfectly. We're so pleased with the results, and glad we now have a website that can grow with us as a business.",
+      attribution: "FlowFirst Plumbing",
+    },
   },
 ];
 
