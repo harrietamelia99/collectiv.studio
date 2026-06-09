@@ -4,8 +4,25 @@ export function hotelsExperiencePublic(): boolean {
 }
 
 export function hotelsPreviewSecret(): string | undefined {
-  const s = process.env.HOTELS_PREVIEW_SECRET?.trim();
+  const s = process.env.HOTELS_PREVIEW_SECRET?.trim().replace(/^["']|["']$/g, "");
   return s || undefined;
+}
+
+/** Query strings turn `+` into space — common when secrets are base64. */
+export function hotelsAccessMatchesSecret(
+  access: string | null | undefined,
+  secret: string,
+): boolean {
+  if (!access) return false;
+  const trimmed = access.trim();
+  if (trimmed === secret) return true;
+  if (trimmed.replace(/ /g, "+") === secret) return true;
+  try {
+    if (decodeURIComponent(trimmed) === secret) return true;
+  } catch {
+    /* ignore malformed encoding */
+  }
+  return false;
 }
 
 export const HOTELS_PREVIEW_COOKIE = "cc_hotels_preview";

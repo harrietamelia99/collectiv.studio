@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import {
   HOTELS_PREVIEW_COOKIE,
+  hotelsAccessMatchesSecret,
   hotelsExperiencePublic,
   hotelsPreviewSecret,
 } from "@/lib/hotels-preview";
@@ -43,16 +44,14 @@ function hotelsPreviewGate(req: NextRequest): NextResponse {
   if (cookie === secret) return NextResponse.next();
 
   const access = req.nextUrl.searchParams.get("hotelsAccess");
-  if (access === secret) {
-    const url = req.nextUrl.clone();
-    url.searchParams.delete("hotelsAccess");
-    const res = NextResponse.redirect(url);
+  if (hotelsAccessMatchesSecret(access, secret)) {
+    const res = NextResponse.next();
     res.cookies.set(HOTELS_PREVIEW_COOKIE, secret, {
       httpOnly: true,
       secure: true,
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 30,
-      path: "/hotels",
+      path: "/",
     });
     return res;
   }
