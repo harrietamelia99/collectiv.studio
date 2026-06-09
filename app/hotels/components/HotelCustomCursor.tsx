@@ -7,12 +7,15 @@ export function HotelCustomCursor() {
   const pos = useRef({ x: 0, y: 0 });
   const target = useRef({ x: 0, y: 0 });
   const [hovering, setHovering] = useState(false);
+  const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
     if (window.matchMedia("(hover: none)").matches) return;
 
     const onMove = (e: MouseEvent) => {
       target.current = { x: e.clientX, y: e.clientY };
+      const under = document.elementFromPoint(e.clientX, e.clientY);
+      setHidden(Boolean(under?.closest(".hw-amenities")));
     };
 
     const onOver = (e: MouseEvent) => {
@@ -48,7 +51,7 @@ export function HotelCustomCursor() {
   return (
     <div
       ref={cursorRef}
-      className={`hw-cursor ${hovering ? "hw-cursor--hover" : ""}`}
+      className={`hw-cursor ${hovering ? "hw-cursor--hover" : ""} ${hidden ? "hw-cursor--hidden" : ""}`}
       aria-hidden
     />
   );

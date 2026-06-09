@@ -1,4 +1,5 @@
-import { AMENITY_ICONS, type AmenityKey } from "../data";
+import type { AmenityKey } from "../data";
+import { AMENITY_ICONS } from "./AmenityIcons";
 
 export type AmenityItem = {
   key: AmenityKey;

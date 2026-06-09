@@ -88,85 +88,19 @@ export const CITY_ROOMS: RoomItem[] = [
   },
 ];
 
-export const AMENITY_ICONS = {
-  sun: (
-    <svg viewBox="0 0 24 24" className="hw-amenity__icon" aria-hidden>
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
-    </svg>
-  ),
-  pool: (
-    <svg viewBox="0 0 24 24" className="hw-amenity__icon" aria-hidden>
-      <path d="M2 12c2 0 2-4 4-4s2 4 4 4 2-4 4-4 2 4 4 4 2-4 4-4 2 4 4 4" />
-      <path d="M2 18c2 0 2-4 4-4s2 4 4 4 2-4 4-4 2 4 4 4 2-4 4-4 2 4 4 4" />
-    </svg>
-  ),
-  dining: (
-    <svg viewBox="0 0 24 24" className="hw-amenity__icon" aria-hidden>
-      <path d="M8 3v8M5 3v5M11 3v5M8 11v10M16 3v18M19 3v8a3 3 0 0 1-3 3h0" />
-    </svg>
-  ),
-  spa: (
-    <svg viewBox="0 0 24 24" className="hw-amenity__icon" aria-hidden>
-      <path d="M12 3c3 4 6 6 6 10a6 6 0 0 1-12 0c0-4 3-6 6-10z" />
-    </svg>
-  ),
-  concierge: (
-    <svg viewBox="0 0 24 24" className="hw-amenity__icon" aria-hidden>
-      <path d="M12 2l2 6h6l-5 4 2 6-5-4-5 4 2-6-5-4h6z" />
-    </svg>
-  ),
-  transport: (
-    <svg viewBox="0 0 24 24" className="hw-amenity__icon" aria-hidden>
-      <path d="M5 17h14v-5H5v5zM5 9l2-4h10l2 4M7 17a1.5 1.5 0 1 0 0 .01M17 17a1.5 1.5 0 1 0 0 .01" />
-    </svg>
-  ),
-  fire: (
-    <svg viewBox="0 0 24 24" className="hw-amenity__icon" aria-hidden>
-      <path d="M12 22c4-3 6-6 6-10a6 6 0 0 0-10-4c-1 3-3 4-3 7a3 3 0 0 0 6 0c0-2-1-3-1-5 2 2 2 5 2 5z" />
-    </svg>
-  ),
-  grounds: (
-    <svg viewBox="0 0 24 24" className="hw-amenity__icon" aria-hidden>
-      <path d="M12 22V12M12 12C8 12 5 9 5 5c4 0 7 3 7 7M12 12c4 0 7-3 7-7-4 0-7 3-7 7" />
-    </svg>
-  ),
-  dog: (
-    <svg viewBox="0 0 24 24" className="hw-amenity__icon" aria-hidden>
-      <path d="M9 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM15 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM6 16c1-3 3-4 6-4s5 1 6 4" />
-    </svg>
-  ),
-  tea: (
-    <svg viewBox="0 0 24 24" className="hw-amenity__icon" aria-hidden>
-      <path d="M6 8h12v6a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V8zM18 10h1a2 2 0 0 1 0 4h-1M8 4v2M12 4v2M16 4v2" />
-    </svg>
-  ),
-  bar: (
-    <svg viewBox="0 0 24 24" className="hw-amenity__icon" aria-hidden>
-      <path d="M8 22h8M12 15V2M5 6h14" />
-    </svg>
-  ),
-  cinema: (
-    <svg viewBox="0 0 24 24" className="hw-amenity__icon" aria-hidden>
-      <rect x="3" y="5" width="18" height="14" rx="1" />
-      <path d="M7 9v6M11 9v6M15 9v6" />
-    </svg>
-  ),
-  lounge: (
-    <svg viewBox="0 0 24 24" className="hw-amenity__icon" aria-hidden>
-      <path d="M4 18v2h16v-2M6 10h12v8H6zM8 10V6h8v4" />
-    </svg>
-  ),
-  valet: (
-    <svg viewBox="0 0 24 24" className="hw-amenity__icon" aria-hidden>
-      <path d="M3 14h18M5 14l2-7h10l2 7M7 14a2 2 0 1 0 4 0M13 14a2 2 0 1 0 4 0" />
-    </svg>
-  ),
-  shop: (
-    <svg viewBox="0 0 24 24" className="hw-amenity__icon" aria-hidden>
-      <path d="M6 6h15l-1.5 9h-12L6 6zM6 6L5 3H2M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM18 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
-    </svg>
-  ),
-} as const;
-
-export type AmenityKey = keyof typeof AMENITY_ICONS;
+export type AmenityKey =
+  | "sun"
+  | "pool"
+  | "dining"
+  | "spa"
+  | "concierge"
+  | "transport"
+  | "fire"
+  | "grounds"
+  | "dog"
+  | "tea"
+  | "bar"
+  | "cinema"
+  | "lounge"
+  | "valet"
+  | "shop";
