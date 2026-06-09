@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
+import {
+  HOTELS_PREVIEW_COOKIE,
+  hotelsExperiencePublic,
+  hotelsPreviewSecret,
+} from "@/lib/hotels-preview";
 import { PORTAL_AUTH_SHELL_HEADER } from "@/lib/portal-auth-shell-header";
 import { nextAuthSecret } from "@/lib/nextauth-secret";
 
@@ -23,8 +28,45 @@ function nextWithPortalAuthShell(req: NextRequest) {
   return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
+function hotelsPreviewGate(req: NextRequest): NextResponse {
+  if (hotelsExperiencePublic()) return NextResponse.next();
+
+  const isDev = process.env.NODE_ENV === "development";
+  if (isDev) return NextResponse.next();
+
+  const secret = hotelsPreviewSecret();
+  if (!secret) {
+    return new NextResponse(null, { status: 404 });
+  }
+
+  const cookie = req.cookies.get(HOTELS_PREVIEW_COOKIE)?.value;
+  if (cookie === secret) return NextResponse.next();
+
+  const access = req.nextUrl.searchParams.get("hotelsAccess");
+  if (access === secret) {
+    const url = req.nextUrl.clone();
+    url.searchParams.delete("hotelsAccess");
+    const res = NextResponse.redirect(url);
+    res.cookies.set(HOTELS_PREVIEW_COOKIE, secret, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 30,
+      path: "/hotels",
+    });
+    return res;
+  }
+
+  return new NextResponse(null, { status: 404 });
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  if (pathname.startsWith("/hotels")) {
+    return hotelsPreviewGate(req);
+  }
+
   if (!pathname.startsWith("/portal")) return NextResponse.next();
   if (isPortalPublicAuthPath(pathname)) {
     return nextWithPortalAuthShell(req);
@@ -47,5 +89,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/portal", "/portal/:path*"],
+  matcher: ["/portal", "/portal/:path*", "/hotels", "/hotels/:path*"],
 };

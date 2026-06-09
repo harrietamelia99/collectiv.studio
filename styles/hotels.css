@@ -1,0 +1,893 @@
+.hotel-world {
+  --hw-transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  --hw-transition-fast: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  --hw-radius: 2px;
+  --hw-radius-lg: 4px;
+  --hw-letter-tight: -0.03em;
+  --hw-letter-wide: 0.15em;
+
+  min-height: 100dvh;
+  background: var(--hw-bg);
+  color: var(--hw-text);
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+}
+
+.hotel-world--mediterranean {
+  --hw-bg: #f7f3ee;
+  --hw-bg-alt: #ede8e0;
+  --hw-bg-rgb: 247, 243, 238;
+  --hw-text: #1c1510;
+  --hw-text-muted: #7a6e65;
+  --hw-accent: #c4956a;
+  --hw-accent-light: #e8d5bc;
+  --hw-white: #fdfaf7;
+  --hw-hero-overlay: rgba(20, 14, 8, 0.35);
+}
+
+.hotel-world--cotswolds {
+  --hw-bg: #f4f1eb;
+  --hw-bg-alt: #eae4d6;
+  --hw-bg-rgb: 244, 241, 235;
+  --hw-text: #1e1a12;
+  --hw-text-muted: #6b6355;
+  --hw-accent: #5c7a4e;
+  --hw-accent-light: #c8d9c0;
+  --hw-white: #fdfcf8;
+  --hw-hero-overlay: rgba(15, 12, 6, 0.45);
+}
+
+.hotel-world--city {
+  --hw-bg: #0e0e0e;
+  --hw-bg-alt: #161616;
+  --hw-bg-card: #1c1c1c;
+  --hw-bg-rgb: 14, 14, 14;
+  --hw-text: #f0ede8;
+  --hw-text-muted: #888078;
+  --hw-accent: #c9a96e;
+  --hw-accent-light: #3a3228;
+  --hw-white: #fdfcf8;
+  --hw-hero-overlay: rgba(0, 0, 0, 0.55);
+}
+
+.hotel-world a {
+  color: inherit;
+}
+
+/* Portal */
+.hotel-portal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #0a0a0a;
+}
+
+@media (min-width: 768px) {
+  .hotel-portal {
+    flex-direction: row;
+    height: 100dvh;
+    max-height: 100dvh;
+  }
+}
+
+.hotel-portal__header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  padding: 32px 24px 0;
+  text-align: center;
+  pointer-events: none;
+  animation: hwFadeIn 1s ease 0.8s both;
+}
+
+.hotel-portal__brand {
+  display: block;
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: #fff;
+  opacity: 0.7;
+}
+
+.hotel-portal__tagline {
+  display: block;
+  margin-top: 8px;
+  font-family: var(--font-hotel-display), "Cormorant Garamond", serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: 13px;
+  color: #fff;
+  opacity: 0.5;
+}
+
+.hotel-portal__fade {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+.hotel-portal__fade--active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.portal-card {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  flex: 1;
+  min-height: 60vh;
+  transition: flex 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: hwFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.portal-card:nth-child(1) {
+  animation-delay: 0.2s;
+}
+.portal-card:nth-child(2) {
+  animation-delay: 0.4s;
+}
+.portal-card:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+@media (min-width: 768px) {
+  .portal-card {
+    height: 100vh;
+    min-height: 0;
+  }
+
+  .portal-card:hover {
+    flex: 1.6;
+  }
+}
+
+.portal-card__bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: scale(1.05);
+  will-change: transform;
+}
+
+@media (min-width: 768px) {
+  .portal-card:hover .portal-card__bg {
+    transform: scale(1);
+  }
+}
+
+.portal-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.75) 0%,
+    rgba(0, 0, 0, 0.2) 50%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
+  transition: opacity 0.6s ease;
+}
+
+@media (min-width: 768px) {
+  .portal-card:hover .portal-card__overlay {
+    opacity: 0.85;
+  }
+}
+
+.portal-card__content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 40px 28px;
+  color: #fff;
+}
+
+@media (min-width: 768px) {
+  .portal-card__content {
+    padding: 48px 40px;
+  }
+}
+
+.portal-card__number {
+  display: block;
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  opacity: 0.5;
+  margin-bottom: 16px;
+}
+
+.portal-card__title {
+  font-family: var(--font-hotel-display), "Cormorant Garamond", serif;
+  font-weight: 300;
+  font-size: clamp(28px, 3vw, 42px);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0 0 10px;
+}
+
+.portal-card__tagline {
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  opacity: 0.65;
+  text-transform: uppercase;
+  margin: 0 0 24px;
+}
+
+.portal-card__divider {
+  width: 32px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.4);
+  margin-bottom: 20px;
+  transition: width 0.5s ease, background 0.5s ease;
+}
+
+@media (min-width: 768px) {
+  .portal-card:hover .portal-card__divider {
+    width: 64px;
+    background: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.portal-card__cta {
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  transform: translateY(0);
+  transition: all 0.4s ease 0.1s;
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .portal-card__cta {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  .portal-card:hover .portal-card__cta {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hero */
+.hw-hero {
+  position: relative;
+  height: 100vh;
+  min-height: 560px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hw-hero__bg {
+  position: absolute;
+  inset: -15% 0 0;
+  height: 130%;
+  background-size: cover;
+  background-position: center;
+  will-change: transform;
+}
+
+.hw-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--hw-hero-overlay);
+}
+
+.hw-hero__content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 0 24px;
+  max-width: 900px;
+}
+
+.hw-hero__eyebrow {
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 10px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: #fff;
+  opacity: 0.7;
+  margin: 0 0 24px;
+}
+
+.hw-hero__headline {
+  font-family: var(--font-hotel-display), "Cormorant Garamond", serif;
+  font-weight: 300;
+  font-size: clamp(40px, 7vw, 96px);
+  letter-spacing: var(--hw-letter-tight);
+  line-height: 1.05;
+  color: #fff;
+  margin: 0 0 20px;
+}
+
+.hw-hero__sub {
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  color: #fff;
+  opacity: 0.6;
+  margin: 0;
+}
+
+.hw-hero__scroll {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: 48px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0));
+  animation: hwScrollPulse 2s ease-in-out infinite;
+}
+
+/* Nav */
+.hw-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: rgba(var(--hw-bg-rgb), 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid color-mix(in srgb, var(--hw-text) 8%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px);
+  transition: var(--hw-transition-fast);
+}
+
+.hw-nav--visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.hw-nav__title {
+  font-family: var(--font-hotel-display), "Cormorant Garamond", serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: 18px;
+  color: var(--hw-text);
+}
+
+.hw-nav__back {
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--hw-text-muted);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.hw-nav__back:hover {
+  color: var(--hw-text);
+  text-decoration: underline;
+}
+
+/* Sections */
+.hw-section {
+  padding: 80px 24px;
+}
+
+@media (min-width: 768px) {
+  .hw-section {
+    padding: 120px 80px;
+  }
+}
+
+.hw-quote {
+  font-family: var(--font-hotel-display), "Cormorant Garamond", serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(24px, 3vw, 38px);
+  line-height: 1.35;
+  color: var(--hw-text);
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.hw-rule {
+  width: 80px;
+  height: 1px;
+  background: var(--hw-accent-light);
+  margin: 32px auto;
+}
+
+.hw-label {
+  display: block;
+  text-align: center;
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--hw-text-muted);
+}
+
+.hw-editorial {
+  display: grid;
+  gap: 48px;
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .hw-editorial {
+    grid-template-columns: 1.5fr 1fr;
+    gap: 64px;
+  }
+}
+
+.hw-editorial__text {
+  font-family: var(--font-hotel-display), "Cormorant Garamond", serif;
+  font-weight: 300;
+  font-size: clamp(18px, 2.2vw, 22px);
+  line-height: 1.8;
+  color: var(--hw-text);
+  margin: 0;
+}
+
+.hw-editorial__image {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+}
+
+.hw-statement {
+  font-family: var(--font-hotel-display), "Cormorant Garamond", serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: clamp(36px, 6vw, 80px);
+  letter-spacing: var(--hw-letter-tight);
+  line-height: 1.1;
+  text-align: center;
+  color: var(--hw-text);
+  margin: 0;
+}
+
+.hw-statement-rule {
+  width: 60px;
+  height: 1px;
+  background: var(--hw-accent);
+  margin: 32px auto 0;
+}
+
+/* Rooms */
+.hw-rooms__heading {
+  font-family: var(--font-hotel-display), "Cormorant Garamond", serif;
+  font-weight: 400;
+  font-size: clamp(28px, 4vw, 38px);
+  color: var(--hw-text);
+  margin: 0 0 32px;
+  padding-left: 24px;
+}
+
+@media (min-width: 768px) {
+  .hw-rooms__heading {
+    padding-left: 80px;
+  }
+}
+
+.hw-rooms__scroll {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding: 0 24px 16px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.hw-rooms__scroll::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .hw-rooms__scroll {
+    padding: 0 80px 24px;
+    gap: 24px;
+  }
+}
+
+.hw-room-card {
+  flex: 0 0 min(78vw, 340px);
+  scroll-snap-align: start;
+  background: var(--hw-bg-alt);
+  border-radius: var(--hw-radius);
+  overflow: hidden;
+}
+
+.hotel-world--city .hw-room-card {
+  background: var(--hw-bg-card);
+  border: 1px solid var(--hw-accent-light);
+}
+
+.hw-room-card__image-wrap {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+
+.hw-room-card__image {
+  object-fit: cover;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hw-room-card:hover .hw-room-card__image {
+  transform: scale(1.04);
+}
+
+.hw-room-card__body {
+  padding: 24px;
+}
+
+.hw-room-card__name {
+  font-family: var(--font-hotel-display), "Cormorant Garamond", serif;
+  font-weight: 400;
+  font-size: 22px;
+  color: var(--hw-text);
+  margin: 0 0 8px;
+}
+
+.hw-room-card__type {
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--hw-text-muted);
+  margin: 0 0 12px;
+}
+
+.hw-room-card__price {
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 13px;
+  color: var(--hw-text-muted);
+  margin: 0;
+}
+
+.hotel-world--city .hw-room-card__price {
+  color: var(--hw-accent);
+}
+
+/* Amenities */
+.hw-amenities {
+  padding: 64px 24px;
+  background: var(--hw-text);
+  color: var(--hw-white);
+}
+
+.hotel-world--cotswolds .hw-amenities {
+  background: var(--hw-accent);
+}
+
+.hotel-world--city .hw-amenities {
+  background: var(--hw-accent);
+  color: var(--hw-bg);
+}
+
+.hw-amenities__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px 24px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .hw-amenities__grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 48px 32px;
+  }
+}
+
+.hw-amenity {
+  text-align: center;
+}
+
+.hw-amenity__icon {
+  width: 28px;
+  height: 28px;
+  margin: 0 auto 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.25;
+}
+
+.hw-amenity__label {
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* Interlude */
+.hw-interlude {
+  position: relative;
+  height: 70vh;
+  min-height: 400px;
+  overflow: hidden;
+}
+
+.hw-interlude__bg {
+  position: absolute;
+  inset: -15% 0 0;
+  height: 130%;
+  background-size: cover;
+  background-position: center;
+  will-change: transform;
+}
+
+/* CTA */
+.hw-cta {
+  padding: 100px 24px;
+  background: var(--hw-bg-alt);
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .hw-cta {
+    padding: 160px 24px;
+  }
+}
+
+.hw-cta__eyebrow {
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--hw-accent);
+  margin: 0 0 24px;
+}
+
+.hw-cta__headline {
+  font-family: var(--font-hotel-display), "Cormorant Garamond", serif;
+  font-weight: 300;
+  font-size: clamp(32px, 4vw, 54px);
+  letter-spacing: var(--hw-letter-tight);
+  line-height: 1.15;
+  color: var(--hw-text);
+  margin: 0 auto 20px;
+  max-width: 720px;
+}
+
+.hw-cta__sub {
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--hw-text-muted);
+  max-width: 480px;
+  margin: 0 auto 40px;
+}
+
+.hw-cta__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 180px;
+  height: 56px;
+  border: 1px solid var(--hw-text);
+  background: transparent;
+  color: var(--hw-text);
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+.hw-cta__btn:hover {
+  background: var(--hw-text);
+  color: var(--hw-white);
+}
+
+.hotel-world--city .hw-cta__btn {
+  border-color: var(--hw-accent);
+  color: var(--hw-accent);
+}
+
+.hotel-world--city .hw-cta__btn:hover {
+  background: var(--hw-accent);
+  color: var(--hw-bg);
+}
+
+/* Footer row */
+.hw-footer-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 48px 24px 80px;
+  background: var(--hw-bg);
+}
+
+@media (min-width: 768px) {
+  .hw-footer-row {
+    padding: 48px 80px 100px;
+  }
+}
+
+.hw-footer-row__back {
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--hw-text-muted);
+  text-decoration: none;
+}
+
+.hw-footer-row__back:hover {
+  text-decoration: underline;
+  color: var(--hw-text);
+}
+
+.hw-back-fixed {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 40;
+  padding: 10px 16px;
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--hw-text-muted);
+  text-decoration: none;
+  background: color-mix(in srgb, var(--hw-bg) 85%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid color-mix(in srgb, var(--hw-text) 10%, transparent);
+  transition: color 0.3s ease;
+}
+
+.hw-back-fixed:hover {
+  color: var(--hw-text);
+}
+
+.hw-credit {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 40;
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--hw-text-muted);
+  text-decoration: none;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.hw-credit:hover {
+  opacity: 1;
+}
+
+/* Reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Custom cursor */
+.hw-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border: 1px solid var(--hw-accent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transition:
+    width 0.35s ease,
+    height 0.35s ease,
+    margin 0.35s ease,
+    background 0.35s ease;
+  mix-blend-mode: difference;
+}
+
+.hw-cursor--hover {
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  background: color-mix(in srgb, var(--hw-accent) 20%, transparent);
+}
+
+@media (hover: none), (max-width: 767px) {
+  .hw-cursor {
+    display: none;
+  }
+}
+
+.hotel-portal .hw-credit {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.hotel-portal .hw-credit:hover {
+  color: rgba(255, 255, 255, 0.85);
+  opacity: 1;
+}
+
+@keyframes hwFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hwFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes hwScrollPulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: translateX(-50%) scaleY(0.6);
+    transform-origin: top;
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scaleY(1);
+    transform-origin: top;
+  }
+}
