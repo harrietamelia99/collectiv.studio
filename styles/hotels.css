@@ -63,6 +63,7 @@
   min-height: 100dvh;
   overflow: hidden;
   background: #0a0a0a;
+  padding-bottom: 120px;
 }
 
 @media (min-width: 768px) {
@@ -70,6 +71,7 @@
     flex-direction: row;
     height: 100dvh;
     max-height: 100dvh;
+    padding-bottom: 0;
   }
 }
 
@@ -101,9 +103,78 @@
   font-family: var(--font-hotel-display), "Cormorant Garamond", serif;
   font-weight: 300;
   font-style: italic;
-  font-size: 13px;
+  font-size: 15px;
   color: #fff;
-  opacity: 0.5;
+  opacity: 0.75;
+}
+
+.hotel-portal__intro {
+  max-width: 520px;
+  margin: 16px auto 0;
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 12px;
+  line-height: 1.65;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.hotel-portal__footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 24px;
+  padding: 20px 28px 28px;
+  pointer-events: auto;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85), transparent);
+}
+
+@media (min-width: 768px) {
+  .hotel-portal__footer {
+    padding: 24px 40px 32px;
+  }
+}
+
+.hotel-portal__capabilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hotel-portal__capabilities li {
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.hotel-portal__contact {
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+  padding-bottom: 2px;
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+.hotel-portal__contact:hover {
+  color: #fff;
+  border-color: #fff;
 }
 
 .hotel-portal__fade {
@@ -273,11 +344,74 @@
 .hw-hero {
   position: relative;
   height: 100vh;
-  min-height: 560px;
+  min-height: 640px;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.hw-hero__inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  width: 100%;
+  max-width: 1200px;
+  padding: 100px 24px 80px;
+}
+
+@media (min-width: 900px) {
+  .hw-hero__inner {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 48px;
+    padding: 0 80px 80px;
+  }
+}
+
+.hw-hero--editorial .hw-hero__inner {
+  align-items: flex-start;
+}
+
+@media (min-width: 900px) {
+  .hw-hero--editorial .hw-hero__inner {
+    align-items: flex-end;
+  }
+
+  .hw-hero--editorial .hw-hero__content {
+    text-align: left;
+    max-width: 560px;
+  }
+}
+
+.hw-hero--minimal .hw-hero__grid {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent 80%);
+}
+
+.hw-hero--minimal .hw-hero__headline {
+  text-transform: lowercase;
+  font-weight: 300;
+  letter-spacing: -0.04em;
+}
+
+.hotel-world--mediterranean .hw-hero__headline {
+  font-style: italic;
+}
+
+.hotel-world--cotswolds .hw-hero__headline {
+  font-weight: 400;
+  letter-spacing: -0.02em;
 }
 
 .hw-hero__bg {
@@ -299,8 +433,9 @@
   position: relative;
   z-index: 2;
   text-align: center;
-  padding: 0 24px;
+  padding: 0;
   max-width: 900px;
+  flex: 1;
 }
 
 .hw-hero__eyebrow {
@@ -890,4 +1025,715 @@
     transform: translateX(-50%) scaleY(1);
     transform-origin: top;
   }
+}
+
+/* Booking widget demo */
+.hw-booking {
+  width: 100%;
+  max-width: 340px;
+  padding: 24px;
+  background: rgba(253, 250, 247, 0.96);
+  backdrop-filter: blur(16px);
+  border-radius: var(--hw-radius);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
+  color: #1c1510;
+  flex-shrink: 0;
+}
+
+.hw-booking--cotswolds {
+  border: 2px double var(--hw-accent-light);
+  border-radius: 0;
+  background: var(--hw-white);
+}
+
+.hw-booking--city {
+  max-width: 100%;
+  background: rgba(14, 14, 14, 0.92);
+  border: 1px solid var(--hw-accent);
+  border-radius: 0;
+  color: var(--hw-text);
+  box-shadow: none;
+}
+
+.hw-hero--minimal .hw-hero__inner {
+  flex: 1;
+  justify-content: center;
+  padding-bottom: 280px;
+}
+
+@media (min-width: 900px) {
+  .hw-hero--minimal .hw-hero__inner {
+    padding-bottom: 100px;
+  }
+
+  .hw-hero--minimal .hw-booking {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-width: none;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto auto;
+    align-items: end;
+    gap: 24px;
+    padding: 24px 80px;
+    border-top: 1px solid var(--hw-accent);
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+  }
+
+  .hw-hero--minimal .hw-booking__header,
+  .hw-hero--minimal .hw-booking__note {
+    display: none;
+  }
+
+  .hw-hero--minimal .hw-booking__fields {
+    display: contents;
+  }
+
+  .hw-hero--minimal .hw-booking__from {
+    margin: 0;
+    align-self: center;
+  }
+
+  .hw-hero--minimal .hw-booking__btn {
+    align-self: center;
+    white-space: nowrap;
+  }
+}
+
+.hw-booking__header {
+  margin-bottom: 20px;
+}
+
+.hw-booking__label {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #7a6e65;
+  margin-bottom: 6px;
+}
+
+.hw-booking--city .hw-booking__label {
+  color: var(--hw-text-muted);
+}
+
+.hw-booking__property {
+  font-family: var(--font-hotel-display), "Cormorant Garamond", serif;
+  font-size: 22px;
+  font-weight: 400;
+}
+
+.hw-booking__fields {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.hw-booking__field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: var(--hw-radius);
+}
+
+.hw-booking--city .hw-booking__field {
+  background: var(--hw-bg-card);
+  border: 1px solid var(--hw-accent-light);
+  border-radius: 0;
+}
+
+.hw-booking__field-label {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #7a6e65;
+}
+
+.hw-booking--city .hw-booking__field-label {
+  color: var(--hw-text-muted);
+}
+
+.hw-booking__field-value {
+  font-size: 13px;
+}
+
+.hw-booking__stepper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hw-booking__step {
+  width: 28px;
+  height: 28px;
+  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  background: transparent;
+  color: inherit;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.hw-booking__step:hover {
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+
+.hw-booking__from {
+  font-size: 12px;
+  color: #7a6e65;
+  margin: 0 0 16px;
+}
+
+.hw-booking--city .hw-booking__from {
+  color: var(--hw-accent);
+}
+
+.hw-booking__btn {
+  width: 100%;
+  height: 48px;
+  border: none;
+  background: #1c1510;
+  color: #fdfaf7;
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.hw-booking--cotswolds .hw-booking__btn {
+  background: var(--hw-accent);
+}
+
+.hw-booking--city .hw-booking__btn {
+  background: var(--hw-accent);
+  color: var(--hw-bg);
+}
+
+.hw-booking__btn:hover {
+  opacity: 0.9;
+}
+
+.hw-booking__note {
+  margin: 12px 0 0;
+  font-size: 9px;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+  color: #7a6e65;
+  opacity: 0.85;
+}
+
+.hw-booking--city .hw-booking__note {
+  color: var(--hw-text-muted);
+}
+
+/* Intro variants */
+.hw-intro--statement {
+  padding-top: 120px;
+  padding-bottom: 120px;
+}
+
+@media (min-width: 768px) {
+  .hw-intro--statement {
+    padding-top: 160px;
+    padding-bottom: 160px;
+  }
+}
+
+.hotel-world--cotswolds .hw-editorial__image {
+  border: 8px solid var(--hw-white);
+  outline: 1px solid var(--hw-accent-light);
+}
+
+/* Integrations */
+.hw-integrations {
+  padding: 80px 24px;
+  background: var(--hw-bg-alt);
+}
+
+@media (min-width: 768px) {
+  .hw-integrations {
+    padding: 100px 80px;
+  }
+}
+
+.hw-integrations__header {
+  max-width: 640px;
+  margin-bottom: 48px;
+}
+
+.hw-integrations__eyebrow {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--hw-accent);
+  margin-bottom: 16px;
+}
+
+.hotel-world--city .hw-integrations__eyebrow {
+  font-family: var(--font-hotel-body), "Jost", sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.35em;
+}
+
+.hw-integrations__headline {
+  font-family: var(--font-hotel-display), "Cormorant Garamond", serif;
+  font-weight: 300;
+  font-size: clamp(28px, 3.5vw, 42px);
+  line-height: 1.2;
+  color: var(--hw-text);
+  margin: 0;
+}
+
+.hotel-world--city .hw-integrations__headline {
+  text-transform: lowercase;
+}
+
+.hw-integrations__grid {
+  display: grid;
+  gap: 20px;
+}
+
+@media (min-width: 640px) {
+  .hw-integrations__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .hw-integrations__grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+}
+
+.hw-integration-card {
+  padding: 28px;
+  background: var(--hw-white);
+  border-radius: var(--hw-radius);
+  border: 1px solid color-mix(in srgb, var(--hw-text) 6%, transparent);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.hw-integration-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.06);
+}
+
+.hotel-world--cotswolds .hw-integration-card {
+  border-radius: 0;
+  border: 1px solid var(--hw-accent-light);
+  background: var(--hw-bg);
+}
+
+.hotel-world--city .hw-integration-card {
+  background: var(--hw-bg-card);
+  border-color: var(--hw-accent-light);
+  border-radius: 0;
+}
+
+.hotel-world--city .hw-integration-card:hover {
+  box-shadow: 0 0 0 1px var(--hw-accent);
+}
+
+.hw-integration-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.hw-integration-card__tag {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--hw-accent);
+}
+
+.hw-integration-card__chip {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  background: var(--hw-bg-alt);
+  color: var(--hw-text-muted);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.hotel-world--city .hw-integration-card__chip {
+  background: var(--hw-bg);
+  border: 1px solid var(--hw-accent-light);
+  border-radius: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.hw-integration-card__title {
+  font-family: var(--font-hotel-display), "Cormorant Garamond", serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--hw-text);
+  margin: 0 0 10px;
+}
+
+.hw-integration-card__desc {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--hw-text-muted);
+  margin: 0;
+}
+
+/* Highlights */
+.hw-highlights {
+  padding: 80px 24px;
+  background: var(--hw-bg);
+}
+
+@media (min-width: 768px) {
+  .hw-highlights {
+    padding: 100px 80px;
+  }
+}
+
+.hw-highlights__eyebrow {
+  display: block;
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--hw-text-muted);
+  margin-bottom: 12px;
+}
+
+.hw-highlights__headline {
+  font-family: var(--font-hotel-display), "Cormorant Garamond", serif;
+  font-weight: 300;
+  font-size: clamp(28px, 3.5vw, 40px);
+  text-align: center;
+  color: var(--hw-text);
+  margin: 0 0 56px;
+}
+
+.hotel-world--city .hw-highlights__headline {
+  text-transform: lowercase;
+}
+
+.hw-highlights__list {
+  display: flex;
+  flex-direction: column;
+  gap: 64px;
+}
+
+.hw-highlight {
+  display: grid;
+  gap: 32px;
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .hw-highlight {
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+  }
+
+  .hw-highlight--reverse .hw-highlight__image {
+    order: 2;
+  }
+
+  .hw-highlight--reverse .hw-highlight__body {
+    order: 1;
+  }
+}
+
+.hw-highlight__image {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--hw-radius);
+}
+
+.hotel-world--cotswolds .hw-highlight__image {
+  border-radius: 0;
+  border: 1px solid var(--hw-accent-light);
+  padding: 8px;
+  background: var(--hw-white);
+}
+
+.hotel-world--cotswolds .hw-highlight__image img {
+  border-radius: 0;
+}
+
+.hotel-world--city .hw-highlight__image {
+  border-radius: 0;
+  border: 1px solid var(--hw-accent);
+}
+
+.hw-highlight__label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--hw-accent);
+  margin-bottom: 12px;
+}
+
+.hw-highlight__title {
+  font-family: var(--font-hotel-display), "Cormorant Garamond", serif;
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 400;
+  color: var(--hw-text);
+  margin: 0 0 16px;
+}
+
+.hotel-world--mediterranean .hw-highlight__title {
+  font-style: italic;
+}
+
+.hw-highlight__text {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--hw-text-muted);
+  margin: 0;
+}
+
+/* Reviews */
+.hw-reviews {
+  padding: 64px 24px;
+  background: var(--hw-white);
+  border-top: 1px solid color-mix(in srgb, var(--hw-text) 8%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--hw-text) 8%, transparent);
+}
+
+.hotel-world--city .hw-reviews {
+  background: var(--hw-bg-alt);
+  border-color: var(--hw-accent-light);
+}
+
+@media (min-width: 768px) {
+  .hw-reviews {
+    padding: 80px;
+  }
+}
+
+.hw-reviews__eyebrow {
+  display: block;
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--hw-text-muted);
+  margin-bottom: 32px;
+}
+
+.hw-reviews__grid {
+  display: grid;
+  gap: 32px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .hw-reviews__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+  }
+}
+
+.hw-review {
+  margin: 0;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .hw-review {
+    text-align: left;
+  }
+
+  .hotel-world--cotswolds .hw-review {
+    padding-left: 24px;
+    border-left: 2px solid var(--hw-accent-light);
+  }
+}
+
+.hw-review__quote {
+  font-family: var(--font-hotel-display), "Cormorant Garamond", serif;
+  font-style: italic;
+  font-size: clamp(18px, 2.2vw, 22px);
+  line-height: 1.5;
+  color: var(--hw-text);
+  margin: 0 0 12px;
+}
+
+.hw-review__source {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--hw-text-muted);
+}
+
+/* Partner section */
+.hw-partner {
+  display: grid;
+  gap: 48px;
+  padding: 80px 24px;
+  background: var(--hw-text);
+  color: var(--hw-white);
+}
+
+.hotel-world--cotswolds .hw-partner {
+  background: var(--hw-accent);
+}
+
+.hotel-world--city .hw-partner {
+  background: var(--hw-bg-card);
+  border-top: 1px solid var(--hw-accent);
+  border-bottom: 1px solid var(--hw-accent);
+}
+
+@media (min-width: 900px) {
+  .hw-partner {
+    grid-template-columns: 1.4fr 1fr;
+    gap: 64px;
+    padding: 100px 80px;
+    align-items: start;
+  }
+}
+
+.hw-partner__eyebrow {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  opacity: 0.65;
+  margin-bottom: 20px;
+}
+
+.hotel-world--city .hw-partner__eyebrow {
+  color: var(--hw-accent);
+  opacity: 1;
+}
+
+.hw-partner__headline {
+  font-family: var(--font-hotel-display), "Cormorant Garamond", serif;
+  font-weight: 300;
+  font-size: clamp(28px, 3.5vw, 44px);
+  line-height: 1.15;
+  margin: 0 0 20px;
+}
+
+.hotel-world--mediterranean .hw-partner__headline {
+  font-style: italic;
+}
+
+.hotel-world--city .hw-partner__headline {
+  text-transform: lowercase;
+}
+
+.hw-partner__sub {
+  font-size: 14px;
+  line-height: 1.7;
+  opacity: 0.75;
+  margin: 0 0 28px;
+  max-width: 520px;
+}
+
+.hw-partner__list {
+  margin: 0 0 32px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 14px;
+}
+
+.hw-partner__item {
+  position: relative;
+  padding-left: 20px;
+  font-size: 13px;
+  line-height: 1.5;
+  opacity: 0.9;
+}
+
+.hw-partner__item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+  opacity: 0.5;
+  border-radius: 50%;
+}
+
+.hotel-world--city .hw-partner__item::before {
+  border-radius: 0;
+  background: var(--hw-accent);
+  opacity: 1;
+}
+
+.hw-partner__link {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: inherit;
+  opacity: 0.85;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 4px;
+  transition: opacity 0.3s ease;
+}
+
+.hw-partner__link:hover {
+  opacity: 1;
+}
+
+.hotel-world--city .hw-partner__link {
+  color: var(--hw-accent);
+  border-color: var(--hw-accent);
+}
+
+.hw-partner__aside {
+  display: grid;
+  gap: 24px;
+}
+
+@media (min-width: 900px) {
+  .hw-partner__aside {
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    padding-left: 48px;
+  }
+
+  .hotel-world--city .hw-partner__aside {
+    border-left-color: var(--hw-accent-light);
+  }
+}
+
+.hw-partner__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hw-partner__stat-num {
+  font-family: var(--font-hotel-display), "Cormorant Garamond", serif;
+  font-size: 48px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.hotel-world--city .hw-partner__stat-num {
+  color: var(--hw-accent);
+}
+
+.hw-partner__stat-label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  opacity: 0.65;
 }

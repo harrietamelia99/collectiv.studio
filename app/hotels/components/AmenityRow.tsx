@@ -6,7 +6,7 @@ export type AmenityItem = {
 };
 
 type Props = {
-  items: AmenityItem[];
+  items: readonly AmenityItem[];
 };
 
 export function AmenityRow({ items }: Props) {
