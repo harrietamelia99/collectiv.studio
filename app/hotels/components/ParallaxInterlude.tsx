@@ -1,6 +1,7 @@
 "use client";
 
-import { useParallax } from "../hooks/useParallax";
+import { useRef } from "react";
+import { useElementParallax } from "../hooks/useElementParallax";
 
 type Props = {
   imageSrc: string;
@@ -8,10 +9,11 @@ type Props = {
 };
 
 export function ParallaxInterlude({ imageSrc, parallaxFactor = 0.5 }: Props) {
-  const offset = useParallax(parallaxFactor);
+  const sectionRef = useRef<HTMLElement>(null);
+  const offset = useElementParallax(sectionRef, parallaxFactor, 64);
 
   return (
-    <section className="hw-interlude" aria-hidden>
+    <section ref={sectionRef} className="hw-interlude" aria-hidden>
       <div
         className="hw-interlude__bg"
         style={{

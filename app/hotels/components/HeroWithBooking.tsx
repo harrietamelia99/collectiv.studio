@@ -1,8 +1,8 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import type { HotelTheme } from "../data";
-import { useParallax } from "../hooks/useParallax";
+import { useElementParallax } from "../hooks/useElementParallax";
 import { MockBookingPanel } from "./MockBookingPanel";
 
 type Props = {
@@ -22,10 +22,11 @@ export function HeroWithBooking({
   bookingFrom,
   children,
 }: Props) {
-  const offset = useParallax(0.4);
+  const heroRef = useRef<HTMLElement>(null);
+  const offset = useElementParallax(heroRef, 0.5, 80);
 
   return (
-    <section className={`hw-hero hw-hero--${layout}`}>
+    <section ref={heroRef} className={`hw-hero hw-hero--${layout}`}>
       {layout === "minimal" ? <div className="hw-hero__grid" aria-hidden /> : null}
       <div
         className="hw-hero__bg"
@@ -37,8 +38,13 @@ export function HeroWithBooking({
       <div className="hw-hero__overlay" />
       <div className="hw-hero__inner">
         <div className="hw-hero__content">{children}</div>
-        <MockBookingPanel theme={theme} property={bookingProperty} fromPrice={bookingFrom} />
+        {layout !== "minimal" ? (
+          <MockBookingPanel theme={theme} property={bookingProperty} fromPrice={bookingFrom} />
+        ) : null}
       </div>
+      {layout === "minimal" ? (
+        <MockBookingPanel theme={theme} property={bookingProperty} fromPrice={bookingFrom} />
+      ) : null}
       <div className="hw-hero__scroll" aria-hidden />
     </section>
   );
