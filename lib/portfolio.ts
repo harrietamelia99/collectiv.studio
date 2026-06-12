@@ -103,6 +103,60 @@ export const portfolioProjects: PortfolioProject[] = [
     liveSiteButtonLabel: "View here",
   },
   {
+    slug: "outlier-coaching",
+    title: "Outlier Coaching",
+    type: "WordPress website",
+    image: "/images/portfolio-outlier.png",
+    tagline:
+      "A straight-talking one-page WordPress site for a coaching practice built on real connection—not corporate fluff.",
+    year: "2026",
+    overview:
+      "Outlier Coaching offers one-to-one coaching, team workshops, talks, outdoor experiences in North Devon and leadership adventures in Ghana. Joe wanted a site that felt as direct as the work itself: no jargon, no performative coaching language—just a clear path to start a conversation. We built a simple one-page WordPress site that lets the offer and the testimonials do the talking.",
+    challenge:
+      "Executive coaching sites often default to stock photography, vague promises and the same tired phrases. Joe's practice is the opposite—confidential, human and unapologetically different. The site needed to reflect that without over-designing it or turning into another template-led brochure.",
+    approach:
+      "We kept the structure intentionally simple: a bold hero question, clear sections for coaching, workshops, talks, experiences and adventures, social proof from clients, and friction-free CTAs to book a discovery call or send an email. The design leans on strong typography, Outlier's orange accent and real photography—room to breathe, nothing extra. WordPress gives Joe a site he can maintain without a complex CMS.",
+    outcome:
+      "A live one-page site that matches how Joe shows up in the room—direct, warm and credible. Visitors can understand what Outlier offers in seconds, explore upcoming adventures like the Ghana leadership trip, and connect without wading through corporate copy.",
+    services: ["WordPress build", "Web design", "One-page site"],
+    galleryCaptions: ["Site — desktop hero", "Site — mobile views"],
+    galleryImages: [
+      "/images/portfolio-outlier-gallery-desktop.png",
+      "/images/portfolio-outlier-gallery-mobile.png",
+    ],
+    liveSiteUrl: "https://outliercoaching.co.uk/",
+    liveSiteButtonLabel: "View here",
+  },
+  {
+    slug: "tenerife-weather-forum",
+    title: "Tenerife Weather Forum",
+    type: "Website",
+    image: "/images/portfolio-tenerife-weather.png",
+    tagline:
+      "A daily weather and travel hub for Tenerife—forecasts, guides and live info supporting a growing Facebook and TikTok community.",
+    year: "2026",
+    overview:
+      "Tenerife Weather Forum is an independent weather and travel resource for visitors and residents—daily forecasts, microclimate explainers, travel guides, airport updates, live webcams and excursion ideas. The site sits alongside a Facebook community of 6,000+ Tenerife enthusiasts and a growing TikTok presence, giving the group a professional home on the web.",
+    challenge:
+      "Weather and tourism sites can feel cluttered, outdated or stuffed with ads. The forum needed to be genuinely useful at a glance—live conditions across the island, credible travel advice and clear paths to the community—while staying fast, readable and easy to update as the audience grows.",
+    approach:
+      "We built a clean, user-friendly site around how people actually plan a Tenerife trip: a live conditions bar, today's forecast front and centre, essential travel guides, hand-picked excursions, embedded webcams and a free daily weather digest. Social links and a Facebook group CTA connect the website to the community channels already driving engagement.",
+    outcome:
+      "A professional, approachable platform that works for holidaymakers and locals alike—updated daily, easy to navigate, and built to grow with the forum's Facebook and TikTok following.",
+    services: ["Web design", "Website build", "Community integration"],
+    galleryCaptions: ["Site — homepage hero", "Site — live forecasts & community"],
+    galleryImages: [
+      "/images/portfolio-tenerife-weather-gallery-desktop.png",
+      "/images/portfolio-tenerife-weather-gallery-desktop.png",
+    ],
+    liveSiteUrl: "https://www.tenerifeweatherforum.com/",
+    liveSiteButtonLabel: "View here",
+    quote: {
+      text: "Really pleased with everything Harriet has done so far. She's been patient with all my ideas and changes plus communication has been excellent throughout and the site is very professional and user friendly. Would definitely recommend.",
+      attribution: "Tenerife Weather Forum",
+    },
+  },
+  {
     slug: "beautigel-nails",
     title: "Beautigel Nails",
     type: "Coming soon",
