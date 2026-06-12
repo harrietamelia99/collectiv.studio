@@ -56,26 +56,27 @@ export const portfolioProjects: PortfolioProject[] = [
   {
     slug: "malow-london",
     title: "Malow London",
-    type: "Branding",
+    type: "Branding & Shopify website",
     image: "/images/portfolio-malows.png",
     tagline:
-      "Full brand identity for comfort-led heels—feminine and pink, grounded in quiet luxury.",
+      "Full brand identity and a Shopify store for comfort-led heels—feminine, pink, and grounded in quiet luxury.",
     year: "2026",
     overview:
-      "Malow London is an e-commerce brand creating heels designed for comfort without compromising on style. We developed a full brand identity that captures their vision exactly - feminine and pink, yet grounded in a quiet luxury, neutral aesthetic.",
+      "Malow London is an e-commerce brand creating heels designed for comfort without compromising on style. We developed a full brand identity—feminine and pink, yet grounded in a quiet luxury, neutral aesthetic—then built a Shopify store that carries that vision through to checkout.",
     challenge:
-      "The brief sat in a tricky space: pink and feminine, but not loud or trend-led. The identity needed to feel elevated enough to sit alongside premium footwear brands, while still being warm and accessible to their customer.",
+      "The brief sat in a tricky space: pink and feminine, but not loud or trend-led. The identity needed to feel elevated enough to sit alongside premium footwear brands, while still being warm and accessible. The shop had to do the same—selling occasion heels for weddings, proms and race days without feeling generic or sacrificing the comfort story at the heart of the brand.",
     approach:
-      "We worked closely with the team to refine the visual direction, building a palette and identity system that balanced softness with sophistication. Every element, from the primary logo to the submarks, was designed to work across packaging, digital and social as the brand scales.",
+      "We worked closely with the team to refine the visual direction, building a palette and identity system that balanced softness with sophistication. From the logo suite and submarks through to the Shopify build, every touchpoint was designed to work together—editorial product presentation, clear size and shipping information, and a calm, premium shopping experience on mobile and desktop.",
     outcome:
-      "A brand the founders are genuinely proud of. The submarks in particular landed exactly where they wanted, and with a website currently in the works, the identity is already doing its job before the full platform is even live.",
-    services: ["Visual identity", "Logo suite & submarks", "Packaging & digital"],
+      "A brand and Shopify store the founders are genuinely proud of. Malow London is live at malowlondon.com—identity, product storytelling and ecommerce working as one cohesive experience.",
+    services: ["Visual identity", "Logo suite & submarks", "Shopify build", "Web design"],
     galleryCaptions: ["Brand identity and logo suite", "Submarks and brand application"],
     galleryImages: [
       "/images/portfolio-malow-gallery-brand.png",
       "/images/portfolio-malow-gallery-application.png",
     ],
-    liveSiteUrl: "https://malow-london.myshopify.com/",
+    liveSiteUrl: "https://malowlondon.com/",
+    liveSiteButtonLabel: "View here",
   },
   {
     slug: "reset-pilates",
