@@ -145,10 +145,10 @@ export const portfolioProjects: PortfolioProject[] = [
     outcome:
       "A professional, approachable platform that works for holidaymakers and locals alike—updated daily, easy to navigate, and built to grow with the forum's Facebook and TikTok following.",
     services: ["Web design", "Website build", "Community integration"],
-    galleryCaptions: ["Site — homepage hero", "Site — live forecasts & community"],
+    galleryCaptions: ["Site — homepage hero", "Site — mobile views"],
     galleryImages: [
       "/images/portfolio-tenerife-weather-gallery-desktop.png",
-      "/images/portfolio-tenerife-weather-gallery-desktop.png",
+      "/images/portfolio-tenerife-weather-gallery-mobile.png",
     ],
     liveSiteUrl: "https://www.tenerifeweatherforum.com/",
     liveSiteButtonLabel: "View here",
