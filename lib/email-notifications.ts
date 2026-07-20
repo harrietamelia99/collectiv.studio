@@ -800,7 +800,7 @@ export async function sendLaunchListSignupStudioEmail(opts: {
       [
         { label: "Name", value: opts.name },
         { label: "Email", value: opts.email },
-        { label: "Source", value: "Homepage launch modal (July 2026 bookings)" },
+        { label: "Source", value: "Homepage launch modal (August 2026 bookings)" },
       ],
       submittedAt,
     ),
