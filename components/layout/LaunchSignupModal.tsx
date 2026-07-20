@@ -4,7 +4,10 @@ import Image from "next/image";
 import { useReducedMotion } from "framer-motion";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { TurnstileWidget } from "@/components/forms/TurnstileWidget";
 import { ctaButtonClasses } from "@/components/ui/Button";
+import { useFormStartedAt } from "@/hooks/useFormStartedAt";
+import { turnstileRequiredOnClient } from "@/lib/turnstile-public";
 
 const STORAGE_KEY = "cc-launch-signup-dismissed";
 const MODAL_IMAGE = "/images/portfolio-petite.png";
@@ -20,7 +23,10 @@ export function LaunchSignupModal() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [thanks, setThanks] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
   const panelRef = useRef<HTMLDivElement>(null);
+  const formStartedAt = useFormStartedAt();
+  const turnstileRequired = turnstileRequiredOnClient();
 
   useEffect(() => {
     let cancelled = false;
@@ -89,12 +95,27 @@ export function LaunchSignupModal() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    if (turnstileRequired && !turnstileToken) {
+      setError("Please complete the security check.");
+      return;
+    }
     setBusy(true);
     try {
       const res = await fetch("/api/launch-signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), email: email.trim() }),
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          honeypot: (e.currentTarget as HTMLFormElement).querySelector<HTMLInputElement>(
+            "#launch-signup-trap",
+          )?.value,
+          websiteTrap: (e.currentTarget as HTMLFormElement).querySelector<HTMLInputElement>(
+            "#launch-signup-website-trap",
+          )?.value,
+          formStartedAt,
+          turnstileToken: turnstileToken || undefined,
+        }),
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
@@ -191,6 +212,20 @@ export function LaunchSignupModal() {
                 onSubmit={onSubmit}
                 noValidate
               >
+                <div
+                  className="pointer-events-none absolute -left-[9999px] h-px w-px overflow-hidden opacity-0"
+                  aria-hidden="true"
+                >
+                  <label htmlFor="launch-signup-trap">Title</label>
+                  <input id="launch-signup-trap" tabIndex={-1} autoComplete="off" name="trap" />
+                  <label htmlFor="launch-signup-website-trap">Company website</label>
+                  <input
+                    id="launch-signup-website-trap"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    name="websiteTrap"
+                  />
+                </div>
                 <div className="flex flex-col gap-1.5">
                   <label
                     htmlFor="launch-signup-name"
@@ -230,6 +265,10 @@ export function LaunchSignupModal() {
                     className="min-h-[2.75rem] w-full rounded-[var(--cc-pill-radius)] border border-burgundy/20 bg-white px-4 font-body text-sm text-burgundy placeholder:text-burgundy/38 outline-none transition-[border-color,box-shadow] duration-200 focus:border-burgundy/45 focus:ring-2 focus:ring-burgundy/15 sm:min-h-[3rem] sm:px-5 sm:text-[15px]"
                   />
                 </div>
+                <TurnstileWidget
+                  onToken={setTurnstileToken}
+                  onExpire={() => setTurnstileToken("")}
+                />
                 <button
                   type="submit"
                   disabled={busy}

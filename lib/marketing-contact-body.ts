@@ -6,6 +6,9 @@ export type ContactApiHomeBody = {
   source: "home";
   email: string;
   honeypot?: string;
+  websiteTrap?: string;
+  formStartedAt?: number;
+  turnstileToken?: string;
 };
 
 export type ContactApiFullBody = {
@@ -27,6 +30,9 @@ export type ContactApiFullBody = {
   wordOfMouthThanks?: string;
   additionalQuestions?: string;
   honeypot?: string;
+  websiteTrap?: string;
+  formStartedAt?: number;
+  turnstileToken?: string;
 };
 
 export type ContactApiParsed =
@@ -36,6 +42,10 @@ export type ContactApiParsed =
 
 function str(v: unknown): string {
   return typeof v === "string" ? v : "";
+}
+
+function num(v: unknown): number | undefined {
+  return typeof v === "number" && Number.isFinite(v) ? v : undefined;
 }
 
 /** JSON body: checkbox sent as boolean true from fetch API. */
@@ -66,7 +76,14 @@ export function parseContactApiJson(body: unknown): ContactApiParsed {
     }
     return {
       ok: true,
-      data: { source: "home", email, honeypot: str(o.honeypot) },
+      data: {
+        source: "home",
+        email,
+        honeypot: str(o.honeypot),
+        websiteTrap: str(o.websiteTrap),
+        formStartedAt: num(o.formStartedAt),
+        turnstileToken: str(o.turnstileToken) || undefined,
+      },
     };
   }
   if (source !== "contact") {
@@ -117,6 +134,9 @@ export function parseContactApiJson(body: unknown): ContactApiParsed {
       wordOfMouthThanks: str(o.wordOfMouthThanks).trim() || undefined,
       additionalQuestions: str(o.additionalQuestions).trim() || undefined,
       honeypot: str(o.honeypot),
+      websiteTrap: str(o.websiteTrap),
+      formStartedAt: num(o.formStartedAt),
+      turnstileToken: str(o.turnstileToken) || undefined,
     },
   };
 }

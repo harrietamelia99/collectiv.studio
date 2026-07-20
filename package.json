@@ -30,6 +30,7 @@
     "seed": "node prisma/seed.cjs"
   },
   "dependencies": {
+    "@marsidev/react-turnstile": "^1.5.3",
     "@prisma/client": "5.22.0",
     "@supabase/supabase-js": "^2.101.0",
     "@uploadthing/react": "^7.3.3",

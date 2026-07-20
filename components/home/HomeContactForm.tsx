@@ -3,8 +3,12 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { HoneypotFields } from "@/components/forms/HoneypotFields";
+import { TurnstileWidget } from "@/components/forms/TurnstileWidget";
 import { ctaButtonClasses } from "@/components/ui/Button";
+import { useFormStartedAt } from "@/hooks/useFormStartedAt";
 import { CONTACT_EMAIL_PATTERN } from "@/lib/marketing-contact-body";
+import { turnstileRequiredOnClient } from "@/lib/turnstile-public";
 
 const HOME_EMAIL_KEY = "cc-home-contact-email";
 
@@ -12,6 +16,7 @@ type Values = {
   email: string;
   privacyConsent: boolean;
   trap: string;
+  websiteTrap: string;
 };
 
 export function HomeContactForm() {
@@ -19,18 +24,27 @@ export function HomeContactForm() {
   const [banner, setBanner] = useState<"none" | "error">("none");
   const [buttonSuccessFlash, setButtonSuccessFlash] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
   const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const formStartedAt = useFormStartedAt();
+  const turnstileRequired = turnstileRequiredOnClient();
 
   const {
     register,
     handleSubmit,
     reset,
     setError,
-    clearErrors,
     formState: { errors },
-  } = useForm<Values>({ defaultValues: { email: "", privacyConsent: false, trap: "" } });
+  } = useForm<Values>({
+    defaultValues: { email: "", privacyConsent: false, trap: "", websiteTrap: "" },
+  });
 
   const onSubmit = async (data: Values) => {
+    if (turnstileRequired && !turnstileToken) {
+      setBanner("error");
+      return;
+    }
+
     setBanner("none");
     setIsSubmitting(true);
     try {
@@ -40,7 +54,11 @@ export function HomeContactForm() {
         body: JSON.stringify({
           source: "home",
           email: data.email.trim(),
+          privacyConsent: data.privacyConsent === true,
           honeypot: data.trap,
+          websiteTrap: data.websiteTrap,
+          formStartedAt,
+          turnstileToken: turnstileToken || undefined,
         }),
       });
       const payload = (await res.json().catch(() => ({}))) as {
@@ -54,7 +72,8 @@ export function HomeContactForm() {
         } catch {
           /* private mode */
         }
-        reset({ email: "", privacyConsent: false, trap: "" });
+        reset({ email: "", privacyConsent: false, trap: "", websiteTrap: "" });
+        setTurnstileToken("");
         setSent(true);
         setButtonSuccessFlash(true);
         if (successTimerRef.current) clearTimeout(successTimerRef.current);
@@ -125,13 +144,7 @@ export function HomeContactForm() {
             onSubmit={handleSubmit(onSubmit)}
             noValidate
           >
-            <div
-              className="pointer-events-none absolute -left-[9999px] h-px w-px overflow-hidden opacity-0"
-              aria-hidden="true"
-            >
-              <label htmlFor="home-trap">Title</label>
-              <input id="home-trap" tabIndex={-1} autoComplete="off" {...register("trap")} />
-            </div>
+            <HoneypotFields register={register} trapId="home-trap" websiteTrapId="home-website-trap" />
 
             <div className="mx-auto w-full max-w-[min(100%,280px)]">
               <label
@@ -199,6 +212,12 @@ export function HomeContactForm() {
                 </p>
               ) : null}
             </div>
+
+            <TurnstileWidget
+              className="mx-auto mt-5 max-w-md"
+              onToken={setTurnstileToken}
+              onExpire={() => setTurnstileToken("")}
+            />
 
             <div className="mt-5 flex flex-col items-center gap-2 md:mt-6">
               <button

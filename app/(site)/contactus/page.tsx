@@ -3,11 +3,15 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useForm, type UseFormRegister } from "react-hook-form";
+import { HoneypotFields } from "@/components/forms/HoneypotFields";
+import { TurnstileWidget } from "@/components/forms/TurnstileWidget";
 import { HOME_EMAIL_KEY } from "@/components/home/HomeContactForm";
 import { ctaButtonClasses } from "@/components/ui/Button";
 import { MotionSection } from "@/components/ui/SectionReveal";
 import { SectionLabel } from "@/components/ui/SectionLabel";
+import { useFormStartedAt } from "@/hooks/useFormStartedAt";
 import { CONTACT_EMAIL_PATTERN } from "@/lib/marketing-contact-body";
+import { turnstileRequiredOnClient } from "@/lib/turnstile-public";
 
 type FormValues = {
   firstName: string;
@@ -28,6 +32,7 @@ type FormValues = {
   additionalQuestions: string;
   privacyConsent: boolean;
   trap: string;
+  websiteTrap: string;
 };
 
 const BUDGET_OPTIONS = [
@@ -131,12 +136,16 @@ export default function ContactPage() {
   const [banner, setBanner] = useState<"none" | "success" | "error">("none");
   const [buttonSuccessFlash, setButtonSuccessFlash] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
   const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const formStartedAt = useFormStartedAt();
+  const turnstileRequired = turnstileRequiredOnClient();
 
   const { register, handleSubmit, reset, setValue, setError, formState: { errors } } =
     useForm<FormValues>({
       defaultValues: {
         trap: "",
+        websiteTrap: "",
         phone: "",
         firstName: "",
         lastName: "",
@@ -176,6 +185,11 @@ export default function ContactPage() {
   }, []);
 
   const onSubmit = async (data: FormValues) => {
+    if (turnstileRequired && !turnstileToken) {
+      setBanner("error");
+      return;
+    }
+
     setBanner("none");
     setIsSubmitting(true);
     try {
@@ -202,6 +216,9 @@ export default function ContactPage() {
           additionalQuestions: data.additionalQuestions.trim() || undefined,
           privacyConsent: data.privacyConsent === true,
           honeypot: data.trap,
+          websiteTrap: data.websiteTrap,
+          formStartedAt,
+          turnstileToken: turnstileToken || undefined,
         }),
       });
 
@@ -216,6 +233,7 @@ export default function ContactPage() {
         console.log("[contact-form] client: submission OK");
         reset({
           trap: "",
+          websiteTrap: "",
           phone: "",
           firstName: "",
           lastName: "",
@@ -234,6 +252,7 @@ export default function ContactPage() {
           additionalQuestions: "",
           privacyConsent: false,
         });
+        setTurnstileToken("");
         setBanner("success");
         setButtonSuccessFlash(true);
         if (successTimerRef.current) clearTimeout(successTimerRef.current);
@@ -278,13 +297,11 @@ export default function ContactPage() {
           className="relative mt-10 border-0 bg-transparent p-0 md:mt-12"
           noValidate
         >
-          <div
-            className="pointer-events-none absolute -left-[9999px] h-px w-px overflow-hidden opacity-0"
-            aria-hidden="true"
-          >
-            <label htmlFor="contact-trap">Company website</label>
-            <input id="contact-trap" tabIndex={-1} autoComplete="off" {...register("trap")} />
-          </div>
+          <HoneypotFields
+            register={register}
+            trapId="contact-trap"
+            websiteTrapId="contact-website-trap"
+          />
 
           <div className="space-y-10 md:space-y-12">
             <div>
@@ -470,6 +487,12 @@ export default function ContactPage() {
             </label>
             <FieldError message={errors.privacyConsent?.message} />
           </div>
+
+          <TurnstileWidget
+            className="mt-10"
+            onToken={setTurnstileToken}
+            onExpire={() => setTurnstileToken("")}
+          />
 
           <div className="mt-12 flex flex-col gap-4 border-t-cc border-solid border-[var(--cc-border)] pt-10">
             <button

@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+import { contactEmailRateLimitAllow } from "@/lib/contact-email-rate-limit";
 import { contactRateLimitAllow } from "@/lib/contact-rate-limit";
+import { checkContactSpam } from "@/lib/contact-spam";
 import { notifyIssyOfMarketingContact } from "@/lib/contact-form-studio-notification";
 import { sendMarketingContactEmails } from "@/lib/email-notifications";
 import { fullContactToStudioRows, parseContactApiJson } from "@/lib/marketing-contact-body";
+import { turnstileConfigured, verifyTurnstileToken } from "@/lib/turnstile";
 
 export const runtime = "nodejs";
 
@@ -15,6 +18,10 @@ function clientIp(request: Request): string {
   const real = request.headers.get("x-real-ip")?.trim();
   if (real) return real;
   return "unknown";
+}
+
+function silentOk() {
+  return NextResponse.json({ ok: true });
 }
 
 export async function POST(request: Request) {
@@ -43,10 +50,39 @@ export async function POST(request: Request) {
     );
   }
 
-  if (parsed.data.honeypot?.trim()) {
+  const data = parsed.data;
+  const spam = checkContactSpam({
+    honeypot: data.honeypot,
+    websiteTrap: data.websiteTrap,
+    formStartedAt: data.formStartedAt,
+    email: data.email,
+    firstName: data.source === "contact" ? data.firstName : undefined,
+    lastName: data.source === "contact" ? data.lastName : undefined,
+    textFields:
+      data.source === "contact"
+        ? [
+            data.aboutBusiness,
+            data.additionalQuestions,
+            data.businessName,
+            data.businessWebsite,
+            data.industry,
+          ].filter((v): v is string => Boolean(v))
+        : undefined,
+  });
+
+  if (spam.spam) {
     // eslint-disable-next-line no-console
-    console.warn("[contact-form] honeypot filled — silent accept", { ip });
-    return NextResponse.json({ ok: true });
+    console.warn("[contact-form] spam dropped", { ip, reason: spam.reason });
+    return silentOk();
+  }
+
+  const turnstile = await verifyTurnstileToken(data.turnstileToken, ip);
+  if (!turnstile.ok) {
+    if (turnstileConfigured()) {
+      // eslint-disable-next-line no-console
+      console.warn("[contact-form] turnstile failed", { ip, reason: turnstile.reason });
+      return NextResponse.json({ ok: false, error: "captcha_failed" }, { status: 400 });
+    }
   }
 
   if (!contactRateLimitAllow(ip)) {
@@ -55,13 +91,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "rate_limited" }, { status: 429 });
   }
 
+  if (!contactEmailRateLimitAllow(data.email)) {
+    // eslint-disable-next-line no-console
+    console.warn("[contact-form] email rate limited", { ip, email: data.email });
+    return silentOk();
+  }
+
   try {
-    if (parsed.data.source === "home") {
+    if (data.source === "home") {
       const { studioSent, autoReplySent } = await sendMarketingContactEmails({
         source: "home",
-        submitterEmail: parsed.data.email,
+        submitterEmail: data.email,
         studioRows: [
-          { label: "Email", value: parsed.data.email },
+          { label: "Email", value: data.email },
           { label: "Privacy policy consent", value: "Yes — home contact form" },
         ],
       });
@@ -71,24 +113,24 @@ export async function POST(request: Request) {
         return NextResponse.json({ ok: false, error: "send_failed" }, { status: 502 });
       }
       try {
-        await notifyIssyOfMarketingContact(parsed.data);
+        await notifyIssyOfMarketingContact(data);
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error("[contact-form] studio notification failed (home)", e);
       }
       // eslint-disable-next-line no-console
-      console.log("[contact-form] success (home)", { ip, email: parsed.data.email });
+      console.log("[contact-form] success (home)", { ip, email: data.email });
       return NextResponse.json({ ok: true });
     }
 
     const rows = [
-      ...fullContactToStudioRows(parsed.data),
+      ...fullContactToStudioRows(data),
       { label: "Privacy policy consent", value: "Yes — discovery enquiry form" },
     ];
     const { studioSent, autoReplySent } = await sendMarketingContactEmails({
       source: "contact",
-      submitterEmail: parsed.data.email,
-      submitterFirstName: parsed.data.firstName,
+      submitterEmail: data.email,
+      submitterFirstName: data.firstName,
       studioRows: rows,
     });
     if (!studioSent || !autoReplySent) {
@@ -97,13 +139,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: "send_failed" }, { status: 502 });
     }
     try {
-      await notifyIssyOfMarketingContact(parsed.data);
+      await notifyIssyOfMarketingContact(data);
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error("[contact-form] studio notification failed (contact)", e);
     }
     // eslint-disable-next-line no-console
-    console.log("[contact-form] success (contact)", { ip, email: parsed.data.email });
+    console.log("[contact-form] success (contact)", { ip, email: data.email });
     return NextResponse.json({ ok: true });
   } catch (e) {
     // eslint-disable-next-line no-console

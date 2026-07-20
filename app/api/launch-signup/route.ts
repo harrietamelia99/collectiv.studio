@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
+import { checkLaunchSignupSpam } from "@/lib/contact-spam";
+import { contactEmailRateLimitAllow } from "@/lib/contact-email-rate-limit";
 import { notifyIssyOfLaunchListSignup } from "@/lib/contact-form-studio-notification";
 import { sendLaunchListSignupStudioEmail } from "@/lib/email-notifications";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
+import { turnstileConfigured, verifyTurnstileToken } from "@/lib/turnstile";
 import { isSafeWebhookUrl } from "@/lib/webhook-url";
 
 const emailOk = (v: string) =>
@@ -13,7 +16,15 @@ const nameOk = (v: string) => {
 };
 
 const SIGNUP_WINDOW_MS = 60_000;
-const SIGNUP_MAX_PER_WINDOW = 12;
+const SIGNUP_MAX_PER_WINDOW = 6;
+
+function str(v: unknown): string {
+  return typeof v === "string" ? v : "";
+}
+
+function num(v: unknown): number | undefined {
+  return typeof v === "number" && Number.isFinite(v) ? v : undefined;
+}
 
 export function GET() {
   return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
@@ -44,14 +55,31 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const email =
-    typeof body === "object" && body !== null && "email" in body
-      ? String((body as { email: unknown }).email).trim()
-      : "";
-  const name =
-    typeof body === "object" && body !== null && "name" in body
-      ? String((body as { name: unknown }).name).trim()
-      : "";
+  const o = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+  const email = str(o.email).trim();
+  const name = str(o.name).trim();
+  const honeypot = str(o.honeypot);
+  const websiteTrap = str(o.websiteTrap);
+  const formStartedAt = num(o.formStartedAt);
+  const turnstileToken = str(o.turnstileToken) || undefined;
+
+  const spam = checkLaunchSignupSpam({
+    honeypot,
+    websiteTrap,
+    formStartedAt,
+    name,
+    email,
+  });
+  if (spam.spam) {
+    // eslint-disable-next-line no-console
+    console.warn("[launch-signup] spam dropped", { ip, reason: spam.reason });
+    return NextResponse.json({ ok: true });
+  }
+
+  const turnstile = await verifyTurnstileToken(turnstileToken, ip);
+  if (!turnstile.ok && turnstileConfigured()) {
+    return NextResponse.json({ error: "Please complete the security check." }, { status: 400 });
+  }
 
   if (!nameOk(name)) {
     return NextResponse.json({ error: "Please enter your name." }, { status: 400 });
@@ -59,6 +87,12 @@ export async function POST(req: Request) {
 
   if (!emailOk(email)) {
     return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
+  }
+
+  if (!contactEmailRateLimitAllow(email)) {
+    // eslint-disable-next-line no-console
+    console.warn("[launch-signup] email rate limited", { ip, email });
+    return NextResponse.json({ ok: true });
   }
 
   const webhook = process.env.LAUNCH_SIGNUP_WEBHOOK?.trim();
