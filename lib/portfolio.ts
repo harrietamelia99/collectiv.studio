@@ -160,25 +160,27 @@ export const portfolioProjects: PortfolioProject[] = [
   {
     slug: "beautigel-nails",
     title: "Beautigel Nails",
-    type: "Coming soon",
+    type: "Ecommerce website",
     image: "/images/portfolio-beautigel-gallery-desktop.png",
     tagline:
-      "Ecommerce gel nail wrap brand by a mother & daughter team—salon-quality nails without the salon, with the site launching soon.",
+      "Salon-effect gel nail wraps by a mother & daughter team—an ecommerce site built to explain the science, sell the starter kit, and grow subscriptions.",
     year: "2026",
     overview:
-      "Beautigel Nails is an ecommerce gel nail wrap brand founded by a mother and daughter team. They came to us to build a digital shop that feels as polished as the product—accessible, confident, and ready for launch.",
+      "Beautigel Nails is a London gel nail wrap brand founded by a mother and daughter who wanted salon-quality nails at home—without the cost, time or damage of regular salon visits. We built their ecommerce site to do more than list products: it educates customers on why UV-cured gel works, guides them through a starter kit, and supports repeat purchase through subscription.",
     challenge:
-      "Gel nail wraps sit in a busy direct-to-consumer beauty market. The site needed to communicate salon-quality results at home without feeling cheap or cluttered, and give a new brand instant credibility before the first order shipped.",
+      "Gel nail wraps sit in a crowded DTC beauty market, and many competitors skip UV curing entirely. Beautigel’s difference is deliberate—UV-cured wraps that last up to four weeks, protect natural nails (especially post-acrylic), and deliver a salon-grade finish. The site had to make that logic clear fast, without overwhelming first-time buyers or underselling the premium positioning.",
     approach:
-      "We designed and built the store around the founders' story and values—confidence and accessibility at the centre—with a clean, editorial layout, clear shop pathways, and mobile-first pages for mission and product discovery.",
+      "We structured the site around how customers actually decide: a bold hero and bestsellers for quick purchase, a step-by-step routine (choose, apply & cure, wear, remove), and a build-your-own starter kit flow combining wraps, UV lamp and cuticle oil. Comparison tables and science-led sections explain why curing matters versus non-UV wraps and salon gel—wear time, protection, removal and at-home convenience. Subscription, membership savings and the founders’ story sit alongside social proof and Instagram integration to build trust and repeat orders.",
     outcome:
-      "The site is built and ready for launch—a scalable ecommerce foundation that reflects a considered mother-and-daughter brand and is prepared to grow with the range.",
-    services: ["Ecommerce website"],
+      "Beautigel Nails is live at beautigelnails.uk—a scalable shop that sells the product and the reasoning behind it. Visitors can buy individual wrap kits, configure a starter bundle, subscribe for regular deliveries, and understand exactly why UV-cured gel is worth it before they checkout.",
+    services: ["Ecommerce website", "Web design", "Product storytelling", "Subscription setup"],
     galleryCaptions: ["Site — desktop homepage", "Site — mobile mission & values"],
     galleryImages: [
       "/images/portfolio-beautigel-gallery-desktop.png",
       "/images/portfolio-beautigel-gallery-mobile.png",
     ],
+    liveSiteUrl: "https://www.beautigelnails.uk/",
+    liveSiteButtonLabel: "View here",
   },
   {
     slug: "ateau",
