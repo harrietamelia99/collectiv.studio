@@ -45,8 +45,13 @@ function FeaturedProjectCard({
           {positionLabel}
         </span>
         <span className="cc-caption-strong absolute right-4 top-4 z-[1] max-w-[min(100%,10rem)] truncate rounded-[var(--cc-pill-radius)] border border-burgundy/22 bg-cream/95 px-2.5 py-1 text-[9px] shadow-[0_1px_10px_rgba(37,13,24,0.12)] md:right-5 md:top-5 md:max-w-[min(100%,12rem)] md:text-[10px]">
-          {project.type}
+          {project.comingSoon ? "Coming soon" : project.type}
         </span>
+        {project.comingSoon ? (
+          <span className="cc-caption-strong absolute bottom-4 left-4 z-[1] rounded-[var(--cc-pill-radius)] border border-cream/30 bg-burgundy/90 px-2.5 py-1 text-[9px] uppercase tracking-[0.12em] text-cream shadow-[0_1px_10px_rgba(37,13,24,0.2)] md:bottom-5 md:left-5 md:text-[10px]">
+            Website launching soon
+          </span>
+        ) : null}
       </div>
       <div className="flex min-h-0 flex-1 flex-col px-4 py-4 md:px-5 md:py-5 lg:px-5 lg:py-5">
         <h3 className="cc-no-heading-hover font-display text-cc-h4 font-normal tracking-[-0.02em] text-burgundy lg:text-[clamp(1.15rem,1.8vw,1.45rem)] lg:leading-snug xl:text-cc-h3">
@@ -54,6 +59,7 @@ function FeaturedProjectCard({
         </h3>
         <p className="cc-caption-strong mt-1.5 normal-case text-burgundy/65 md:mt-2">
           {project.type} · {project.year}
+          {project.comingSoon ? " · Website coming soon" : ""}
         </p>
         <p className="cc-copy-muted mt-2 line-clamp-2 text-[11px] leading-relaxed md:mt-3 md:text-[12px] lg:line-clamp-3">
           {project.tagline}

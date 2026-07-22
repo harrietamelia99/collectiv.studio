@@ -22,6 +22,10 @@ export type PortfolioProject = {
   liveSiteButtonLabel?: string;
   /** When true, shows a “coming soon” label instead of a live site CTA. */
   comingSoon?: boolean;
+  /** Heading for the coming-soon notice (default: “Website coming soon”). */
+  comingSoonLabel?: string;
+  /** Supporting copy under the coming-soon notice. */
+  comingSoonNote?: string;
   quote?: { text: string; attribution: string };
 };
 
@@ -112,7 +116,7 @@ export const portfolioProjects: PortfolioProject[] = [
     image: "/images/portfolio-sante-studio-gallery-desktop.png",
     imageObjectPosition: "center 52%",
     tagline:
-      "Boutique reformer Pilates in Hitchin—warm neutrals, community energy, and a full website built for launch (coming soon).",
+      "Boutique reformer Pilates in Hitchin—warm neutrals, community energy, and a full website ready for launch.",
     year: "2026",
     overview:
       "Santé Studio is an instructor-owned boutique Pilates studio in Hitchin offering Reformer, Mat, Barre and Infrared classes—plus Midwife-led Pre & Postnatal sessions led by founder Leyla. We built a calm, premium digital home that reflects the studio in the room: serif-led typography, cream and taupe tones, clear class pathways, intro offers and booking integration ready for opening day.",
@@ -129,6 +133,9 @@ export const portfolioProjects: PortfolioProject[] = [
       "/images/portfolio-sante-studio-gallery-studio.png",
     ],
     comingSoon: true,
+    comingSoonLabel: "Website coming soon",
+    comingSoonNote:
+      "The site is built and in pre-launch staging. It will go live publicly when Santé Studio opens in Hitchin.",
   },
   {
     slug: "outlier-coaching",

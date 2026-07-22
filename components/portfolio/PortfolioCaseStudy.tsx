@@ -30,6 +30,11 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
             ← Back to portfolio
           </Link>
           <SectionLabel className="mb-3 md:mb-4">[ case study ]</SectionLabel>
+          {project.comingSoon ? (
+            <p className="cc-caption-strong mb-3 inline-flex rounded-[var(--cc-pill-radius)] border border-burgundy/25 bg-burgundy/[0.06] px-3 py-1.5 uppercase tracking-[0.14em] text-burgundy md:mb-4">
+              Coming soon
+            </p>
+          ) : null}
           <h1 className="cc-no-heading-hover max-w-[22rem] text-balance text-burgundy sm:max-w-2xl md:max-w-4xl">
             {project.title}
             <span className="sr-only">
@@ -52,16 +57,20 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
               {project.liveSiteButtonLabel ?? "View website here"}
             </a>
           ) : project.comingSoon ? (
-            <p
-              className={ctaButtonClasses({
-                variant: "burgundy",
-                size: "md",
-                className: "mt-6 w-fit cursor-default opacity-85 md:mt-7",
-              })}
-              aria-label="Website coming soon"
+            <div
+              className="mt-6 w-full max-w-xl rounded-[var(--cc-pill-radius)] border border-burgundy/20 bg-burgundy/[0.05] px-5 py-4 md:mt-7 md:px-6 md:py-5"
+              role="status"
+              aria-label={project.comingSoonLabel ?? "Website coming soon"}
             >
-              Website coming soon
-            </p>
+              <p className="cc-caption-strong uppercase tracking-[0.14em] text-burgundy">
+                {project.comingSoonLabel ?? "Website coming soon"}
+              </p>
+              {project.comingSoonNote ? (
+                <p className="cc-copy-muted mt-2 text-[14px] leading-relaxed md:mt-2.5 md:text-[15px]">
+                  {project.comingSoonNote}
+                </p>
+              ) : null}
+            </div>
           ) : null}
           <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-3 border-t-cc border-solid border-burgundy pt-8 md:mt-10 md:gap-x-6 md:pt-10">
             <span className="cc-caption text-burgundy/55">{project.year}</span>
@@ -69,6 +78,16 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
               ·
             </span>
             <span className="cc-caption-strong">{project.type}</span>
+            {project.comingSoon ? (
+              <>
+                <span className="hidden text-burgundy/25 md:inline" aria-hidden>
+                  ·
+                </span>
+                <span className="cc-caption-strong uppercase tracking-[0.12em] text-burgundy">
+                  Coming soon
+                </span>
+              </>
+            ) : null}
             <div className="flex w-full flex-wrap gap-2 md:ml-auto md:w-auto md:justify-end">
               {project.services.map((s) => (
                 <span

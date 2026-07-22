@@ -49,6 +49,7 @@ export default function PortfolioPage() {
                   href={`/portfolio/${p.slug}`}
                   index={i + 1}
                   imageObjectPosition={p.imageObjectPosition}
+                  comingSoon={p.comingSoon}
                 />
               </li>
             ))}
