@@ -51,6 +51,17 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
             >
               {project.liveSiteButtonLabel ?? "View website here"}
             </a>
+          ) : project.comingSoon ? (
+            <p
+              className={ctaButtonClasses({
+                variant: "burgundy",
+                size: "md",
+                className: "mt-6 w-fit cursor-default opacity-85 md:mt-7",
+              })}
+              aria-label="Website coming soon"
+            >
+              Website coming soon
+            </p>
           ) : null}
           <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-3 border-t-cc border-solid border-burgundy pt-8 md:mt-10 md:gap-x-6 md:pt-10">
             <span className="cc-caption text-burgundy/55">{project.year}</span>

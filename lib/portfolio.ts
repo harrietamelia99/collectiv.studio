@@ -20,6 +20,8 @@ export type PortfolioProject = {
   liveSiteUrl?: string;
   /** Button label when `liveSiteUrl` is set (default: “View website here”). */
   liveSiteButtonLabel?: string;
+  /** When true, shows a “coming soon” label instead of a live site CTA. */
+  comingSoon?: boolean;
   quote?: { text: string; attribution: string };
 };
 
@@ -102,6 +104,31 @@ export const portfolioProjects: PortfolioProject[] = [
     ],
     liveSiteUrl: "https://www.resetpilatesstudio.co.uk/",
     liveSiteButtonLabel: "View here",
+  },
+  {
+    slug: "sante-studio",
+    title: "Santé Studio",
+    type: "Branding & Website",
+    image: "/images/portfolio-sante-studio-gallery-desktop.png",
+    imageObjectPosition: "center 52%",
+    tagline:
+      "Boutique reformer Pilates in Hitchin—warm neutrals, community energy, and a full website built for launch (coming soon).",
+    year: "2026",
+    overview:
+      "Santé Studio is an instructor-owned boutique Pilates studio in Hitchin offering Reformer, Mat, Barre and Infrared classes—plus Midwife-led Pre & Postnatal sessions led by founder Leyla. We built a calm, premium digital home that reflects the studio in the room: serif-led typography, cream and taupe tones, clear class pathways, intro offers and booking integration ready for opening day.",
+    challenge:
+      "Boutique Pilates brands often blur together online—same soft palettes, same stock reformer shots, same generic class lists. Santé needed to feel distinctly theirs: confident without being cold, community-led without losing polish, and credible enough to support specialist pre and postnatal programming alongside everyday class bookings.",
+    approach:
+      "We shaped the site around how members actually discover a studio: a strong hero with the studio's voice (\"Strength, Community, You\"), clear class categories with book and learn-more paths, the 3-for-£45 intro offer, midwife-led specialist support, social proof and Instagram integration. The design mirrors the Hitchin space—warm light, backlit signage, cream reformers—and keeps navigation simple across classes, membership, pre and postnatal, and contact.",
+    outcome:
+      "Santé Studio's website is complete and ready to go live—the brand, class structure, booking flow and launch comms working as one system. The site launches publicly soon; until then it remains in pre-launch staging while the studio prepares for opening.",
+    services: ["Web design", "Website build", "Class & booking UX", "Launch-ready site"],
+    galleryCaptions: ["Site — desktop homepage mockup", "Site — the studio section"],
+    galleryImages: [
+      "/images/portfolio-sante-studio-gallery-desktop.png",
+      "/images/portfolio-sante-studio-gallery-studio.png",
+    ],
+    comingSoon: true,
   },
   {
     slug: "outlier-coaching",
