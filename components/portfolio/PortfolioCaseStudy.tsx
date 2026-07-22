@@ -32,7 +32,7 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
           <SectionLabel className="mb-3 md:mb-4">[ case study ]</SectionLabel>
           {project.comingSoon ? (
             <p className="cc-caption-strong mb-3 inline-flex rounded-[var(--cc-pill-radius)] border border-burgundy/25 bg-burgundy/[0.06] px-3 py-1.5 uppercase tracking-[0.14em] text-burgundy md:mb-4">
-              Coming soon
+              Website coming soon
             </p>
           ) : null}
           <h1 className="cc-no-heading-hover max-w-[22rem] text-balance text-burgundy sm:max-w-2xl md:max-w-4xl">
@@ -84,7 +84,7 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
                   ·
                 </span>
                 <span className="cc-caption-strong uppercase tracking-[0.12em] text-burgundy">
-                  Coming soon
+                  Website coming soon
                 </span>
               </>
             ) : null}

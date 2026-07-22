@@ -58,12 +58,12 @@ export function PortfolioCard({
           </span>
 
           <span className="cc-caption-strong absolute right-3 top-3 z-[2] max-w-[min(100%,11rem)] truncate rounded-[var(--cc-pill-radius)] border border-burgundy/22 bg-cream/95 px-2 py-0.5 shadow-[0_1px_10px_rgba(37,13,24,0.12)] sm:right-4 sm:top-4 sm:max-w-[13rem] sm:px-2.5 sm:py-1 md:right-5 md:top-5">
-            {comingSoon ? "Coming soon" : subtitle}
+            {comingSoon ? "Website coming soon" : subtitle}
           </span>
 
           {comingSoon ? (
             <span className="cc-caption-strong absolute bottom-3 left-3 z-[2] rounded-[var(--cc-pill-radius)] border border-cream/30 bg-burgundy/90 px-2.5 py-1 uppercase tracking-[0.12em] text-cream shadow-[0_1px_10px_rgba(37,13,24,0.2)] sm:bottom-4 sm:left-4 sm:px-3 sm:py-1.5 md:bottom-5 md:left-5">
-              Website launching soon
+              New site launching soon
             </span>
           ) : null}
 

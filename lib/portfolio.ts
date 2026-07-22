@@ -112,30 +112,30 @@ export const portfolioProjects: PortfolioProject[] = [
   {
     slug: "sante-studio",
     title: "Santé Studio",
-    type: "Branding & Website",
+    type: "Website redesign",
     image: "/images/portfolio-sante-studio-gallery-desktop.png",
     imageObjectPosition: "center 52%",
     tagline:
-      "Boutique reformer Pilates in Hitchin—warm neutrals, community energy, and a full website ready for launch.",
+      "Website redesign for an open boutique reformer studio in Hitchin—warm neutrals, community energy, and a new site launching soon.",
     year: "2026",
     overview:
-      "Santé Studio is an instructor-owned boutique Pilates studio in Hitchin offering Reformer, Mat, Barre and Infrared classes—plus Midwife-led Pre & Postnatal sessions led by founder Leyla. We built a calm, premium digital home that reflects the studio in the room: serif-led typography, cream and taupe tones, clear class pathways, intro offers and booking integration ready for opening day.",
+      "Santé Studio is already open in Hitchin—an instructor-owned boutique offering Reformer, Mat, Barre and Infrared classes, plus Midwife-led Pre & Postnatal sessions led by founder Leyla. We redesigned their website to match the studio members already know in the room: serif-led typography, cream and taupe tones, clear class pathways, intro offers and booking integration.",
     challenge:
-      "Boutique Pilates brands often blur together online—same soft palettes, same stock reformer shots, same generic class lists. Santé needed to feel distinctly theirs: confident without being cold, community-led without losing polish, and credible enough to support specialist pre and postnatal programming alongside everyday class bookings.",
+      "The studio was trading, but the old site didn't reflect the space or the brand Santé had built on the reformer floor. Boutique Pilates brands blur together online—same soft palettes, same generic class lists. The redesign needed to feel distinctly Santé: confident without being cold, community-led without losing polish, and credible enough to support specialist pre and postnatal programming alongside everyday class bookings.",
     approach:
-      "We shaped the site around how members actually discover a studio: a strong hero with the studio's voice (\"Strength, Community, You\"), clear class categories with book and learn-more paths, the 3-for-£45 intro offer, midwife-led specialist support, social proof and Instagram integration. The design mirrors the Hitchin space—warm light, backlit signage, cream reformers—and keeps navigation simple across classes, membership, pre and postnatal, and contact.",
+      "We rebuilt the site around how members actually discover a studio: a strong hero with Santé's voice (\"Strength, Community, You\"), clear class categories with book and learn-more paths, the 3-for-£45 intro offer, midwife-led specialist support, social proof and Instagram integration. The design mirrors the Hitchin studio—warm light, backlit signage, cream reformers—and keeps navigation simple across classes, membership, pre and postnatal, and contact.",
     outcome:
-      "Santé Studio's website is complete and ready to go live—the brand, class structure, booking flow and launch comms working as one system. The site launches publicly soon; until then it remains in pre-launch staging while the studio prepares for opening.",
-    services: ["Web design", "Website build", "Class & booking UX", "Launch-ready site"],
+      "The redesigned website is complete and ready to go live—brand, class structure, booking flow and comms working as one system. Santé Studio continues to welcome members in Hitchin; the new site launches publicly soon.",
+    services: ["Website redesign", "Web design", "Class & booking UX", "Launch-ready site"],
     galleryCaptions: ["Site — desktop homepage mockup", "Site — the studio section"],
     galleryImages: [
       "/images/portfolio-sante-studio-gallery-desktop.png",
       "/images/portfolio-sante-studio-gallery-studio.png",
     ],
     comingSoon: true,
-    comingSoonLabel: "Website coming soon",
+    comingSoonLabel: "New website coming soon",
     comingSoonNote:
-      "The site is built and in pre-launch staging. It will go live publicly when Santé Studio opens in Hitchin.",
+      "Santé Studio is already open in Hitchin. The redesigned website is built and in pre-launch staging—it will go live publicly soon.",
   },
   {
     slug: "outlier-coaching",

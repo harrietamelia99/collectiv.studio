@@ -45,11 +45,11 @@ function FeaturedProjectCard({
           {positionLabel}
         </span>
         <span className="cc-caption-strong absolute right-4 top-4 z-[1] max-w-[min(100%,10rem)] truncate rounded-[var(--cc-pill-radius)] border border-burgundy/22 bg-cream/95 px-2.5 py-1 text-[9px] shadow-[0_1px_10px_rgba(37,13,24,0.12)] md:right-5 md:top-5 md:max-w-[min(100%,12rem)] md:text-[10px]">
-          {project.comingSoon ? "Coming soon" : project.type}
+          {project.comingSoon ? "Website coming soon" : project.type}
         </span>
         {project.comingSoon ? (
           <span className="cc-caption-strong absolute bottom-4 left-4 z-[1] rounded-[var(--cc-pill-radius)] border border-cream/30 bg-burgundy/90 px-2.5 py-1 text-[9px] uppercase tracking-[0.12em] text-cream shadow-[0_1px_10px_rgba(37,13,24,0.2)] md:bottom-5 md:left-5 md:text-[10px]">
-            Website launching soon
+            New site launching soon
           </span>
         ) : null}
       </div>
