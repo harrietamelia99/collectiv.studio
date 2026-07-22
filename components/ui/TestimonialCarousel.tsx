@@ -33,6 +33,10 @@ const staticQuotes: { text: string; name: string; id?: string; fullHref?: string
     name: "Tan-Ex Salon",
   },
   {
+    text: "Harriet and Issy have been amazing, highly recommend them 🖤",
+    name: "Reset.",
+  },
+  {
     text: "We decided to bring Harriet on to run our socials and improve our overall engagement. Our turnover up 150%, a coincidence? We don't think so!",
     name: "PROSITEUK",
   },
