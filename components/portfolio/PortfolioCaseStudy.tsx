@@ -30,11 +30,6 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
             ← Back to portfolio
           </Link>
           <SectionLabel className="mb-3 md:mb-4">[ case study ]</SectionLabel>
-          {project.comingSoon ? (
-            <p className="cc-caption-strong mb-3 inline-flex rounded-[var(--cc-pill-radius)] border border-burgundy/25 bg-burgundy/[0.06] px-3 py-1.5 uppercase tracking-[0.14em] text-burgundy md:mb-4">
-              Website coming soon
-            </p>
-          ) : null}
           <h1 className="cc-no-heading-hover max-w-[22rem] text-balance text-burgundy sm:max-w-2xl md:max-w-4xl">
             {project.title}
             <span className="sr-only">
@@ -57,16 +52,12 @@ export function PortfolioCaseStudy({ project, prev, next }: Props) {
               {project.liveSiteButtonLabel ?? "View website here"}
             </a>
           ) : project.comingSoon ? (
-            <div
-              className="mt-6 w-full max-w-xl rounded-[var(--cc-pill-radius)] border border-burgundy/20 bg-burgundy/[0.05] px-5 py-4 md:mt-7 md:px-6 md:py-5"
-              role="status"
-              aria-label={project.comingSoonLabel ?? "Website coming soon"}
-            >
-              <p className="cc-caption-strong uppercase tracking-[0.14em] text-burgundy">
+            <div className="mt-6 max-w-2xl md:mt-7" role="status">
+              <p className="cc-caption-strong uppercase tracking-[0.12em] text-burgundy">
                 {project.comingSoonLabel ?? "Website coming soon"}
               </p>
               {project.comingSoonNote ? (
-                <p className="cc-copy-muted mt-2 text-[14px] leading-relaxed md:mt-2.5 md:text-[15px]">
+                <p className="cc-copy-muted mt-2 text-[15px] leading-relaxed md:mt-2.5 md:text-[16px]">
                   {project.comingSoonNote}
                 </p>
               ) : null}
