@@ -217,6 +217,32 @@ export const portfolioProjects: PortfolioProject[] = [
     liveSiteButtonLabel: "View here",
   },
   {
+    slug: "tan-bomb",
+    title: "Tan Bomb",
+    type: "Ecommerce website",
+    image: "/images/portfolio-tan-bomb-gallery-desktop.png",
+    imageObjectPosition: "center 48%",
+    tagline:
+      "Luxury tanning accelerator built by salon owners—for tanners and salons, with Cherry Whip live at tan-bomb.com.",
+    year: "2026",
+    overview:
+      "Tan Bomb is a UK-made luxury tanning accelerator created by tanning business owners who wanted more from the category—salon-quality formula, packaging that sells on shelf, and a brand tanners actually want to use. We built tan-bomb.com to launch Cherry Whip and serve two audiences at once: customers shopping for themselves and salon owners stocking their shelves.",
+    challenge:
+      "Tanning accelerators often look generic online—same bottle shots, same claims, no clear reason to trust the product. Tan Bomb needed to feel premium and indulgent without losing the directness salon owners expect. The site had to sell DTC, support wholesale enquiries, help customers find stockists, and explain a formula built around L-Tyrosine, Hyaluronic Acid, Aloe Vera, Vitamin E and Marine Algae Extract—all while launching Cherry Whip with real campaign energy.",
+    approach:
+      "We structured the site around how people actually buy: a bold Cherry Whip hero with shop paths for home and salon, product storytelling that covers indoor and outdoor use, benefit-led sections built from years in the tanning trade, and a stockist finder for local purchase. Cart and secure Stripe checkout sit alongside wholesale and contact flows, Instagram integration, and copy that speaks to tanners and salon owners in the same confident voice.",
+    outcome:
+      "Tan Bomb is live at tan-bomb.com—Cherry Whip available to buy online, wholesale enquiries in place, and a brand presence that looks as good on a salon shelf as it does on a phone at the beach. The site gives Tan Bomb a scalable home for new drops, stockists and retail growth.",
+    services: ["Ecommerce website", "Web design", "Product launch", "Wholesale & stockist UX"],
+    galleryCaptions: ["Site — desktop Cherry Whip launch", "Site — mobile shop"],
+    galleryImages: [
+      "/images/portfolio-tan-bomb-gallery-desktop.png",
+      "/images/portfolio-tan-bomb-gallery-mobile.png",
+    ],
+    liveSiteUrl: "https://www.tan-bomb.com/",
+    liveSiteButtonLabel: "View here",
+  },
+  {
     slug: "ateau",
     title: "Âteau",
     type: "Social Media",
