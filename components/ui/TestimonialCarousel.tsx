@@ -37,6 +37,11 @@ const staticQuotes: { text: string; name: string; id?: string; fullHref?: string
     name: "Reset.",
   },
   {
+    text: "We honestly couldn't be happier with the website Harriet has created for BeautiGel Nails. From start to finish she's been incredibly patient, professional and supportive, always happy to answer our questions and make any changes we requested. She really understood the premium look and feel we wanted for our brand and brought our vision to life even better than we imagined. The website looks beautiful, is easy to navigate and perfectly reflects our business. Nothing ever felt like too much trouble, and throughout the whole process Harriet has been approachable, responsive and genuinely invested in helping us create something we're proud of. We wouldn't hesitate to recommend her to anyone looking for a talented web designer. Thank you so much for all your hard work—we absolutely love our new website! ❤️",
+    name: "Sara & Kiana, BeautiGel Nails",
+    fullHref: "/portfolio/beautigel-nails",
+  },
+  {
     text: "We decided to bring Harriet on to run our socials and improve our overall engagement. Our turnover up 150%, a coincidence? We don't think so!",
     name: "PROSITEUK",
   },
