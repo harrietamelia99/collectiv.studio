@@ -17,6 +17,7 @@ type Values = {
   privacyConsent: boolean;
   trap: string;
   websiteTrap: string;
+  confirmEmail: string;
 };
 
 export function HomeContactForm() {
@@ -36,7 +37,7 @@ export function HomeContactForm() {
     setError,
     formState: { errors },
   } = useForm<Values>({
-    defaultValues: { email: "", privacyConsent: false, trap: "", websiteTrap: "" },
+    defaultValues: { email: "", privacyConsent: false, trap: "", websiteTrap: "", confirmEmail: "" },
   });
 
   const onSubmit = async (data: Values) => {
@@ -57,6 +58,7 @@ export function HomeContactForm() {
           privacyConsent: data.privacyConsent === true,
           honeypot: data.trap,
           websiteTrap: data.websiteTrap,
+          confirmEmailTrap: data.confirmEmail,
           formStartedAt,
           turnstileToken: turnstileToken || undefined,
         }),
@@ -72,7 +74,7 @@ export function HomeContactForm() {
         } catch {
           /* private mode */
         }
-        reset({ email: "", privacyConsent: false, trap: "", websiteTrap: "" });
+        reset({ email: "", privacyConsent: false, trap: "", websiteTrap: "", confirmEmail: "" });
         setTurnstileToken("");
         setSent(true);
         setButtonSuccessFlash(true);
@@ -144,7 +146,12 @@ export function HomeContactForm() {
             onSubmit={handleSubmit(onSubmit)}
             noValidate
           >
-            <HoneypotFields register={register} trapId="home-trap" websiteTrapId="home-website-trap" />
+            <HoneypotFields
+              register={register}
+              trapId="home-trap"
+              websiteTrapId="home-website-trap"
+              confirmEmailTrapId="home-confirm-email-trap"
+            />
 
             <div className="mx-auto w-full max-w-[min(100%,280px)]">
               <label

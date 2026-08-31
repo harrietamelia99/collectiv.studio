@@ -60,13 +60,16 @@ export async function POST(req: Request) {
   const name = str(o.name).trim();
   const honeypot = str(o.honeypot);
   const websiteTrap = str(o.websiteTrap);
+  const confirmEmailTrap = str(o.confirmEmailTrap);
   const formStartedAt = num(o.formStartedAt);
   const turnstileToken = str(o.turnstileToken) || undefined;
 
   const spam = checkLaunchSignupSpam({
     honeypot,
     websiteTrap,
+    confirmEmailTrap,
     formStartedAt,
+    userAgent: req.headers.get("user-agent"),
     name,
     email,
   });

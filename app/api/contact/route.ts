@@ -54,7 +54,9 @@ export async function POST(request: Request) {
   const spam = checkContactSpam({
     honeypot: data.honeypot,
     websiteTrap: data.websiteTrap,
+    confirmEmailTrap: data.confirmEmailTrap,
     formStartedAt: data.formStartedAt,
+    userAgent: request.headers.get("user-agent"),
     email: data.email,
     firstName: data.source === "contact" ? data.firstName : undefined,
     lastName: data.source === "contact" ? data.lastName : undefined,

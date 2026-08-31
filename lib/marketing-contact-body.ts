@@ -7,6 +7,7 @@ export type ContactApiHomeBody = {
   email: string;
   honeypot?: string;
   websiteTrap?: string;
+  confirmEmailTrap?: string;
   formStartedAt?: number;
   turnstileToken?: string;
 };
@@ -31,6 +32,7 @@ export type ContactApiFullBody = {
   additionalQuestions?: string;
   honeypot?: string;
   websiteTrap?: string;
+  confirmEmailTrap?: string;
   formStartedAt?: number;
   turnstileToken?: string;
 };
@@ -81,6 +83,7 @@ export function parseContactApiJson(body: unknown): ContactApiParsed {
         email,
         honeypot: str(o.honeypot),
         websiteTrap: str(o.websiteTrap),
+        confirmEmailTrap: str(o.confirmEmailTrap),
         formStartedAt: num(o.formStartedAt),
         turnstileToken: str(o.turnstileToken) || undefined,
       },
@@ -135,6 +138,7 @@ export function parseContactApiJson(body: unknown): ContactApiParsed {
       additionalQuestions: str(o.additionalQuestions).trim() || undefined,
       honeypot: str(o.honeypot),
       websiteTrap: str(o.websiteTrap),
+      confirmEmailTrap: str(o.confirmEmailTrap),
       formStartedAt: num(o.formStartedAt),
       turnstileToken: str(o.turnstileToken) || undefined,
     },

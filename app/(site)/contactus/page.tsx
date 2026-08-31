@@ -33,6 +33,7 @@ type FormValues = {
   privacyConsent: boolean;
   trap: string;
   websiteTrap: string;
+  confirmEmail: string;
 };
 
 const BUDGET_OPTIONS = [
@@ -146,6 +147,7 @@ export default function ContactPage() {
       defaultValues: {
         trap: "",
         websiteTrap: "",
+        confirmEmail: "",
         phone: "",
         firstName: "",
         lastName: "",
@@ -217,6 +219,7 @@ export default function ContactPage() {
           privacyConsent: data.privacyConsent === true,
           honeypot: data.trap,
           websiteTrap: data.websiteTrap,
+          confirmEmailTrap: data.confirmEmail,
           formStartedAt,
           turnstileToken: turnstileToken || undefined,
         }),
@@ -234,6 +237,7 @@ export default function ContactPage() {
         reset({
           trap: "",
           websiteTrap: "",
+          confirmEmail: "",
           phone: "",
           firstName: "",
           lastName: "",
@@ -301,6 +305,7 @@ export default function ContactPage() {
             register={register}
             trapId="contact-trap"
             websiteTrapId="contact-website-trap"
+            confirmEmailTrapId="contact-confirm-email-trap"
           />
 
           <div className="space-y-10 md:space-y-12">

@@ -1,6 +1,6 @@
 /** In-memory sliding window (best-effort on serverless; resets per instance). */
 const WINDOW_MS = 60 * 60 * 1000;
-const MAX_PER_WINDOW = 3;
+const MAX_PER_WINDOW = 2;
 
 const buckets = new Map<string, number[]>();
 

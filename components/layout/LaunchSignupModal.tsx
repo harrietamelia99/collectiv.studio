@@ -113,6 +113,9 @@ export function LaunchSignupModal() {
           websiteTrap: (e.currentTarget as HTMLFormElement).querySelector<HTMLInputElement>(
             "#launch-signup-website-trap",
           )?.value,
+          confirmEmailTrap: (e.currentTarget as HTMLFormElement).querySelector<HTMLInputElement>(
+            "#launch-signup-confirm-email-trap",
+          )?.value,
           formStartedAt,
           turnstileToken: turnstileToken || undefined,
         }),
@@ -213,10 +216,10 @@ export function LaunchSignupModal() {
                 noValidate
               >
                 <div
-                  className="pointer-events-none absolute -left-[9999px] h-px w-px overflow-hidden opacity-0"
+                  className="absolute m-0 h-px w-px overflow-hidden border-0 p-0 [clip:rect(0,0,0,0)] whitespace-nowrap"
                   aria-hidden="true"
                 >
-                  <label htmlFor="launch-signup-trap">Title</label>
+                  <label htmlFor="launch-signup-trap">Job title</label>
                   <input id="launch-signup-trap" tabIndex={-1} autoComplete="off" name="trap" />
                   <label htmlFor="launch-signup-website-trap">Company website</label>
                   <input
@@ -224,6 +227,13 @@ export function LaunchSignupModal() {
                     tabIndex={-1}
                     autoComplete="off"
                     name="websiteTrap"
+                  />
+                  <label htmlFor="launch-signup-confirm-email-trap">Confirm email</label>
+                  <input
+                    id="launch-signup-confirm-email-trap"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    name="confirmEmailTrap"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
