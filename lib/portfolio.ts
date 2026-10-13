@@ -251,6 +251,36 @@ export const portfolioProjects: PortfolioProject[] = [
     },
   },
   {
+    slug: "smoky-jays",
+    title: "Smoky Jays",
+    type: "Shopify website",
+    image: "/images/portfolio-smoky-jays-gallery-desktop.png",
+    tagline:
+      "A custom-coded Shopify store for a Chippenham BBQ retailer, built around its bold branding and an easy shop-by-brand experience.",
+    year: "2026",
+    overview:
+      "Smoky Jays is a Wiltshire outdoor cooking specialist selling premium BBQs, smokers, fuel and accessories from brands including Kamado Joe, Pit Barrel and Big K. Collectiv. designed and built the store from scratch, turning the founder’s passion for proper BBQ into an online shop that feels as confident as the products it sells.",
+    challenge:
+      "Smoky Jays had a distinctive logo but no wider style guide, and needed a store that felt more crafted than a typical ecommerce template. Customers shop by brand, so the founder wanted each brand’s barbecues and accessories together in one place. The old approach of spreading them across nested categories meant too many clicks.",
+    approach:
+      "We took the logo’s wood-grain, branded-iron look and built a full visual system from it, with a palette of smoked black, oak, leather tan and ember red, and bold, characterful type. We designed and approved the site as a preview first, then rebuilt it as a custom Shopify theme so it looks exactly the same. Navigation is organised by brand, and the product cards are clean and simple, showing price, discounts and stock status at a glance.",
+    outcome:
+      "Smoky Jays launched with a store that looks and feels unmistakably theirs. It’s easy to browse, quick to shop and simple for the team to manage in Shopify. Customers can find their brand, compare products and check out in a few clicks, with free UK delivery over £50 front and centre.",
+    services: [
+      "Ecommerce design",
+      "Custom Shopify theme",
+      "Brand-led style guide",
+      "Shop-by-brand navigation",
+    ],
+    galleryCaptions: ["Site — desktop homepage", "Site — mobile homepage"],
+    galleryImages: [
+      "/images/portfolio-smoky-jays-gallery-desktop.png",
+      "/images/portfolio-smoky-jays-gallery-mobile.png",
+    ],
+    liveSiteUrl: "https://smokyjays.co.uk/",
+    liveSiteButtonLabel: "View here",
+  },
+  {
     slug: "beautigel-nails",
     title: "Beautigel Nails",
     type: "Ecommerce website",
