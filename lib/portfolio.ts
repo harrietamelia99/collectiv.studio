@@ -31,6 +31,67 @@ export type PortfolioProject = {
 
 export const portfolioProjects: PortfolioProject[] = [
   {
+    slug: "studio-333",
+    title: "Studio 333",
+    type: "Branding & Website",
+    image: "/images/portfolio-studio-333-gallery-desktop.png",
+    tagline:
+      "A full brand identity, a website with BookWhen built in, and a launch campaign across social and email for a boutique Reformer Pilates studio in Epsom.",
+    year: "2026",
+    overview:
+      "Studio 333 is a calm, small-group Reformer Pilates studio in Epsom, Surrey. It’s built around three pillars: Balance, Connection and Strength. Collectiv. created the studio’s brand from the logo up, then designed and built the website and the social graphics and email campaigns that carried it through launch.",
+    challenge:
+      "The studio needed a brand that felt considered and premium but still approachable for people new to Reformer. It had to stand out in a busy local Pilates market. The website, booking system, intro offers and launch messaging had to work together from day one, so every touchpoint felt like the same studio.",
+    approach:
+      "We built the identity around the meaning behind the name, with “Balance · Connection · Strength” running through the logo, the class structure and the messaging. The website maps the three class types to those pillars and gives clear routes to the timetable, pricing and the 2-for-£40 intro offer. BookWhen handles bookings, class packs and memberships. Launch social graphics and email campaigns used the same visual system to build anticipation and drive Founding Member sign-ups.",
+    outcome:
+      "Studio 333 opened with a cohesive brand and a website ready to take bookings. Its launch presence was recognisable on every channel. Clients can find the right class, take up the intro offer and book in a few clicks, and the studio has a brand system it can carry forward into ongoing content.",
+    services: [
+      "Logo & brand identity",
+      "Website design & build",
+      "BookWhen integration",
+      "Launch social graphics",
+      "Launch email campaigns",
+    ],
+    galleryCaptions: ["Site — desktop homepage", "Site — mobile homepage and classes"],
+    galleryImages: [
+      "/images/portfolio-studio-333-gallery-desktop.png",
+      "/images/portfolio-studio-333-gallery-mobile.png",
+    ],
+    liveSiteUrl: "https://www.studio333.co.uk/",
+    liveSiteButtonLabel: "View here",
+  },
+  {
+    slug: "billingbear-health",
+    title: "Billingbear Health",
+    type: "Website design & build",
+    image: "/images/portfolio-billingbear-gallery-desktop.png",
+    tagline:
+      "A two-path website for a physiotherapy clinic and Reformer Pilates studio in Binfield. Visitors can book, buy class packs and join a membership in one place.",
+    year: "2026",
+    overview:
+      "Billingbear Health is a hybrid clinic and studio in the Dutch Barn on a peaceful Berkshire smallholding, where assessment-led physiotherapy sits alongside small-group Reformer Pilates. Collectiv. designed and built the website in two phases. First came a pre-launch landing page with integrated payments. Then the full site, with booking for both sides of the business and a custom CMS so the team can keep it up to date themselves.",
+    challenge:
+      "Billingbear runs two businesses under one roof, each with its own audience, booking system and pricing. The site had to feel calm, premium and rooted in its countryside setting while sending visitors to the right service quickly. It also had to handle class packs, memberships, intro offers and physio appointments without any confusion.",
+    approach:
+      "We built a “Your Journey” homepage that splits visitors into Pilates or Physio from the first scroll, with a Book Pilates / Book Physio bar that follows them through the site. Pilates timetables, class packs and memberships run through Momence, and physio appointments link to Nookal. Each service has its own colour story so the two sides feel distinct but stay part of one brand. A bespoke staff CMS lets the team update offers, banners and content without needing a developer.",
+    outcome:
+      "Billingbear launched with a website that works as hard as the studio does. It takes pre-launch payments and Founding Member sign-ups, and it gives the clinic and the studio clear, bookable paths. The team now has full control over day-to-day updates, and the build is ready for deeper booking integration as the business grows.",
+    services: [
+      "Website design",
+      "Stripe payments",
+      "Momence & Nookal booking integration",
+      "Custom staff CMS",
+    ],
+    galleryCaptions: ["Site — desktop homepage", "Site — mobile Your Journey"],
+    galleryImages: [
+      "/images/portfolio-billingbear-gallery-desktop.png",
+      "/images/portfolio-billingbear-gallery-mobile.png",
+    ],
+    liveSiteUrl: "https://billingbearhealth.com/",
+    liveSiteButtonLabel: "View here",
+  },
+  {
     slug: "petite-social-club",
     title: "Petite Social Club",
     type: "Branding & Website",
