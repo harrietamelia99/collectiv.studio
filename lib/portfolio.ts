@@ -31,6 +31,31 @@ export type PortfolioProject = {
 
 export const portfolioProjects: PortfolioProject[] = [
   {
+    slug: "house-of-tula",
+    title: "House of Tula",
+    type: "Branding & Website",
+    image: "/images/portfolio-house-of-tula-gallery-desktop.jpg",
+    tagline:
+      "A refined logo, a studio photoshoot and a calm, easy-to-run website for a countryside yoga and wellbeing studio in Chew Magna.",
+    year: "2026",
+    overview:
+      "House of Tula is a small, welcoming yoga and wellbeing studio in Chew Magna, just outside Bristol, run by Emma Hasell. Tula means balance in Sanskrit, and Emma offers yoga, breathwork, meditation, massage, facials and wellbeing sessions for workplaces. Collectiv. refined the logo, photographed the studio and designed and built a website that feels as peaceful as a visit.",
+    challenge:
+      "Emma needed a website that captured the feeling of the studio, not just the timetable. It had to feel gentle, natural and personal while explaining a wide mix of services clearly. It also had to be simple enough for Emma to keep up to date herself, without needing to call a developer every time she adds an event or swaps a photo.",
+    approach:
+      "We started by refining the House of Tula logo and its H monogram so the brand felt polished across the website and beyond. A studio photoshoot gave the site real, warm imagery of the space, from the treatment room to the small details that make it feel like Emma’s. The website is built around soft, earthy tones and elegant serif type, with clear routes to services, events and enquiries. We also added a simple editing area, so Emma can change wording, swap photos and post events with a Book on WhatsApp button in a few clicks.",
+    outcome:
+      "House of Tula launched with a website that feels like stepping into the studio. Visitors can discover Emma’s story, explore her services and get in touch easily, and enquiries land straight in her inbox. Emma has full control over her events, photos and wording, so the site can grow with the studio.",
+    services: ["Logo refinement", "Studio photoshoot", "Website design & build", "Simple editing area (CMS)"],
+    galleryCaptions: ["Site - desktop homepage", "Site - mobile homepage"],
+    galleryImages: [
+      "/images/portfolio-house-of-tula-gallery-desktop.jpg",
+      "/images/portfolio-house-of-tula-gallery-mobile.jpg",
+    ],
+    liveSiteUrl: "https://www.houseoftula.co.uk/",
+    liveSiteButtonLabel: "View here",
+  },
+  {
     slug: "studio-333",
     title: "Studio 333",
     type: "Branding & Website",
